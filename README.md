@@ -1,7 +1,7 @@
 # UlmerBuch
 UlmerBuch Beispiele
 
-In diesem Github Repository findest Du alle Beispiele aus dem Buch. Die Beispiele werden als R-package geliefert, so dass sie moeglichst einfach installiert werden koennen. Dazu benoetigst du eine Moeglichst neue R/Rstudio installation. Ein Installationsanleitung findest Du hier [auf Englisch](https://rstudio-education.github.io/hopr/starting.html). Nach der installation musst du Rstudio starten und den folgenden Befehl in der Console eingeben:
+In diesem Github Repository findest Du alle Beispiele aus dem Buch. Die Beispiele werden als R-package geliefert, so dass sie moeglichst einfach installiert werden koennen. Dazu benoetigst du eine moeglichst neue R/Rstudio Installation. Ein Installationsanleitung findest Du [hier - in Englisch](https://rstudio-education.github.io/hopr/starting.html). Nach der Installation starte Rstudio und gib den folgenden Befehl in der Console ein:
 
 ```install.packages("UlmerBuch")```
 
@@ -9,9 +9,14 @@ Fuer die Installation benoetigst Du eine Internetverbindung. Nach erfolgreicher 
 
 ```library("UlmerBuch")```
 
-eingeben. Zum Ausprobieren ob das Package erfolgreich installiert wurde am besten einfach ein Beispiel mittels des Befehls:
+eingeben. Von hieran ist es nur notwendig den ```library``` Befehl einzugeben, wenn Du eine R-Sitzung startest. Zum Ausprobieren ob das Package erfolgreich installiert wurde, am besten einfach ein Beispiel mittels des Befehls:
 
-bespiel(bsp="4.1") #ruft das Beispiel 4.1 auf.
+```bespiel(bsp="4.1") #(ruft Beispiel 4.1 auf)```
 
-Nach Ausfuerung des obigen Befehls, sollte sich ein weitere Code-Fenster oeffnen. In diesem Code-Fenster ist der kommentierte Beispiel-Code der es erlaubt die einzelnen Beispiele nach zu rechnen. Am einfachsten ist es den gesamten Code zu markieren (mittels Maus oder Strg-A) und dann via Strg-R auszufuehren. Oft ist es moeglich und lehrreich den Code nur schrittweise auszufuehren und die Zwischenschritte zu ueberpruefen, oder an den beschriebenen Stellen im Code Werte von Parametern zu veraendern und somit die Code fuer seine eignenen Fragestellungen zu verwenden. Im Folgenden beschreiben wir, das an Beispiel 4.1, welches die Anzahl der notwendigen Erfassungen fuer die Wahrscheinlichkeit einer nichtvorhandenen Art berechnet.
+aufrufen.
+
+Nach Ausfuerung des obigen Befehls, sollte sich ein weiteres Code-Fenster oeffnen. In diesem Code-Fenster ist der kommentierte Beispiel-Code der es erlaubt die einzelnen Beispiele nachzurechnen. Oft ist es moeglich und lehrreich den Code nur schrittweise auszufuehren und die Zwischenschritte zu ueberpruefen, oder an den beschriebenen Stellen im Code Werte von Parametern zu veraendern und somit die Code fuer seine eignenen Fragestellungen zu verwenden [STRG-SHIFT-ENTER um einen Code block auszufuehren]. Um den Einstieg zu erleichtern haben wir ein Video erstellt, welches die Vorgehensweise anhand Beispiel 4.1 erlaeutert.
+
+Viel Spass und Erfolg beim Ausprobieren der Beispiele. Falls Ihr einen Fehler entdeckt habt bitte eine Email an: [xyz@ulmerbuch.de] (xyz@ulmerbuch.de) schicken.
+
 
