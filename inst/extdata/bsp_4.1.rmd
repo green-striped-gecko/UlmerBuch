@@ -16,7 +16,7 @@ editor_options:
 Dieses Beispiel erlaubt die Berechnung der Anzahl der Erfassungen, die notwendig sind um die Abwesenheit einer Art fest zu stellen. Die Berechnung hat als Annahme dass die Nachweisewahrscheinlichkeit einer Art waehrend einer Erfassung bekannt und ueber den Untersuchungszeitraum konstant ist (siehe hierzu Kapitel 4.1, Seite xyz). Der Beispiel Code erlaubt die Nachweisewahrscheinlichkeit p, die gewuenschte Sicherheit anzupassen.
 
 ```{r}
-nerfass <- function(p, sicher) {
+n.erfass <- function(p, sicher) {
 	res <- (log(1-sicher))/log(1-p)
 	if (length(res)==1) cat("Es sind ", round(res,4),"[gerundet",ceiling(res),"]", "Erfassungen notwendig, um eine Sicherheit von",sicher*100,"% zu haben (bei einer einmaligen Erfassungswahrscheinlichkeit von ",p*100,"%), dass eine Art, welche vorher anwesend war, nun abwesend ist. Bitte beachten dass die Anzahl der Erfassungen aufgerundet, werden sollten.")
 	return(ceiling(res))
@@ -25,10 +25,10 @@ nerfass <- function(p, sicher) {
 
 ### Berechnung fuer eine bestimmte Kombination von Werten
 
-Du kannst die Werte fuer p und sicher veraendern.
+Du kannst die Werte fuer `p` und `sicher` veraendern.
 
 ```{r}
-nerfass(p=0.95, sicher=0.9)
+n.erfass(p=0.95, sicher=0.9)
 ```
 
 ### Plot fuer verschieden Werte von p
@@ -46,6 +46,6 @@ sicher <- 0.95 #95%
 ```{r}
 #Berechnung und Darstellung fuer 1:n Erfassungen
 
-is <- nerfass(p=ps, sicher=0.9)
+is <- n.erfass(p=ps, sicher=0.9)
 plot(ps,is, ylab="# Erfassungen", xlab="Nachweisewahrscheinlichkeit", type="b", pch=16)
 ```
