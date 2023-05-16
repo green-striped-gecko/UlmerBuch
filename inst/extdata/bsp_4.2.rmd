@@ -23,7 +23,7 @@ Als erstes muss das unmarked package geladen werden. Der folgende Code,
 schaut nach, ob es nicht schon installiert ist und installiert es
 gegebenenfalls.
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
 # check.packages function: install and load multiple R packages.
 # Function from: https://gist.github.com/smithdanielle/9913897
 check.packages <- function(pkg){
@@ -67,8 +67,7 @@ function.
 sample.koalas <- unmarkedFrameOccu(  y = as.matrix(koalas))
 ```
 
-Unmarked hat eine Summary funktion, welches die Daten uebersichtlich
-zusammenfasst
+Unmarked hat eine Summary funktion, welches die Daten uebersichtlich zusammenfasst
 
 ```{r}
 summary(sample.koalas)
@@ -144,7 +143,7 @@ summary(occu.m2)
 ```
 
 In der Zusammenfassung koennen wir den "Erklaerungswert" der Variablen
-foodtrees erkennen (p=1.56e-03 \<0.001), welches es signifikant
+foodtrees erkennen (p=1.56e-03 \<0.01), welches es signifikant
 geschaetzt wird. Fuer die weitere Untersuchgen des Effekts (die
 Schaetzung des Effekts von 0.0363 bedeutet dass ein positiver
 Zusammenhang besteht, das heist eine Site ist eher besetzt, je mehr
@@ -156,8 +155,11 @@ Belegungswahrscheinlichkeit auf.
 predict_m2_food <- predict(occu.m2, newdata = data.frame(foodtrees= 0:30), type="state")
 ```
 
-```{r}
-ggplot(data = predict_m2_food, aes(x = 0:30, y = Predicted)) +  geom_ribbon(aes(ymin = lower, ymax = upper), fill = "gray") +  stat_smooth(method = "loess", col = "black", se = FALSE) + labs(x = "Foodtrees", y = "Belegungswahrscheinlichkeit") +
-  theme_classic()
+```{r, message=FALSE, warning=FALSE}
+ggplot(data = predict_m2_food, aes(x = 0:30, y = Predicted)) +  
+	geom_ribbon(aes(ymin = lower, ymax = upper), fill = "gray") +  
+	stat_smooth(method = "loess", col = "black", se = FALSE) +
+	labs(x = "Foodtrees", y = "Belegungswahrscheinlichkeit") +
+	theme_classic()
 
 ```
