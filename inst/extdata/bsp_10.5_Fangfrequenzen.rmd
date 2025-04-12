@@ -1,0 +1,116 @@
+---
+title: "Beispiel 10.5-Schätzung der Größe einer Geckopopulation, Gehyra variegata, durch Anpassung der Fangfrequenzen an die Geometrische Verteilung mit Programm FREQ"
+subtitle: "Kapitel 10.2 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
+author: "Annegret Grimm-Seyfarth"
+date: "2025-03-28"
+output:
+  pdf_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+Im semi-ariden Kinchega Nationalpark, Australien, wurden 2016 Geckos an insgesamt einer Feldstation in sechs Fangnächsten per Hand gefangen. Per Fotoidentifikation können die Individuen bestimmt werden. Zusätzlich erhielten alle gefangenen Tiere Farbmarkierungen, die jedoch aufgrund von Häutungen nur wenige Tage erhalten blieben. Farbmarkierte Geckos wurden als Wiederfänge notiert, aber nicht erneut gefangen. Am Computer wurden zusätzlich Wiederfänge per Foto zugeordnet, die ihre Farbmarkierung verloren hatten. Somit wurde der Fehler durch Verlust der Markierung beseitigt. Die Untersuchung war eine Fortsetzung eines 30-jährigen Populationsmonitorings, um die Auswirkungen des Klimawandels zu erforschen (Henle 1990, Grimm-Seyfarth et al. 2018). In diesem Beispiel wollen wir die Anwendung der Fangfrequenzmodelle zeigen.
+
+```{r}
+# check.packages function: install and load multiple R packages.
+# Function from: https://gist.github.com/smithdanielle/9913897
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE, type = "source")
+  sapply(pkg, require, character.only = TRUE)
+}
+
+# benoetigte R pakete
+#pakete <- c("FREQ")
+
+# Pruefe und installiere
+#check.packages(pakete)
+# Anmerkung: Bis das Update von FREQ bei CRAN akzeptiert ist, laden wir den Quellcode direkt ein als:
+source("extdata/FREQ 2.2.r")
+```
+
+Weitere Informationen zur Nutzung des Paketes finden sich hier:
+
+https://cran.r-project.org/web/packages/FREQ/FREQ.pdf
+
+# Daten einladen
+Wir laden uns für dieses Beispiel die Fangzahlen der einzelnen Individuen in R ein. Es gab 6 Fanggelegenheiten, demnach können einzelne Individuen maximal sechs Mal gefangen worden sein.
+
+```{r}
+GV.2016 <- read.csv2("extdata/GV_Station_2016_capture_frequencies.csv")
+head(GV.2016)
+```
+Die Anzahl gefangener Individuen beträgt:
+```{r}
+nrow(GV.2016)
+```
+# Vektor der Fangfrequenzen erstellen
+Die als Input benötigte Zusammenfassung aller einzelnen Fangfrequenzen erhalten wir folgendermaßen:
+```{r}
+table(GV.2016)
+f <- as.vector(table(GV.2016))
+```
+Es wurden 35 Individuen einmal, 20 zweimal, 21 dreimal, 15 viermal, 15 fünfmal und 9 sechsmal gefangen. Nach der Empfehlung, bei größeren Populationen mindestens zehn Exemplare mindestens viermal gefangen zu haben, können wir also alle Verteilungen nutzen. Diese Fangfrequenzen haben wir im Vektor *f* gespeichert. Würde es mehr als sechs Fanggelegenheiten geben, müsste man für alle verbleibenden Fanggelegenheiten eine 0 hinzufügen.
+
+# Berechnung der Erwartungswerte
+Die verschiedenen Erwartungswerte bei Anpassung an die verschiedenen Verteilungen erhält man folgendermaßen:
+
+```{r}
+f.freq <- freq(f)
+f.freq
+```
+Der erste Datensatz  (expected_values) beinhaltet die Erwartungswerte nach den verschiedenen Verteilungen. Der zweite Datensatz (estimations) beinhaltet die entsprechenden Schätzwerte. 
+
+Nun vergleichen wir die tatsächlichen Fangfrequenzen mit den Erwartungswerten. Wir nutzen den Fisher-Test als Alternative zum Chi-Test, da dieser hier exaktere Werte liefern sollte.
+```{r}
+f.freq$expected_values
+# mit geometrischer Verteilung
+fisher.test(round(f.freq$expected_values[,c(1,2)]))
+# mit doppelt abgeschnittener geometrischer Verteilung
+fisher.test(round(f.freq$expected_values[,c(1,3)]))
+# mit Poissonverteilung
+fisher.test(round(f.freq$expected_values[,c(1,4)]))
+# mit Negativ Binomialverteilung
+fisher.test(round(f.freq$expected_values[,c(1,5)]))
+```
+Kein Test ist signifikant, doch die Poissonverteilung weist den geringsten p-Wert auf. Eventuell liegt individuelle Heterogenität vor.
+
+Schauen wir uns die Differenz von beobachteter und erwarteter Fangfrequenz an:
+```{r}
+# mit geometrischer Verteilung
+summary(f.freq$expected_values[,1] - f.freq$expected_values[,2])
+# mit doppelt abgeschnittener geometrischer Verteilung
+summary(f.freq$expected_values[,1] - f.freq$expected_values[,3])
+# mit Poissonverteilung
+summary(f.freq$expected_values[,1] - f.freq$expected_values[,4])
+# mit Negativ Binomialverteilung
+summary(f.freq$expected_values[,1] - f.freq$expected_values[,5])
+```
+Die geringste Streuung weist die doppelt abgeschnittene geometrische Verteilung auf. 
+
+# Populationsgrößenschätzung
+Schauen wir noch einmal genauer auf die Schätzwerte.
+```{r}
+f.freq$estimations
+```
+Laut der Schätzung der doppelt abgeschnittenen geometrischen Verteilung liegt die Populationsgröße bei 145 Individuen, und mit 95% Wahrscheinlichkeit zwischen 139 und 151 bzw. 140 und 152, womit die symmetrische und asymetrische Schätzung sehr nahe beieinander liegen. 
+
+Neben der Populationsgröße *N* und dem Konfidenzintervall (*CI*) gibt die Ergebnistabelle noch den Wert für die Verteilung (q bzw. lambda) sowie die Anzahl insgesamt gefangener Individuen an. 
+
+
+# Literaturverzeichnis
+Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. 2018. Some like it hot: from individual to population responses of an arboreal arid-zone gecko to local and distant climate. Ecological Monographs 88: 336–352.
+
+Henle, K. 1990. Population ecology and life history of the arboreal gecko *Gehyra variegata* in arid Australia. Herpetological Monographs 4: 30-60.

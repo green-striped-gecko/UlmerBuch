@@ -1,0 +1,146 @@
+---
+title: "Beispiel 11.X-Ring Ringfundanalysen zur Mortalitätsschätzung von juvenilen und adulten Stockenten (Anas platyrhynchos) "
+subtitle: "Kapitel 11 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
+author: "Annegret Grimm-Seyfarth"
+date: "2025-03-17"
+output:
+  pdf_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+Beispiel Ringfund (7.32 im Kap. 11)
+
+Einführungstext...
+
+KLAUS: nur als Beispiel, siehe Kommentar im Text - rein oder nicht? Dann schreib ich noch einen kurzen Einführungstext
+
+```{r}
+# check.packages function: install and load multiple R packages.
+# Function from: https://gist.github.com/smithdanielle/9913897
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE, type = "source")
+  sapply(pkg, require, character.only = TRUE)
+}
+
+# benoetigte R pakete
+pakete <- c("RMark", "ggplot2")
+
+# Pruefe und installiere
+check.packages(pakete)
+```
+
+Weitere Informationen zur Nutzung des Paketes finden sich hier:
+
+https://cran.r-project.org/web/packages/RMark/RMark.pdf
+
+Beim diesem Datensatz werden Jung- und Alttiere unterschieden [Modell H1 von BROWNIE et al. (1985)]. Die Annahmen des Modells entsprechen denjenigen von Kap. 11. 11 Modell 1, außer dass Jungvögel im ersten Lebensjahr und adulte Vögel eine unterschiedliche Überlebens- und Rückmelderate aufweisen. Damit kann dem Umstand Rechnung getragen werden, dass Jungvögel häufig eine erheblich höhere Mortalität aufweisen als Altvögel.
+
+Der Datensatz ist im RMark Paket als Beispeil integriert.
+
+```{r}
+data("brownie")
+head(brownie)
+```
+
+Die Standardsortierreihenfolge von RealeaseAge (also Alter der Beringung) ist alphabetisch, folglich: Adult, Young. Daher ist initial.ages=c(1,0)
+
+# Seber Modell
+wird indiziert mit model = "Recovery"
+
+```{r}
+br <- process.data(brownie,model="Recovery",groups="ReleaseAge",
+                age.var=1,initial.ages=c(1,0))
+br.ddl <- make.design.data(br,parameters=list(S=list(age.bins=c(0,1,10)),
+                                           r=list(age.bins=c(0,1,10))),right=FALSE)
+mod <- mark(br,br.ddl,
+         model.parameters=list(S=list(formula=~-1+age:time,link="sin"),
+                               r=list(formula=~-1+age:time,link="sin")),delete=TRUE)
+summary(mod)
+
+# konkret die Schätzwerte aufrufen
+mod.seber <- mod$results$real
+```
+Die Überlebensraten der adulten beringten Vögel ist höher als der jung beringten Vögel.
+
+# Brownie Modell
+wird indiziert mit model = "Brownie"
+
+```{r}
+br=process.data(brownie,model="Brownie",groups="ReleaseAge",
+                age.var=1,initial.ages=c(1,0))
+br.ddl=make.design.data(br,
+                        parameters=list(S=list(age.bins=c(0,1,10)),
+                                        
+f=list(age.bins=c(0,1,10))),right=FALSE)
+mod=mark(br,br.ddl,
+         model.parameters=list(S=list(formula=~-1+age:time,link="sin"),
+                               
+f=list(formula=~-1+age:time,link="sin")),delete=TRUE)
+#mod=mark(br,br.ddl,model.parameters=list(S=list(formula=~-1+age,link="sin"),
+#                                         
+#f=list(formula=~-1+age,link="sin")),delete=TRUE)
+summary(mod)
+
+# konkret die Schätzwerte aufrufen
+mod.brownie <- mod$results$real
+```
+
+Vergleichen wir die Daten aus beiden Modellen miteinander. Dazu nutzen wir das Paket ggplot2 (Wickham 2016).
+
+```{r}
+mod.seber.adult <- mod.seber[1:9,]
+mod.seber.adult$Occasion <- 1:9
+mod.seber.young <- mod.seber[10:18,]
+mod.seber.young$Occasion <- 1:9
+mod.brownie.adult <- mod.brownie[1:8,]
+mod.brownie.adult$Occasion <- 1:8
+mod.brownie.young <- mod.brownie[9:16,]
+mod.brownie.young$Occasion <- 1:8
+
+# Adult markierte Tiere
+ggplot(mod.seber.adult,aes(Occasion,estimate,
+                     ymin=lcl,ymax=ucl))+
+       geom_errorbar(width=0.2)+geom_point()+geom_line()+
+       geom_point(data=mod.brownie.adult, 
+                  aes(Occasion, estimate, ymin=lcl,ymax=ucl), color="red") +
+       xlab("\nFanggelegenheit")+ylab("Ueberlebensrate\n") 
+
+# Juvenil markierte Tiere
+ggplot(mod.seber.young,aes(Occasion,estimate,
+                     ymin=lcl,ymax=ucl))+
+       geom_errorbar(width=0.2)+geom_point()+geom_line()+
+       geom_point(data=mod.brownie.young, 
+                  aes(Occasion, estimate, ymin=lcl,ymax=ucl), color="red") +
+       xlab("\nFanggelegenheit")+ylab("Ueberlebensrate\n") 
+
+```
+Die berechneten Überlebensraten sind nahezu identisch. 
+
+
+
+
+# Literaturverzeichnis
+
+Brownie
+
+Laake, J. & E. Rexstad. 2013. RMark – an alternative approach to building linear models in MARK. In: Program MARK: A Gentle Introduction, edited by E. Cooch & G.C. White. 
+
+Laake, J.L. (2013). RMark: An R Interface for Analysis of Capture-Recapture Data with MARK. AFSC Processed Rep 2013-01, 25p. Alaska Fish. Sci. Cent., NOAA, Natl. Mar. Fish. Serv., 7600 Sand Point Way NE, Seattle WA 98115.
+
+Seber
+
+Wickham, H. 2016. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag, New York.
