@@ -1,15 +1,20 @@
 ---
-title: "Beispiel 4.2"
+title: "Beispiel 4.1 Single-Season Berechnung der Abhängigkeit der Vorkommenswahrscheinlichkeit des Koalas (*Phascolarctos cinereus*) von Umweltvariablen "
+subtitle: "Kapitel 4.1 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
 author: "Bernd Gruber"
 date: 2022-08-29
 output:
-  pdf_document: default
+  pdf_document: 
+  word_document: default
   html_document:
     self_contained: no
     df_print: paged
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{amssymb}
 editor_options:
   chunk_output_type: inline
-  markdown: 
+  markdown:
     wrap: 72
 ---
 
