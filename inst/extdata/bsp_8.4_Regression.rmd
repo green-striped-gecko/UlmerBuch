@@ -1,0 +1,48 @@
+---
+title: "Beispiel 8.4. Wachstumsrate einer Erdkrötenpopulation an einem Amphibienschutzzaun"
+subtitle: "Kapitel 8.3.2 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
+author: "Annegret Grimm-Seyfarth"
+date: "2025-04-22"
+output:
+  pdf_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+In diesem Beispiel zeigen wir eine Regressionsanalyse in R. Für klassische Regressionsanalysen mittels *lm* und *glm* sind keine weiteren Pakete nötig. Als Datensatz nutzen wir das Beispiel aus 8.2. Wir laden hier die Daten noch einmal neu ein, mit leichten Anpassungen.
+
+# Daten einladen
+Am Wasserwerk Hedem, Preußisch-Oldendorf, wurden vom Kreis Minden von 1996 bis 2012 Erdkröten an den Amphibienschutzzäunen erfasst. Die Bestandsentwicklung ist in untenstehender Tabelle dargestellt. Zusätzlich kreieren wir die Zeitspalte, die die Datenlücke von 2008 berücksichtigt. 
+```{r}
+kroeten <- data.frame(jahr = c(1996:2007,2009:2012),
+                      t = c(0:11,13:16),
+    anzahl = c(311,564,257,645,797,589,412,177,398,138,235,265,315,138,112,37))
+kroeten
+```
+
+Alternativ hätten wir einen Datensatz kreieren können, in dem das fehlende Jahr 2008 als NA dargestellt wird. Dies macht für die Analyse keinen Unterschied. 
+```{r}
+kroeten2 <- data.frame(jahr = c(1996:2012),
+                       t = 0:16,
+    anzahl = c(311,564,257,645,797,589,412,177,398,138,235,265,NA,315,138,112,37))
+kroeten2
+```
+# Logarithmisches Wachstumsmodell
+Wir logarithmieren die Populationsgröße und lassen sie von der Zeit abhängen. Dabei ist wichtig, dass das fehlende Jahr berücksichtigt wird (ein Zeitschritt in t wird übersprungen). 
+```{r}
+mod1 <- lm(log(anzahl)~t, data=kroeten)
+# Zusammenfassung des Modells
+summary(mod1)
+```
+Das Modell ist signifikant (gesamt-p-Wert: 0,001, in diesem Fall kann der p-Wert aus der summary Funktion genutzt werden) und zeigt einen Wachstumsfaktor von -0,11. Eine Nicht-Beachtung des fehlenden Jahres würde jedoch einen stärkeren Trend ergeben.
