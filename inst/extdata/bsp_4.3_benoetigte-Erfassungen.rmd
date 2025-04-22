@@ -1,5 +1,5 @@
 ---
-title: "Beispiel 4.3 Wann ist ein Baufeld frei von einer umzusiedelnden Art"
+title: "Beispiel 4.3 Wann ist ein Baufeld frei von einer umzusiedelnden Art?"
 subtitle: "Kapitel 4.2 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
 author: "Bernd Gruber"
 date: 2022-08-29
