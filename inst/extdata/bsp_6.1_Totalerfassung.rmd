@@ -1,0 +1,83 @@
+---
+title: "Beispiel 6.1. Erfassung von Fischottern (*Lutra lutra*) anhand von Spuren"
+subtitle: "Kapitel 6.2.2 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
+author: "Bernd Gruber"
+date: "2022-12-20"
+output:
+  pdf_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+  markdown:
+    wrap: 72
+---
+
+# Totalerfassung auf homogenen Untersuchungsflächen
+
+Für die Berechnung der Totalerfassung auf homogenen Untersuchungsflächen benötigen wir die folgenden Eingabeparameter:
+
+* TF: Anzahl der Teilflaechen
+* t: Anzahl der Probeflaechen
+* $n_i$: Anzahl gefundener Individuen auf Probeflaeche i [as a vector]
+
+Schreiben wir zunächst die benötigte Funktion (entspricht Formeln 6.2-6.5 im Kapitel 6.2.2 des Buches):
+```{r}
+#Funktionen
+#geschätzte Anzahl estN
+est.N<- function(TF,funde) {
+	return(TF/sum(funde$anz_probeflaechen) * sum(funde$anz_probeflaechen*funde$anz_funde))
+}
+
+
+var.N <- function(TF,funde, conf=0.9) {
+	t <- funde$anz_probeflaechen
+	n <- funde$anz_funde
+	
+	mean.n <- sum(n*t)/sum(t)
+	s2 <- sum(((n-mean.n)^2)*t)/ (sum(t)-1)
+	var.N <-  TF^2*s2/sum(t)*(1-sum(t)/TF)
+	est.N <- round(est.N(TF,funde))
+	tv <- qt((1-conf)/2, sum(t)-1, lower.tail = F)
+	ci <- (tv*sqrt(var.N))
+	N.low <- est.N - ci
+	N.up <- est.N + ci 
+	res <- paste0("Geschätzte Anzahl von Funden:\n est(N): ", round(est.N),
+	              "\n Var(N): ",round(var.N,2), 
+	              "\n Konfidenzinterval(N)[",conf*100,"%]: ",floor(N.low)," - ",
+	              ceiling(N.up) )
+	cat(res)
+	return(list(N=est.N, var.N=round(var.N,2), N.low=N.low, N.up=N.up))
+}
+
+```
+
+# Beispiel anhand Fischotterspuren im Schnee 
+Labes et al. (1991) erfassten den Bestand des Fischotters im Einzugsgebiet der Warnow (Mecklenburg-Vorpommern) mittels Spurennachweisen auf Probeflächen. Dazu teilten sie das Gebiet mit einer Uferlänge von 257 km in T = 514 Segmente von 500 m Länge ein. An acht Tagen nach Neuschnee wurden PF = 50 zufällig ausgewählte Segmente nach Spuren abgesucht. Gefundene Otterspuren wurden soweit wie möglich verfolgt, um Doppelzählungen zu vermeiden. Die Erfassungsdaten stellen sich wie folgt dar:
+```{r}
+funde <- data.frame(anz_funde=c(0,1,2), anz_probeflaechen=c(45,4,1))
+funde
+```
+
+Mithilfe der oben erstellten Funktion est.N können wir nun unter Angabe der Gesamtzahl Teilflächen und den Erfassungsdaten die Gesamtzahl berechnet werden.
+```{r}
+est.N(TF=514, funde = funde)
+```
+Die geschätzte Populationsgröße beträgt demnach 62. 
+
+Die Varianz berechnen wir mit dem 90% Vertrauensintervall als:
+```{r}
+erg1 <- var.N(TF=514, funde=funde, conf=0.9)
+```
+Vorausgesetzt in den Probeflächen konnten alle Fischotter erfasst werden, die sich in ihnen aufhielten, liegt also die Populationsgröße im Einzugsgebiet der Warnow mit 90% Wahrscheinlichkeit zwischen 17-107 Otter.
+
+Mit dem 95% Vertrauensintervall beträgt die Varianz:
+```{r}
+erg2 <- var.N(TF=514, funde=funde, conf=0.95)
+```
+Vorausgesetzt in den Probeflächen konnten alle Fischotter erfasst werden, die sich in ihnen aufhielten, liegt also die Populationsgröße im Einzugsgebiet der Warnow mit 95% Wahrscheinlichkeit zwischen 8-116 Otter.
+
+# Literaturverzeichnis
+Labes, R., Labes, S., Labes, H. 1991. Der Fischotterbestand (Lutra lutra L.) des Einzugsgebietes der Warnow (Mecklenburg) im Winter 1991. S. 22-27 in: Schutz des Fischotters, Landesumweltamt Brandenburg, Potsdam. 

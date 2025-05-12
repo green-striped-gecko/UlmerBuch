@@ -1,0 +1,195 @@
+---
+title:  "Beispiel 7.5. Einfluss der Körperkondition auf das Mortalitätsrisiko überwinternder Dunkelenten (*Anas rubripes*)"
+subtitle: "Kapitel 7.3.1.3 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
+author: "Annegret Grimm-Seyfarth"
+date: "2025-04-07"
+output:
+  pdf_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+Conroy et al. (1989) untersuchten die Wintermortalität von Dunkelenten (*Anas rubripes*) in zwei Untersuchungsgebieten in New Jersey. Zur Illustration des Cox-Modells des relativen Risikos werden nur die Daten im ersten Untersuchungsjahr ausgewertet. Zwischen Enten im ersten Lebensjahr (Jungenten) und älteren Enten (Adulte) wurde unterschieden. Im Zeitraum vom 8. November und 14. Dezember 1983 wurden 50 Enten besendert. Die besenderten Tiere wurden zu Fuß, mit Fahrzeugen, Boot und Flugzeug verfolgt, und ihr Status (lebend, tot, vermisst) wurde täglich bis zum 15. Februar 1984 kontrolliert. Die Analyse erfolgt für die 63 Tage ab 15. Dezember 1983, da zu diesem Zeitpunkt die Besenderung abgeschlossen war. In diesem Fall lebten zu diesem Zeitpunkt noch alle besenderten Enten. Die Körperkondition wurde beim Fang bestimmt. Pollock et al. (1989a) verwendeten bei ihrer Auswertung der Daten von Conroy et al. (1989) als Index der Körperkondition das Verhältnis von Masse zu Flügellänge. Abweichend hierzu werden nachfolgend als Konditionsindex (KI) die Residuen – d.h. die Abweichungen vom Erwartungswert – aus einer Regressionsanalyse mit der dritten Wurzel der Masse als abhängiger und Flügellänge als unabhängiger Variablen benutzt. Die dritte Wurzel wird verwendet, da die Masse mit der dritten Potenz der Länge wachsen sollte. Der Index von Pollock et al. (1989a) gewichtet die Länge stärker und stellt daher mehr einen Größenindex der relativen Flügellänge als ein Konditionsindex dar. Der hier verwendete Ansatz hat außerdem den Vorteil, dass sich das Basisrisiko auf Enten bezieht, deren Masse dem Erwartungswert für ihre Größe (Kondition = 0) entspricht und somit das relative Risiko bei gleicher Abweichung der Kondition nach oben und unten direkt miteinander verglichen werden kann.
+
+Für diese beiden Beispiele nutzen wir das R-Paket survival (Therneau & Grambsch 2000, Therneau 2024a). Für die Darstellung der Kaplan-Meier-Überlebensgrafiken nutzen wir das Paket ggsurvfit (Sjoberg et al. 2024).
+
+```{r}
+# check.packages function: install and load multiple R packages.
+# Function from: https://gist.github.com/smithdanielle/9913897
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE, type = "source")
+  sapply(pkg, require, character.only = TRUE)
+}
+
+# benoetigte R pakete
+pakete <- c("survival", "ggsurvfit", "emmeans")
+
+# Pruefe und installiere
+check.packages(pakete)
+```
+
+Weitere Informationen zur Nutzung des Paketes finden sich hier:
+
+https://cran.r-project.org/web/packages/survival/survival.pdf
+
+https://cran.r-project.org/web/packages/ggsurvfit/ggsurvfit.pdf
+
+# Einlesen der Fangdaten
+Wir laden zunächst die Daten ein. Dazu haben wir die Tabelle von Pollock et al. (1989a) um den Index der Körperkondition ergänzt.
+
+```{r}
+# Daten einlesen
+ARData <- read.csv2("extdata/AR_Pollock_et_al_1989.csv")
+head(ARData)
+```
+Die Daten beinhalten die Kontrolldaten telemetrierter Dunkelenten (*Anas rubripes*) in New Jersey. i: Nummer des Individuums; ti: Anzahl der Beobachtungstage ab 15. Dezember 1983 für Exemplar i; Status: H - geschossen ("hunter"), C - gefunden ("censored"), N - natürlich verstorben; Indikator:  0 = lebend, 1 = tot; Alter: 0 = diesjährig, 1 = mindestens einjährig; Masse in g; FL: Flügellänge in mm. Quelle: Pollock et al. (1989a).
+
+# Berechnung Konditionsindex
+Zur Berechnung des Konditionsindex benötigen wir eine Regressionsanalyse mit der dritten Wurzel der Masse als abhängiger und Flügellänge als unabhängiger Variable. 
+```{r}
+# dritte Wurzel der Masse ziehen
+ARData$MasseW <- ARData$Masse^(1/3)
+# Regressionsgerade erstellen
+KIfit <- lm(MasseW~FL, data=ARData)
+# davon die Residuen ziehen
+KI <- resid(KIfit)
+# und zum Datensatz hinzufügen
+ARData$KI <- KI
+```
+
+Schauen wir kurz einmal rein, ob die Tiere mit unterschiedlichem Status auch eine unterschiedliche Körperkondition aufweisen.
+```{r}
+boxplot(KI~Status+Alter, data=ARData)
+```
+Analog dem Datensatz entspricht Status: H - geschossen ("hunter"), C - gefunden ("censored"), N - natürlich verstorben; und Alter: 0 = diesjährig, 1 = mindestens einjährig. Scheinbar sterben Tiere natürlichen Todes, wenn sie zu geringe Körperkondition aufweisen. Dies trifft für diesjährige zu wie für ältere Tiere. Im Gegensatz dazu werden von den Jägern auch Tiere mit besonders hoher Körperkondition geschossen, besonders bei den diesjährigen Tieren, wobei sich das nicht von den überlebenden Tieren statistisch unterscheidet. Bei den älteren Tieren wiederum sind die mit hoher Kondition möglicher Weise zu schnell für Jäger, es werden eher (mit einer Ausnahme) Tiere mit niedriger Kondition geschossen.
+
+# Kaplan-Meier-Überlebensgrafik
+Um einen Überblick über die Daten zu bekommen, passen wir sie zunächst einem Kaplan-Meier-Modell an. Damit können die Überlebensgrafiken für diesjährige und mindestens einjährige Individuen dargestellt werden. Das einfaste Modell sieht folgendermaßen aus:
+
+```{r}
+fit <- survfit(Surv(ti, Indikator) ~ Alter, data = ARData)
+plot(fit, lty = 2:3)
+legend(40, 1, c("diesjährig", "mind. einjährig"), lty = 2:3)
+```
+Dank des Paketes ggsurvfit können wir auf ggplot-Basis diesen Plot noch deutlich hübscher gestalten. Dies sieht folgendermaßen aus:
+```{r}
+survfit2(Surv(ti, Indikator) ~ Alter, data = ARData) %>%
+ggsurvfit() +
+scale_ggsurvfit(x_scales = list(breaks = seq(0, 60, by = 10)))
+```
+Es lassen sich auch Konfidenzintervalle hinzufügen und weitere Sachen anpassen:
+```{r}
+survfit2(Surv(ti, Indikator) ~ Alter, data = ARData) %>%
+ggsurvfit(linewidth = 0.8) +
+  add_censor_mark() +
+  add_confidence_interval() +
+  add_quantile() +
+  #add_risktable() +
+  add_legend_title() +
+  scale_ggsurvfit() +
+  scale_color_manual(values = c('#54738E', '#82AC7C'),
+                     labels = c("diesjährig", "mind. einjährig")) +
+  scale_fill_manual(values = c('#54738E', '#82AC7C'),
+                    labels = c("diesjährig", "mind. einjährig")) +
+  theme(plot.title = element_text(size=24),
+        axis.title.x = element_text(size=22),
+        axis.title.y = element_text(size=22),
+        axis.text = element_text(size=18),
+        legend.text = element_text(size = 18),
+        legend.title = element_text(size = 22)) + 
+  labs(
+    title = "Kaplan-Maier",
+    y = "Überlebensrate",
+    x = "Tage"
+  )
+
+```
+
+# Cox-Modell mit Kovariablen
+Als nächstes rechnen wir das Cox-Modell des relativen Risikos. Dies schauen wir uns in allen Teilschritten an. 
+
+## Modell erstellen
+Wir gehen davon aus, dass es Unterschiede im Überleben zwischen diesjährigen und mindestens einjährigen Individuen gibt. Außerdem haben wir anhand des obigen Boxplots eine Idee über den Einfluss der Körperkondition bekommen: es könnte sich um einen quadratischen Zusammenhang handeln, der sich jedoch je nach Alter unterschiedlich verhält. Dies beschreiben wir als Interaktion. Wir nehmen also an, dass eine geringe Kondition das Überleben verschlechtert, aber eine zu hohe Kondition dazu führt, wahrscheinlicher geschossen zu werden. Für Adulte sollte der quadratische Term jedoch 0 sein.
+```{r}
+fit2 <- coxph(Surv(ti, Indikator) ~ Alter * poly(KI,2), data = ARData)
+drop1(fit2, test="Chi")
+# der Interaktionsterm ist signifikant
+summary(fit2)
+emmeans(fit2, ~ Alter*poly(KI,2))
+```
+Das Alter hat einen positiven Effekt auf das Überleben (ältere Tiere hatten eine höhere Überlebenswahrscheinlichkeit), Körperkondition bei Jungtieren einen negativen, bei erwachsenen Tieren einen positiven Effekt.
+
+## Modelle vergleichen
+Wir könnten auch hier verschiedene Modelle mittels AIC vergleichen (siehe Kapitel 9.3).
+```{r}
+AIC(fit2)
+AIC(coxph(Surv(ti, Indikator) ~ Alter * KI, data = ARData))
+AIC(coxph(Surv(ti, Indikator) ~ Alter + poly(KI,2), data = ARData))
+AIC(coxph(Surv(ti, Indikator) ~ Alter, data = ARData))
+AIC(coxph(Surv(ti, Indikator) ~ KI, data = ARData))
+AIC(coxph(Surv(ti, Indikator) ~ poly(KI,2), data = ARData))
+```
+Wir sehen, dass unser ursprünglich gebautes Modell (basierend auf biologischen Annahmen und einer guten Datenexploration zu Beginn) den deutlich niedrigsten AIC Wert aufweist. Wir haben also intiutiv das beste Modell gebaut. Schauen wir uns noch die p-Werte an. Dazu schauen wir uns unser gebautes Modell sowie eins ohne Interaktion an.
+```{r}
+drop1(fit2, test="Chi")
+drop1(coxph(Surv(ti, Indikator) ~ Alter + poly(KI,2), data = ARData), 
+      test="Chi")
+```
+Der Gesamtterm (Alter * poly(KI,2)) ist signifikant. Bei einem Modell ohne Interaktion wäre nur noch die quadratische Körperkondition signifikant.
+
+## Modellüberprüfung
+Auch dieses Modell können wir auf Einhaltung der Annahmen prüfen. Dazu schauen wir uns den Waldtest an, der angibt, ob die finalen Koeffizienten vom Ausgangswert abweichen. Außerdem testen wir die Annahme des proportionalen Risikos für die Anpassung eines Cox-Regressionsmodells (coxph).
+
+```{r}
+summary(fit2)
+temp <- cox.zph(fit2)
+print(temp) # Ergebnisse darstellen
+# Modellvalidierung als Plot darstellen 
+# Achsenbeschriftungen werden automatisch erstellt und sind daher Englisch
+plot(temp) 
+```
+Der Wald-Test ist signifikant, die Parameter haben also einen Einfluss auf das Überleben. Der Anpassungstest wiederum zeigt keine signifikanten Abweichungen von den Modellannahmen. Unser Modell passt also gut.
+
+## Überlebensgrafiken
+```{r}
+plot(survfit(fit2, newdata=data.frame(Alter=c(0,1), KI=mean(ARData$KI))),
+     xlab = "Tage", ylab="Überlebensrate",
+     main="Mittlere Körperkondition")
+legend(40, 1, c("diesjährig", "mind. einjährig"), lty = 2:3)
+
+plot(survfit(fit2, newdata=data.frame(Alter=c(0,1), KI=min(ARData$KI))),#
+     xlab = "Tage", ylab="Überlebensrate", lty=c(2,3), 
+     main="Minimale Körperkondition")
+legend(40, 1, c("diesjährig", "mind. einjährig"), lty = 2:3)
+
+plot(survfit(fit2, newdata=data.frame(Alter=c(0,1), KI=max(ARData$KI))),
+     xlab = "Tage", ylab="Überlebensrate", lty=c(2,3), 
+     main="Maximale Körperkondition")
+legend(40, 1, c("diesjährig", "mind. einjährig"), lty = 2:3)
+
+```
+Jungtiere haben bei mittlerer Körperkondition die höchste Überlebensrate, bei hohen sterben sie fast sicher. Bei adulten ist es umgekehrt, sie haben bei hoher Körperkondition die höchsten Überlebensraten, wobei der Unterschied zwischen minimaler Körperkondition und mittlerer Körperkondition bei ihnen sehr gering ist.
+
+# Literaturverzeichnis
+Conroy, M.J., Costanzo, G.R., Stotts, D.B. 1989. Winter survival of female American black ducks on the Atlantic coast. The Journal of Wildlife Management 53: 99-109.
+
+Pollock, K.H., Winterstein, S.R., Conroy, M.J. 1989a. Estimation and analysis of survival distributions for radio-tagged animals. Biometrics 45: 99-109.
+
+Sjoberg, D., Baillie, M., Fruechtenicht, C., Haesendonckx, S., Treis, T. 2024. ggsurvfit: Flexible time-to-event figures. R package version 1.1.0, <https://CRAN.R-project.org/package=ggsurvfit>.
+
+Therneau, T. 2024a. A package for survival analysis in R. R package version 3.8-3, <https://CRAN.R-project.org/package=survival>
+
+Therneau, T.M., Grambsch, P.M. 2000. Modeling survival data: Extending the cox model. Springer, New York. 
