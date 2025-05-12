@@ -1,0 +1,13 @@
+---
+title: "Beispiel 8.1 - Ruferfassung von Froeschen"
+author: "Bernd Gruber"
+date: 2024-04-16
+output:
+  pdf_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+---
+

@@ -1,0 +1,81 @@
+---
+title: "Beispiel 8.2 - Zunahme des Löfflers (*Platalea leucorodia*) auf der Insel Mellum"
+author: "Bernd Gruber"
+date: 2024-04-16
+output:
+  pdf_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+editor_options:
+  chunk_output_type: inline
+---
+
+```{r, warning=FALSE, message=FALSE}
+# Bibliotheken
+library(knitr)
+library(trend)
+
+```
+
+
+Die Insel Mellum im Nationalpark Nordfriesisches Wattenmeer wurde bald nach ihrer Entstehung vor knapp 150 Jahren Vogelschutzgebiet (Gerdes et al. 1987). Sowohl Brutvögel als auch Durchzügler werden regelmäßig erfasst. Die Bestandsentwicklung seit dem Jahr 2003 ist in untenstehender Tabelle dargestellt.
+
+
+
+```{r}
+# Daten
+loeffler <- data.frame(jahr = 2003:2018,
+                       anzahl = c(23,27,27,32,39,44,59,68,52,67,71,137,98,113,152,177))
+kable(t(loeffler), caption = "Bestandsentwicklung des Löfflers auf der Insel Mellum 
+			von 2003 bis 2018", digits = T)
+
+
+```
+
+
+Wir verwenden die Methode von Mann(1945) um den Bestandszuwachs zu untersuchen. Die Methode ist in der Funktion 'mk.test' in dem R-paket "trend"  implementiert. Der Test wird im Englischen auch als 'Mann-Kendall Trend Test' bezeichnet. Der Test ist ein nicht-parametrischer Test, sehr einfach anzuwenden und robust gegenüber Ausreißern. Die grundsaetzliche Idee ist dass die  Vorzeichen der Differenzen zwischen den aufeinanderfolgenden Beobachtungen bei zu(ab)nahme einem berechenbaren Muster folgen sollten. Der Test ist für Zeitreihen geeignet, die nicht normalverteilt sind. Der Test kann zweiseitig (alternative="two.sided", gibt es einen Trend nach oben oder unten) und auch einseitig durchgefuehrt werden (alternative ="greater" order "less", gibt es einen zunehmenden oder abnehmenden Trend).
+
+Wir verwenden hier die Version des Tests dass die Loefflerpopulation of Mellum einen zunehmenden Trend zeigt. 
+
+```{r}
+mk.test(loeffler$anzahl, alternative = "greater")
+
+```
+Der p-Wert ist kleiner als 0.05, daher können wir die Nullhypothese, dass es keinen Trend gibt, ablehnen. Der Bestand des Löfflers auf der Insel Mellum hat zwischen 2003 und 2018 signifikant zugenommen.
+
+
+
+# Anzahl der am Wasserwerk Hedem in Amphibienschutzzäunen gefangenen und über die Straße getragenen Erdkröten (Bufo bufo) 
+
+
+```{r}
+# Daten
+kroeten <- data.frame(jahr = c(1996:2007,2009:2012),
+                       anzahl = c(311,564,257,645,797,589,412,177,398,138,235,265,315,138,112,37))
+kable(t(loeffler), caption = "Bestandsentwicklung der Erkroeten am Wasserwerk Hedem 
+			von 1996 bis 2012", digits = T)
+
+
+```
+
+
+
+
+Wir verwenden hier die Version des Tests dass die Erdkrötenpopulation am Wasserwerk Hedem einen abnehmenden Trend zeigt. 
+
+```{r}
+
+mk.test(kroeten$anzahl, alternative = "less")
+
+```
+Auch hier zeigt der p-Wert (p-value < 0.05) einen signifikanten Trend. Die Anzahl der Erdkröten am Wasserwerk Hedem hat zwischen 1996 und 2012 signifikant abgenommen.
+
+Referenzen
+
+Hipel, K.W. and McLeod, A.I. (1994), Time Series Modelling of Water Resources and Environmental Systems. New York: Elsevier Science.
+
+Libiseller, C. and Grimvall, A., (2002), Performance of partial Mann-Kendall tests for trend detection in the presence of covariates. Environmetrics 13, 71–84, doi:10.1002/env.507.
+
+
+
