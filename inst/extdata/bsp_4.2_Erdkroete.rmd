@@ -1,0 +1,411 @@
+---
+title: "Beispiel 4.2 Multi-Season Modell zur Abhängigkeit der Nachweis- und Vorkommenswahrscheinlichkeit von Erdkröten (*Bufo bufo*) in einer Auenlandschaft von Umweltparametern"
+subtitle: "Kapitel 4.1 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
+author: "Annegret Grimm-Seyfarth"
+date: "2023-05-16"
+output:
+  pdf_document: 
+  word_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{amssymb}
+editor_options:
+  chunk_output_type: inline
+  markdown:
+    wrap: 72
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+
+Dieses Beispiel verwendet das R-Paket "unmarked" (Fiske & Chandler 2011, Kellner et al. 2023) für eine Demonstration, wie die Belegungswahrscheinlichkeit über mehrere Jahre nach MacKenzie et al. (2018) berechnet werden kann. Man nennt dies Multi-Season Occupancy Analysen.
+
+# Multi-Season Occupancy mittels Paket unmarked
+
+Als erstes muss das unmarked package geladen werden. Der folgende Code,
+schaut nach, ob es nicht schon installiert ist und installiert es
+gegebenenfalls. Wie laden, neben unmarked, Paket ggplot2 (Wickham 2016) zur Erstellung von Grafiken sowie Paket MuMIn (Barton 2024) zur Modellselektion.
+
+```{r, warning=FALSE, message=FALSE}
+# check.packages function: install and load multiple R packages.
+# Function from: https://gist.github.com/smithdanielle/9913897
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+# benoetigte R pakete
+pakete <- c("unmarked", "ggplot2", "MuMIn")
+
+# Pruefe und installiere
+check.packages(pakete)
+```
+
+Für dieses Beispiel verwenden wir Daten von Erdkröten (*Bufo bufo*) in einer Auenlandschaft. Wir wollen die Vorkommenswahrscheinlichkeit in Abhängigkeit von Umweltparametern berechnen. 
+Die Laichzeit stellt für Amphibien in Deutschland eine optimale Zeit für Bestandserhebungen dar. In einem standardisierten Verfahren wurden alle Amphibien an allen Gewässern im Naturschutzgebiet der Papitzer Lehmlachen bei Leipzig mittels akustischer und visueller Verfahren erhoben. Jede Art wurde zu ihrem jeweiligen Laichzeitraum in den Jahren 2013, 2014, 2015 und 2018 erfasst. Wir wollen die Analysen hier am Beispiel der Erdkröte darstellen. Es fanden 2013 6, 2014 7, 2015 5 und 2018 ebenfalls 5 Begehungen statt. Um einen Vergleich über die Jahre möglich zu machen, wird eine Nachweisgeschichte mit je 7 Erfassungen pro Jahr (= Saison) erstellt, wobei nicht begangene Tage oder Gewaesser pro Saison, inkl. der nicht begangenen Tage in 2016 und 2017, mit „NA“ gekennzeichnet wurden, um sie von einer tatsächlichen Nicht-Beobachtung (0) unterscheiden zu können. Eine Reihe an Erfassungs- (z.B. Wetter) und Standortparametern (z.B. Habitatparameter) wurden parallel und über alle Jahre identisch erfasst. 
+
+
+```{r, warning=FALSE, message=FALSE}
+#fn <- system.file('extdata',"Erdkroete_JV.csv", package = "UlmerBuch")
+# 35 Gewässer mit 7 Besuchen pro Gewässer und Jahr ueber 6 Jahre
+#EK <- read.csv2(fn, row.names = "Pond")
+EK <- read.csv2("extdata/Erdkroete_JV.csv", 
+                row.names = "Pond", stringsAsFactors = TRUE)
+```
+
+## Multi-Season Basismodell: Erdkröten an/abwesend
+
+```{r, warning=FALSE, message=FALSE}
+dim(EK)  #
+# 35 Gewaesser, 152 Spalten
+
+## Artbeobachtungen
+head(EK[,1:42])
+## Spalten S1_13 (Survey 1, Jahr 2013) bis S7_18 (Survey 7, Jahr 2018)
+
+## Tagesspezifische Parameter (= obsCovs) sind folgende:
+head(EK[,43:126])
+# Spalten B1_13 (Beschattung zu Survey 1, Jahr 2013) 
+# bis B7_18 (Beschattung zu Survey 7, Jahr 2018)
+# Spalten LTemp1_13 (Lufttemperatur zu Survey 1, Jahr 2013) 
+# bis LTemp7_18 (Lufttemperatur zu Survey 7, Jahr 2018)
+
+## Jahresspezifische Plotparameter (= yearlySiteCovs) sind folgende:
+head(EK[,127:150])
+# Roehrichtguertel_13 bis Roehrichtguertel_18 
+# (Prozentuale Bedeckung der Gewaesser mit Röhricht pro Jahr)
+# Schwimmblattpflanzen_13 bis Schwimmblattpflanzen_18 
+# (Prozentuale Bedeckung der Gewässer mit Schwimmblattpflanzen pro Jahr)
+# Sum_Rain_13 bis Sum_Rain_18 (Aufsummierter Niederschlag des Frühjahres / Jahr)
+# Tage_5_Grad_13 bis Tage_5_Grad_18 (Anzahl Tage ueber 5°C im Frühjahr / Jahr)
+
+## Plotspezifische Parameter (= siteCovs) sind folgende:
+head(EK[,151:152])
+# Wasserversorgung 
+# (direkt gespeist, indirekt durch Druckwasser gespeist, keine Wasserspeisung)
+# Flaeche (Wasserflaeche in qm)
+
+# Summierte Anzahl der Erdkroeten-Beobachtungen ueber alle 35 Gewaesser 
+barplot(table(rowSums(EK[,1:42], na.rm=TRUE)))
+```
+
+### Aufbereiten der Daten in das unmarked format
+
+Wir müssen die Daten noch umformatieren mittels der "unmakedFrameOccu" Funktion. Dazu definieren wir zunächst die Artbeobachtungsdaten und die einzelnen Parameter.
+
+```{r, warning=FALSE, message=FALSE}
+# Artbeobachtungen
+y.EK <- EK[,1:42]
+y.EK<- as.matrix(y.EK)
+
+# Parameter für den Jahreseffekt (seasonal effect im unmarked frame)
+year<- as.character(2013:2018)
+years <- matrix(year, nrow(y.EK), 6, byrow=TRUE)
+
+# Parameter pro Survey bzw. pro Jahr als Matrix schreiben
+cloud <- as.matrix(EK[,43:84])
+air <- as.matrix(EK[,85:126])
+Roehrichtguertel <- as.matrix(EK[,127:132])
+Schwimmblattpflanzen <- as.matrix(EK[,133:138])
+Sum_Rain <- as.matrix(EK[,139:144])
+more5degree <- as.matrix(EK[,145:150])
+
+#NA-Werte anpassen
+y.EK[is.na(cloud) != is.na(y.EK)] <- NA
+
+### Datensatz umformatieren, wobei numPrimary die Anzahl Primärperioden, 
+# also Jahre in unserem Fall, darstellt
+sample.EK <- unmarkedMultFrame(y=y.EK,
+                         siteCovs= EK[,c(151:152, 127, 133)], 
+                         yearlySiteCovs=list(year=years, 
+                                    Roehrichtguertel= Roehrichtguertel, 
+                                    Schwimmblattpflanzen= Schwimmblattpflanzen, 
+                                    Sum_Rain = Sum_Rain, 
+                                    more5degree=more5degree),
+                         obsCovs = list(cloud=cloud, air = air),
+                         numPrimary=6)
+
+```
+
+Unmarked hat eine Summary Funktion, welche die Daten übersichtlich zusammenfasst
+
+```{r, warning=FALSE, message=FALSE}
+summary(sample.EK)
+```
+
+### Einfaches Multi-Season Belegungsmodell ohne Kovariable definieren
+
+```{r, warning=FALSE, message=FALSE}
+occu.m1 <- colext(~1, #initiale occupancy  [Jahr 1], keine Kovariable
+                  ~year-1, #colonization, keine Kovariable aber jahresabhängig
+                  ~year-1, #extinction, keine Kovariable aber jahresabhängig
+                  ~year #detection, keine Kovariable aber jahresabhängig
+									, data = sample.EK)
+
+```
+
+Die normale Zusammenfassung zeigt die Schätzungen auf der logit-scale, was nicht allzusehr weiterhilft.
+
+```{r, warning=FALSE, message=FALSE}
+summary(occu.m1) 
+
+```
+
+Die Estimates sind auf der logit Skala und daher für uns nicht interpretierbar. Mittels der "predict" function können wir aber die Belegung in Anwesend/Abwesend umwandeln. Hier steht *psi* fuer die Occupancy.
+
+```{r, warning=FALSE, message=FALSE}
+predict(occu.m1, newdata = data.frame(year = 2013), type = "psi")
+```
+Als erstes Ergebniss erfahren wir, dass initial etwa 79% aller Gewaesser besetzt waren.
+
+Weiterhin möchten wir noch die Nachweiswahrscheinlichkeit p schätzen.
+Da wir in unserem Modell die Nachweiswahrscheinlichkeit als konstant für alle Sites, lediglich variabel zwischen den Jahren angenommen haben, ist es egal, für welche Site wir die Nachweiswahrscheinlichkeit schätzen lassen. Hier steht *det* für die Nachweiswahrscheinlichkeit.
+
+```{r, warning=FALSE, message=FALSE}
+predict(occu.m1, newdata = data.frame(year = as.factor(2013:2018)), 
+        type = "det")
+```
+
+Wir sehen, dass die Nachweiswahrscheinlichkeit p von 2013 bis 2015 von 83,11% auf 22,29% abgenommen hat, 2016 und 2017 nimmt sie, aufgrund fehlender Beobachtungsdaten, die initiale Nachweiswahrscheinlichkeit an und 2018 ist diese im Vergleich zu 2014 und 2015 wieder gestiegen (65,58%).
+
+Nun können wir uns auch die Extinktion (*ext*) und Kolonisierung (*col*) anschauen. Da beide Prozesse nur zwischen den Jahren stattfinden können, lassen wir das Endjahr jeweils aus.
+
+```{r, warning=FALSE, message=FALSE}
+predict(occu.m1, newdata = data.frame(year = as.factor(2013:2017)), 
+        type = "ext")
+```
+
+```{r, warning=FALSE, message=FALSE}
+predict(occu.m1, newdata = data.frame(year = as.factor(2013:2017)), 
+        type = "col")
+```
+Wir sehen, dass die Kolonisierung von 2013-2014 bei 71% lag, dann stark abnahm und von 2017-2018 wieder sehr stark zunahm. 
+
+Schätzungen der Belegungswahrscheinlichkeit (Occupancy) in den Folgejahren müssen aus den Schätzungen der Belegung im ersten Jahr und den beiden Parametern, die die Dynamik bestimmen, Extinktion und Kolonisierung, abgeleitet werden. *unmarked* kennt zwei Wege dies zu tun. 
+
+```{r, warning=FALSE, message=FALSE}
+projected(occu.m1)
+```
+Dieser Datensatz enthält einen Array mit 35 Datenframes, je eins pro Gewaesser. Jeder Datenframe enthält die abgeleitete Schätzung von Abwesenheit und Belegung (Zeilen) pro Jahr (Spalten). Da wir hier keinen Unterschied pro Gewässer berücksichtigen, sind alle 35 Datenframes identisch - es wird daher nur eine Gesamtschätzung angezeigt. Die Jahre ohne Artdaten wurden von unmarked auf 50% gesetzt. 
+
+```{r, warning=FALSE, message=FALSE}
+smoothed(occu.m1)
+```
+Im Gegensatz zu *projected* bekommt man mit *smoothed* einen Rückschluss auf den Anteil der belegten Standorte und nicht auf die Gesamtpopulation der Standorte. Somit handelt es sich bei den *projected* Werten um Schätzungen der Populationsparameter und bei den *smoothed* Schätzungen um die Mengen endlicher Stichproben. Mit anderen Worten: Unser projektionsbasierter Schätzer (*projected*) (Psi.t) schätzt die Belegungsrate für die gesamte Population der hypothetischen Standorte, aus denen unsere Stichprobe ausgewählt wurde, während der geglätteter Schätzer (*smoothed*) (Psi.r|Y, wobei Psi.r die jährliche Schätzung der Vorkommenswahrscheinlichkeit und Y die Beobachtungsdaten darstellt) den Anteil der Stichprobenorte, die in jedem Jahr besetzt sind, schätzt (Weir et al. 2009).
+
+Mithilfe der Bootstrap Methode bekommt man zu diesen Schätzungen auch Standardfehler. 
+
+```{r, warning=FALSE, message=FALSE}
+occu.m1 <- nonparboot(occu.m1, B = 10)  
+# fuer gute Schätzungen sollte man B deutlich höher setzen, 
+# was aber eine höhere Berechnungszeit zur Folge hat
+cbind(smoothed=smoothed(occu.m1)[2,], SE=occu.m1@smoothed.mean.bsse[2,])
+```
+Nun haben wir für jedes Jahr eine Schätzung der Vorkommenwahrscheinlichkeit und deren Standardfehler, aus denen man wiederum ein Konfidenzintervall berechnen könnte. 
+
+
+## Multi-Season Occupancy Modell mit Kovariablen
+
+Unser Erdkrötendatensatz war bereits für die Berechnung mit Kovariablen formatiert. Nun kann man mittels Modellvergleiche herausfinden, welche der Kovariablen tatsächlich einen Einfluss auf Nachweis- und Vorkommenswahrscheinlichkeit haben. 
+
+### Nachweiswahrscheinlichkeit
+Wir beginnen hierzu mit der Nachweiswahrscheinlichkeit. Wir nehmen an, dass diese von Bedeckung, Lufttemperatur, Niederschlag und der Anzahl Tage über 5 Grad Celsius abhängen könnte (bezogen auf die Aktivität von Erdkröten). Zusaetzlich nehmen wir an, dass alle Schätzwerte sich zwischen den Jahren unterscheiden, was nicht unbedingt durch die aufgenommenen Parameter erklärt werden kann.
+
+```{r, warning=FALSE, message=FALSE}
+fmx1 <- colext(~ 1, ~year-1, ~year-1, ~cloud + air + Sum_Rain + more5degree, 
+               data = sample.EK)
+
+summary(fmx1)
+
+# prüfen wir noch auf Kollinearität
+# (Korrelation der Parameter untereinander)
+vif(fmx1, type = "det")
+# Sum_Rain und more5degree haben Werte größer 5
+# entfernen wir zunächst den Temperaturwert, da dieser sicher mit air correliert
+fmx1 <- colext(~ 1, ~year-1, ~year-1, ~cloud + air + Sum_Rain, 
+               data = sample.EK)
+vif(fmx1, type = "det")
+# nun sind alle Werte kleiner als 5, keine Kollinearität
+
+# Modellselektion mithilfe von dredge aus dem MuMIn package
+mx1<-dredge(fmx1, rank="AIC", fixed =~col(year) +ext(year) )
+# Das braucht aufgrund von der Berechnung aller Modellkombinationen etwas Zeit.
+head(mx1)
+```
+Die Parameter fuer die Nachweiswahrscheinlichkeit finden wir in der Modellvergleichtabelle indiziert mit p(). Das beste Modell mit dem geringsten AIC-Wert beinhaltet die Parameter Lufttemperatur und Niederschlagsmenge. Schauen wir uns die Ergebnisse des ersten Modelles einmal an.
+
+```{r, warning=FALSE, message=FALSE}
+get.models(mx1, subset=1)
+```
+Alle beiden Kovariablen beeinflussen die Nachweiswahrscheinlichkeit positiv. Nun schauen wir uns noch an, wie die relative Wichtigkeit der Parameter untereinander aussieht. Dazu lassen wir uns die Summe aller AIC-Wichtungen pro Parameter ausgeben:
+
+```{r, warning=FALSE, message=FALSE}
+sw(mx1)
+```
+Am wichtigsten erscheint die Lufttemperatur (AIC weight = 1), gefolgt von der Niederschlagsmenge (AIC weight = 0,51). Die Bewölkung spielt für den Nachweis von Erdkröten, zumindest in diesem Gebiet, keine nennenswerte Rolle.
+
+Das können wir nun auf neue Daten projezieren und grafisch darstellen. 
+Starten wir mit der Abhängigkeit von Lufttemperatur:
+
+```{r, warning=FALSE, message=FALSE}
+fmx1.fin <- colext(~ 1, ~year-1, ~year-1, ~ air + Sum_Rain, data = sample.EK)
+
+# nur Lufttemperatur wechselt
+nd1 <- data.frame(air = 3:17,
+                Sum_Rain = mean(Sum_Rain))
+
+det.1 <- round(predict(fmx1.fin, type="det", newdata=nd1, appedData = TRUE ),2)
+# det.1
+df.det1 <- as.data.frame(cbind(nd1,det.1))
+head(df.det1)
+
+```
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(data = df.det1, aes(x = air, y = Predicted)) +  
+	geom_ribbon(aes(ymin = lower, ymax = upper), fill = "gray") +  
+	stat_smooth(method = "loess", col = "black", se = FALSE) +
+	labs(x = "Lufttemperatur [°C]", y = "Nachweiswahrscheinlichkeit") +
+	theme_classic()
+
+```
+Die Nachweiswahrscheinlichkeit steigt mit der Lufttemperatur stark an.
+
+Schauen wir uns noch die Abhaengigkeit von Niederschlag an:
+
+```{r, warning=FALSE, message=FALSE}
+# nur Niederschlag wechselt
+nd2 <- data.frame(air = mean(air, na.rm=TRUE),
+                 Sum_Rain = 40:110)
+
+det.2 <- round(predict(fmx1.fin, type="det", newdata=nd2, appedData = TRUE ),2)
+df.det2 <- as.data.frame(cbind(nd2,det.2))
+head(df.det2)
+
+```
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(data = df.det2, aes(x = Sum_Rain, y = Predicted)) +  
+	geom_ribbon(aes(ymin = lower, ymax = upper), fill = "gray") +  
+	stat_smooth(method = "loess", col = "black", se = FALSE) +
+	labs(x = "Summierter Niederschlag [mm]", y = "Nachweiswahrscheinlichkeit") +
+	theme_classic()
+```
+Auch der Niederschlag beeinflusst die Nachweiswahrscheinlichkeit positiv.
+
+### Vorkommenswahrscheinlichkeit
+Als naechstes schauen wir uns an, welche Parameter die Vorkommenswahrscheinlichkeit von Erdkröten be-einflusst. Da diese nur den ersten Wert schätzt (initiale Occupancy), sind auch nur die Parameter des ersten Werts (2013) nötig.
+
+```{r, warning=FALSE, message=FALSE}
+fmx2 <- colext(~ Wasserversorgung + Schwimmblattpflanzen_13 + 
+                 Roehrichtguertel_13 + Flaeche, 
+               ~year-1, ~year-1, 
+               ~ air  + Sum_Rain, 
+               data = sample.EK)
+
+# wir prüfen zunächst wieder die Kollinearität
+vif(fmx2, type="psi")
+# Alle Werte < 5 - keine Kollinearität
+
+# Modellselektion
+# alle bekannten Parameter bleiben gleich
+# auch das braucht einiges an Computerzeit
+mx2<-dredge(fmx2, rank="AIC", fixed = ~p(air) + p(Sum_Rain) + 
+              col(year) + ext(year))
+head(mx2)
+```
+Die initiale Vorkommenswahrscheinlichkeit kann durch die Röhrichtpflanzen und die Wasserversorgung er-klärt werden, wobei die Differenz zum Null-Modell extrem gering ist. Schwimmblattpflanzen könnten auch einen Einfluss haben, die Fläche jedoch scheint keinen Einfluss zu haben. 
+
+```{r, warning=FALSE, message=FALSE}
+get.models(mx2, subset = 5)
+```
+Schauen wir uns wieder die Parameterwichtung an:
+```{r, warning=FALSE, message=FALSE}
+sw(mx2)
+```
+In das finale Modell werden daher Röhrichtgürtel und Wasserversorgung aufgenommen, jedoch nicht die anderen Parameter.
+
+Auch das wollen wir wieder vorhersagen und grafisch darstellen:
+
+```{r, warning=FALSE, message=FALSE}
+fmx2.fin <- colext(~ Roehrichtguertel_13 + Wasserversorgung, 
+                   ~year-1, ~year-1, 
+                   ~ air + Sum_Rain, data = sample.EK)
+
+# nur Wasserversorgung wechselt
+nd3 <- expand.grid(air = mean(air, na.rm=TRUE),
+                 Sum_Rain = mean(Sum_Rain),
+                 Wasserversorgung= c("direkt", "indirekt", "keine"),
+                 Roehrichtguertel_13 = 0)
+
+det.3 <- round(predict(fmx2.fin, type="psi" , newdata=nd3, appedData = TRUE ),2)
+#det.3
+df.det3 <- as.data.frame(cbind(nd3,det.3))
+head(df.det3)
+
+```
+
+
+```{r, message=FALSE, warning=FALSE}
+ggplot(data = df.det3, aes(x = Wasserversorgung, y = Predicted)) + 
+  geom_boxplot(size=2) + 
+  geom_errorbar(aes(ymin=lower,ymax=upper),linetype = 1,width = 0.5) + 
+  labs(x = "Wasserversorgung", y = "Belegungswahrscheinlichkeit") + 
+  theme_classic()
+
+```
+Indirekte Wasserversorgung durch Druckwasser mag die Erdkröte in diesem Gebiet scheinbar nicht so sehr.
+
+```{r, warning=FALSE, message=FALSE}
+# nur Röhrichtgürtel wechselt
+nd4 <- expand.grid(air = mean(air, na.rm=TRUE),
+                 Sum_Rain = mean(Sum_Rain),
+                 Wasserversorgung= "indirekt",
+                 Roehrichtguertel_13 = seq(0,100,5))
+
+det.4 <- round(predict(fmx2.fin, type="psi" , newdata=nd4, appedData = TRUE ),2)
+#det.4
+df.det4 <- as.data.frame(cbind(nd4,det.4))
+head(df.det4)
+```
+```{r, warning=FALSE, message=FALSE}
+ggplot(data = df.det4, aes(x = Roehrichtguertel_13, y = Predicted)) +  
+	geom_ribbon(aes(ymin = lower, ymax = upper), fill = "gray") +  
+	stat_smooth(method = "loess", col = "black", se = FALSE) +
+	labs(x = "Röhrichtgürtel [%]", y = "Vorkommenswahrscheinlichkeit") +
+	theme_classic()
+```
+Anmerkung: Aufgrund des steilen Anstieges kreiert die loess Glättungsmethode einen "Haken" über 1 - selbstverständlich kann die Vorkommenswahrscheinlichkeit nicht höher als 1 sein. 
+
+Ab 25% Röhrichtgürtel kommt die Erdkröte sicher vor.
+
+Analog könnte man nun auch die Kolonisation und Extinktion mit Parametern hinterlegen.
+
+Weiterhin können wir wieder die Occupancy-Werte (Vorkommenswahrscheinlichkeit) von allen Jahren berechnen lassen:
+```{r, warning=FALSE, message=FALSE}
+projected(fmx2.fin)
+```
+Die Belegung nahm von 2013 bis 2015 leicht ab, war aber 2018 am höchsten. Damit unterscheiden sich die Werte leicht, jedoch nicht drastisch von den ursprünglich berechneten Werten ohne Kovariablen.
+
+
+# Literaturverzeichnis
+Bartoń, K. 2024. MuMIn: Multi-Model Inference. R package version 1.48.4, https://CRAN.R-project.org/package=MuMIn.
+
+Fiske, I. & R. Chandler. 2011. unmarked: An R Package for Fitting Hierarchical Models of Wildlife Occurrence and Abundance. Journal of Statistical Software, 43(10): 1-23.
+
+Kellner K.F., A.D. Smith, J.A. Royle, M. Kery, J.L. Belant, & R.B. Chandler. 2023. The unmarked R package: Twelve years of advances in occurrence and   abundance modelling in ecology. Methods in Ecology and Evolution 14(6): 1408-1415.
+
+MacKenzie, D.I., J.D. Nichols, J.A. Royle, K.H. Pollock, L.L. Bailey, & J.E. Hines. 2018. Occupancy Estimation and Modeling. Inferring Patterns and Dynamics of Species Occurence. Second Edition. Academic Press, London.
+
+Weir L.A., I.J. Fiske, & J. Royle J. 2009. Trends in Anuran Occupancy from Northeastern States of the North American Amphibian Monitoring Program. Herpetological Conservation and Biology. 4(3): 389-402.
+
+Wickham, H. 2016. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York.
