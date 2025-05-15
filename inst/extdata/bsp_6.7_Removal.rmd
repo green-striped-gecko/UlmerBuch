@@ -1,0 +1,619 @@
+---
+title: "Beispiel 6.7. Vergleich verschiedener Abfang-Modelle zur Schätzung der Populationsgröße von Amphibienlarven"
+subtitle: "Kapitel 6.4.3 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
+author: "Annegret Grimm-Seyfarth"
+date: "2025-03-10"
+output:
+  pdf_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+In diesem Beispiel werden wir uns mit Removal Methoden beschäftigen. Zunächst werden wir die Schätzungen mit einer Regressionsanalyse durchführen, die konstante Fangwahrscheinlichkeiten annimmt. Anschließend stellen wir die Schätzungen mit der Funktion removal aus dem Paket FSA (Ogle et al. 2023) mit komplexeren Methoden vor, von denen drei (Moran 1951,  Carle & Strub 1978 und Van Deventer & Platts 1983), ebenso wie Regressionsanalysen, eine konstante Fangwahrscheinlichkeit annehmen und eine weitere Methode (Schnute 1983) Abweichungen von diesen Annahmen erlauben. Außerdem werden zwei Spezialfälle bei konstanter Fangwahrscheinlichkeit vorgestellt, bei denen nur zwei bzw. drei Abfänge erfolgen.
+
+Wir nutzen dabei ein Beispiel aus einem Amphibienmonitoring in der Tongrube Lübschütz, südöstlich von Leipzig. Hier wurden im Juni 2023 Amphibienlarven abgekeschert, um den Reproduktionserfolg zu erfassen. Dazu wurde das Gewässer sieben Mal mit dem Kescher befangen (ein Abfangereignis entspricht daher einem Kescherdurchgang). Alle gefangenen Tiere pro Kescherdurchgang wurden ausgezählt und in einem wassergefüllten Eimer zwischengehältert.
+
+Die Abfangzahlen waren die folgenden (eine Zahl pro Kescherdurchgang):
+
+Kammmolchlarven: 15, 11, 24, 26, 14, 6, 9
+
+Teichmolchlarven: 6, 4, 16, 20, 18, 16, 15
+
+Laubfroschkaulquappen: 22, 8, 16, 4, 8, 3, 5
+
+Springfroschkaulquappen: 30, 15, 27, 19, 12, 10, 9
+
+Für die beiden Molcharten ist zu erkennen, dass die Erfolge in den ersten beiden Durchgängen deutlich kleiner waren, eventuell weil die abfangende Person sich zunächst in die Methode einarbeiten musste. Aus diesem Grund werden wir später die Fangwahrscheinlichkeiten in den verschiedenen Kescherdurchgängen miteinander vergleichen. An dieser Stelle nutzen wir aber zunächst die Originaldaten
+
+Diese Daten lesen wir zunächst in R ein:
+
+
+```{r}
+# Kammmolch
+TC <- c(15, 11, 24, 26, 14, 6, 9)
+
+# Teichmolch
+LV <- c(6, 4, 16, 20, 18, 16, 15)
+
+# Laubfrosch
+HA <- c(22, 8, 16, 4, 8, 3, 5)
+
+# Springfrosch
+RD <- c(30, 15, 27, 19, 12, 10, 9)
+
+```
+
+
+# Berechnung mit einer in R geschriebenen Regressionsanalyse
+Nun können wir daraus die Regressionsgerade berechnen zwischen der Anzahl nacheinander entnommenen Tiere pro Kescherdurchgang und deren kummulativer Summe, d.h. der Anzahl zu dem Zeitpunkt insgesamt entnommener Tiere.
+
+## Kammmolch
+
+```{r}
+# Gesamtzahl entnommener Tiere
+(TC.total <- sum(TC))
+
+# Anzahl nacheinander entnommener Tiere
+(removed.TC <- TC)
+
+# Berechnung der cumulativen Summe entnommener Tiere
+(cumulative_removed.TC <- cumsum (removed.TC) - removed.TC)
+
+# Lineare Regression: y=beta0+beta1*x; 
+# x an der Stelle y=0 ist x=-beta0/beta1 (Schnittpunkt mit x-Achse)
+function_fit.TC <- lm (removed.TC~cumulative_removed.TC)
+function_fit.TC
+summary (function_fit.TC)
+m.TC <- function_fit.TC$coefficients [2]
+n.TC <- function_fit.TC$coefficients [1]
+estimated_popsize.TC <- -n.TC/m.TC
+estimated_popsize.TC
+
+# visuelle Darstellung
+plot (cumulative_removed.TC, 
+      removed.TC, 
+      main = "Removal Methode",
+      xlab = "Kumulative Anzahl",
+      ylab = "Gefangene Tiere pro Kescherdurchgang",
+      cex=1.3,cex.axis=1.3,cex.lab=1.3,pch=16, axes=FALSE,
+      xlim = c (0, estimated_popsize.TC * 1.5),
+      ylim = c (0, max(TC) + 1)) +
+abline (n.TC,m.TC, lwd = 3, col = "red") +
+axis(1, pos=0) +
+axis(2, pos=0)
+```
+Die geschätzte Populationsgröße von Kammmolchlarven basierend auf den Originaldaten (nicht für mögliche Abweichung der Fängigkeit im ersten Kescherdurchgang korrigiert) liegt damit bei 227 Individuen (Anmerkung zum Plot: Standardmäßig gehen die Achsen nicht exakt durch den Null-Punkt (0,0), daher wurden sie im Code zunächst ausgeblendet mit axes = FALSE und später wieder hinzugefügt, indem man pos=0 bei der x- und y-Achse ergänzt).
+
+Zum Vergleich berechnen wir die Regressionsgerade für den Datensatz, bei dem wir die ersten beiden Abfangereignisse zunächst ignorieren und im Anschluss auf die geschätzte Anzahl hinzuaddieren. Dieser Ansatz wurde von Pollock et al. (1990) vorgeschlagen.
+
+```{r}
+(TC2 <- TC[-c(1:2)])
+
+# Anzahl nacheinander entnommener Tiere
+(removed.TC2 <- TC2)
+
+# Berechnung der cumulativen Summe entnommener Tiere
+(cumulative_removed.TC2 <- cumsum (removed.TC2) - removed.TC2)
+
+# Lineare Regression: y=beta0+beta1*x; 
+# x an der Stelle y=0 ist x=-beta0/beta1 (Schnittpunkt mit x-Achse)
+function_fit.TC2 <- lm (removed.TC2~cumulative_removed.TC2)
+function_fit.TC2
+summary (function_fit.TC2)
+m.TC2 <- function_fit.TC2$coefficients [2]
+n.TC2 <- function_fit.TC2$coefficients [1]
+estimated_popsize.TC2 <- -n.TC2/m.TC2
+estimated_popsize.TC2
+
+# visuelle Darstellung
+plot (cumulative_removed.TC2, 
+      removed.TC2, 
+      main = "Removal Methode",
+      xlab = "Kumulative Anzahl",
+      ylab = "Gefangene Tiere pro Kescherdurchgang",
+      cex=1.3,cex.axis=1.3,cex.lab=1.3,pch=16, axes=FALSE,
+      xlim = c (0, estimated_popsize.TC2 * 1.5),
+      ylim = c (0, max(TC2) + 1)) +
+abline (n.TC2,m.TC2, lwd = 3, col = "red") +
+axis(1, pos=0) +
+axis(2, pos=0)
+```
+Die geschätzte Populationsgröße von Kammmolchlarven basierend auf den korrigierten Daten liegt damit bei 98 + 26 = 124 Individuen.
+
+
+## Teichmolch
+```{r}
+# Gesamtzahl entnommener Tiere
+(LV.total <- sum(LV))
+
+# Anzahl nacheinander entnommener Tiere
+(removed.LV <- LV)
+
+# Hier wird bereits deutlich, dass keine Abnahme in den Fangzahlen zu verzeichnen ist. 
+# Wir legen daher zunächst die ersten beiden Abfangereignisse zusammen.
+(LV2 <- c(sum(LV[1:2]),LV[3:7]))
+
+# Anzahl nacheinander entnommener Tiere
+(removed.LV <- LV2)
+
+# Berechnung der cumulativen Summe
+cumulative_removed.LV <- cumsum (removed.LV) - removed.LV
+cumulative_removed.LV
+
+# Lineare Regression: y=beta0+beta1*x; 
+# x an der Stelle y=0 ist x=-beta0/beta1 (Schnittpunkt mit x-Achse)
+function_fit.LV <- lm (removed.LV~cumulative_removed.LV)
+function_fit.LV
+summary (function_fit.LV)
+m.LV <- function_fit.LV$coefficients [2]
+n.LV <- function_fit.LV$coefficients [1]
+estimated_popsize.LV <- -n.LV/m.LV
+estimated_popsize.LV
+
+# visuelle Darstellung
+#plot (cumulative_removed.LV, 
+#      removed.LV, 
+#      main = "Removal Methode",
+#      xlab = "Kumulative Anzahl",
+#      ylab = "Gefangene Tiere pro Kescherdurchgang",
+#      cex=1.3,cex.axis=1.3,cex.lab=1.3,pch=16,
+#      xlim = c (0, estimated_popsize.LV * 1.5),
+#      ylim = c (0, n.LV + 1)) +
+#abline (n.LV,m.LV, lwd = 3, col = "red")
+```
+Es wird deutlich, dass sich die Populationsgröße von Teichmolchlarven nicht mit der Regressionsgerade berechnen lässt, da die Fangzahlen nicht genügend abnehmen. Die geschätzte Populationsgröße ist daher negativ. Eine weitere Lösungsmöglichkeit wäre erneut das von Pollock et al. (1990) vorgeschlagene Weglassen der ersten beiden Abfangereignisse, sodass die Abfangzahlen wenigstens leicht abnehmen. Die Anzahlen aus den ersten beiden Abfangereignissen müssen am Ende wieder hinzugezählt werden.
+
+```{r}
+(LV3 <- LV[-c(1:2)])
+
+# Anzahl nacheinander entnommener Tiere
+(removed.LV2 <- LV3)
+
+# Berechnung der cumulativen Summe
+(cumulative_removed.LV2 <- cumsum (removed.LV2) - removed.LV2)
+
+# Lineare Regression: y=beta0+beta1*x; 
+# x an der Stelle y=0 ist x=-beta0/beta1 (Schnittpunkt mit x-Achse)
+function_fit.LV2 <- lm (removed.LV2~cumulative_removed.LV2)
+function_fit.LV2
+summary (function_fit.LV2)
+m.LV2 <- function_fit.LV2$coefficients [2]
+n.LV2 <- function_fit.LV2$coefficients [1]
+estimated_popsize.LV2 <- -n.LV2/m.LV2
+estimated_popsize.LV2
+
+# visuelle Darstellung
+plot (cumulative_removed.LV2, 
+      removed.LV2, 
+      main = "Removal Methode",
+      xlab = "Kumulative Anzahl",
+      ylab = "Gefangene Tiere pro Kescherdurchgang",
+      cex=1.3,cex.axis=1.3,cex.lab=1.3,pch=16, axes=FALSE,
+      xlim = c (0, estimated_popsize.LV2 * 1.5),
+      ylim = c (0, max(LV2) + 1)) +
+abline (n.LV2,m.LV2, lwd = 3, col = "red") +
+axis(1, pos=0) +
+axis(2, pos=0)
+```
+Die geschätzte Populationsgröße von Teichmolchlarven basierend auf den korrigierten Daten liegt damit bei 526 Individuen. Hinzu kommen die 10 Tiere aus den ersten beiden Abfangereignissen, wodurch man 536 Individuen erhält.
+
+## Laubfrosch
+```{r}
+# Gesamtzahl entnommener Tiere
+(HA.total <- sum(HA))
+
+# Anzahl nacheinander entnommener Tiere
+(removed.HA <- HA)
+
+# Berechnung der cumulativen Summe
+(cumulative_removed.HA <- cumsum (removed.HA) - removed.HA)
+
+# Lineare Regression: y=beta0+beta1*x; 
+# x an der Stelle y=0 ist x=-beta0/beta1 (Schnittpunkt mit x-Achse)
+function_fit.HA <- lm (removed.HA~cumulative_removed.HA)
+function_fit.HA
+summary (function_fit.HA)
+m.HA <- function_fit.HA$coefficients [2]
+n.HA <- function_fit.HA$coefficients [1]
+estimated_popsize.HA <- -n.HA/m.HA
+estimated_popsize.HA
+
+# visuelle Darstellung
+plot (cumulative_removed.HA, 
+      removed.HA, 
+      main = "Removal Methode",
+      xlab = "Kumulative Anzahl",
+      ylab = "Gefangene Tiere pro Kescherdurchgang",
+      cex=1.3,cex.axis=1.3,cex.lab=1.3,pch=16, axes=FALSE,
+      xlim = c (0, estimated_popsize.HA * 1.5),
+      ylim = c (0, max(HA) + 1)) +
+abline (n.HA,m.HA, lwd = 3, col = "red") +
+axis(1, pos=0) +
+axis(2, pos=0)
+```
+Die geschätzte Populationsgröße von Laubfroschkaulquappen liegt damit bei 72 Individuen.
+
+## Springfrosch
+```{r}
+# Gesamtzahl entnommener Tiere
+(RD.total <- sum(RD))
+
+# Anzahl nacheinander entnommener Tiere
+(removed.RD <- RD)
+
+# Berechnung der cumulativen Summe
+(cumulative_removed.RD <- cumsum (removed.RD) - removed.RD)
+
+# Lineare Regression: y=beta0+beta1*x; 
+# x an der Stelle y=0 ist x=-beta0/beta1 (Schnittpunkt mit x-Achse)
+function_fit.RD <- lm (removed.RD~cumulative_removed.RD)
+function_fit.RD
+summary (function_fit.RD)
+m.RD <- function_fit.RD$coefficients [2]
+n.RD <- function_fit.RD$coefficients [1]
+estimated_popsize.RD <- -n.RD/m.RD
+estimated_popsize.RD
+
+# visuelle Darstellung
+plot (cumulative_removed.RD, 
+      removed.RD, 
+      main = "Removal Methode",
+      xlab = "Kumulative Anzahl",
+      ylab = "Gefangene Tiere pro Kescherdurchgang",
+      cex=1.3,cex.axis=1.3,cex.lab=1.3,pch=16, axes=FALSE,
+      xlim = c (0, estimated_popsize.RD * 1.5),
+      ylim = c (0, max(RD) + 1)) +
+abline (n.RD,m.RD, lwd = 3, col = "red") +
+axis(1, pos=0) +
+axis(2, pos=0)
+```
+Die geschätzte Populationsgröße von Springfroschkaulquappen liegt damit bei 168 Individuen.
+
+# Berechnung mittels removal Funktion im Package FSA
+```{r}
+# check.packages function: install and load multiple R packages.
+# Function from: https://gist.github.com/smithdanielle/9913897
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE, type = "source")
+  sapply(pkg, require, character.only = TRUE)
+}
+
+# benoetigte R pakete
+pakete <- c("FSA", "tidyr", "dplyr")
+
+# Pruefe und installiere
+check.packages(pakete)
+```
+Weitere Informationen zu den verschiedenen Methoden sowie zur Nutzung des Paketes finden sich hier:
+https://search.r-project.org/CRAN/refmans/FSA/html/removal.html
+
+
+## Methodenvergleich anhand vom Laubfrosch
+Das Paket FSA (Ogle et al. 2023) erlaubt verschiedene Removal-Methoden zur Schätzung der Populations-größe. Anhand des Laubfrosches stellen wir die verschiedenen Methoden hier einmal vor. Wir wählen den Laubfrosch aus, da die Abfangdaten für den Laubfrosch vergleichsweise gut abnehmen zwischen den Abfanggelegenheiten. Bei den Molchen ist die Fängigkeit zu Beginn wahrscheinlich verschieden von den folgenden Fängigkeiten, was wir weiter unten besprechen werden.
+
+Für alle Methoden gelten dennoch die folgenden Annahmen (Zippin 1956, 1958):
+
+(1)	Die Population ist mit Ausnahme der abgefangenen Individuen geschlossen. 
+
+(2)	Die Fangwahrscheinlichkeit ist für alle Individuen und bei allen Entnahmen konstant. 
+
+(3)	Der Fang eines Individuums ist unabhängig vom Fang anderer Individuen. 
+
+Abweichungen von den Annahmen beschreiben wir im Haupttext sowie hinter der jeweiligen Methode im Beispiel. 
+
+### Carle and Strub (1978)
+Die Methode nach Carle and Strub (1978) ist eine Maximum Weighted Likelihood Schätzung. Dies ist ein Zwischending zwischen Maximum Likelihood und Bayesian Removal Schätzungen, mit einem prior für die Beta-Verteilung der zu schätzenden Parameter. Die Methode wurde als Alternative zur Maximum Likelihood Methode von Zippin (1956) entwickelt, weil bei letzterer nur unter bestimmten Bedingungen Schätzwerte erhalten werden können. 
+Vor- und Nachteil: Man erhält immer Schätzergebnisse. Diese können jedoch extrem unzuverlässig sein, wenn die Bedingungen, die für Schätzungen mit der Maximum Likelihood Methode von Zippin (1956) benötigt werden, nicht eingehalten sind. Vermutlich deswegen wird die Methode nur selten verwendet und in den Programmen MARK, CARE-2 sowie in Williams et al. (2002) nicht erwähnt. Im Removal-Paket FSA wird sie jedoch als Standardmethode genutzt. Die Schätzungen sind präziser, approx. N-Schätzungen sind sehr ähnlich.
+
+```{r}
+## Carle Strub (default) Methode
+# Carle and Strub (1978)
+p1 <- removal(HA)
+summary(p1)
+# Die Populationsgröße wird auf 74 geschätzt.
+# Die Fängigkeit wird auf 26,3% geschätzt
+summary(p1,verbose=TRUE)
+
+# nur Parameter geschätzte Populationsgröße
+summary(p1,parm="No")
+
+# nur Parameter Fangwahrscheinlichkeit
+summary(p1,parm="p")
+
+# Vertrauensintervalle
+confint(p1)
+# Die Populationsgröße liegt mit 95% Wahrscheinlichkeit zwischen 63 und 85
+# Die Fängigkeit liegt mit 95% Wahrscheinlichkeit zwischen 16,3% und 36,3%
+
+# einzelnes Aufrufen ist ebenfalls möglich
+confint(p1,parm="No")
+confint(p1,parm="p")
+```
+
+### Moran (1951) und Zippin (1956)
+Die Moran Methode ist identisch mit Zippin und wird heute daher meist als Zippin (1956) bezeichnet, da er Zusätze zur graphischen Bestimmung der Schätzwerte und der Verlässlichkeit gemacht hat. Im FSA Paket wird die Likelihood Methode von Moran (1951) genutzt, wie sie von Schnute (1983) implementiert wurde. Das Paket bietet als weitere Methode auch "Zippin" an, meint hier jedoch eine Lösungsvariante von Carle und Strub (1978), die aufgrund hoher Ungenauigkeiten nicht empfohlen wird. 
+
+```{r}
+## Moran/Zippin Methode
+# Moran (1951) / Zippin (1956)
+p2 <- removal(HA,method="Moran")
+summary(p2,verbose=TRUE)
+# Die Populationsgröße wird auf 75 geschätzt.
+# Die Fängigkeit wird auf 25,5% geschätzt.
+confint(p2,verbose=TRUE)
+# Die Populationsgröße liegt mit 95% Wahrscheinlichkeit zwischen 67 und 98.
+```
+
+### Burnham / Van Deventer und Platts (1983)
+Die von Burnham entwickelte Methode ist eine sogenannte general k-pass Schätzer / Likelihood Methode. Diese ist in der Windows Software MicroFish (Van Deventer und Platts 1985) implementiert. Auch diese Methode darf nur angewendet werden, wenn die Datenerfassung den drei Grundvorraussetzungen nach Zippin (1958) folgt. Ebenso treten ähnliche Probleme auf bei sehr geringen oder sehr variablen Fangwahrscheinlichkeiten oder nicht ausreichend abnehmender Fangzahl, was die Berechnung der Maximum Likelihood unmöglich machen würde.
+
+
+```{r}
+## Burnham Methode
+# entwickelt von Ken Burnham und vorgestellt von Van Deventer und Platts (1983)
+p3 <- removal(HA,method="Burnham")
+summary(p3,verbose=TRUE)
+# Die Populationsgröße wird auf 75 geschätzt.
+# Die Fängigkeit wird auf 25,6% geschätzt
+confint(p3,verbose=TRUE)
+# Die Populationsgröße liegt mit 95% Wahrscheinlichkeit zwischen 63 und 87.
+# Die Fängigkeit liegt mit 95% Wahrscheinlichkeit zwischen 15,4% und 35,7%
+
+## Vergleich der Ergebnisse
+# Nfang ist die Anzahl insgesamt gefangener Tiere
+# Nest.R ist die Anzahl per Regressionsanalyse geschätzter Tiere
+res.HA <- data.frame(Methode = c("Nfang", "Nest.R", "Carle Strub", "Moran", "Burnham"),
+                     N_est = c(HA.total,estimated_popsize.HA,p1$est[1],p2$est[1],p3$est[1]),
+                     LCI = c(NA,NA,p1$est[3],p2$est[2],p3$est[3]),
+                     UCI = c(NA,NA,p1$est[4],p2$est[3],p3$est[4]))
+
+res.HA
+```
+Die per Regressionsgerade geschätzte Populationsgröße an Laubfroschkaulquappen liegt geringfügig unter den anderen Schätzungen. Die Anzahl gefangener Tiere liegt im Konfidenzintervall der Schätzungen, außer für die Schätzung nach der Methode von Moran (1951), jedoch immer unter der geschätzten Populationsgröße. Die Schätzungen unterscheiden sich kaum voneinander, was für ein relativ vollständiges Abfangen spricht und keine Verletzung der Modellannahmen suggeriert.
+
+
+## Spezialfall: Zwei oder drei Abfangereignisse
+Es gibt auch angepasste Methoden, wenn nur zwei oder drei Abfangereignisse stattgefunden haben. Hierbei sollte die Summe in Abfangereignis 1 deutlich größer als bei 2 (bzw. 3) sein, andernfalls ist die Methode sehr unzuverlässig (Seber 2002).  Dieser Unterschied ist beim Springfrosch in unseren Daten der Fall, weshalb wir diese Methoden anhand der Springfroschkaulquappen zeigen.
+
+```{r}
+# zwei Durchgänge, Seber Methode
+RD.2 <- RD[1:2]
+p4 <- removal(RD.2,method="Seber2")
+summary(p4,verbose=TRUE)
+confint(p4)
+# Die geschätzte Populationsgröße liegt bei 60 Individuen 
+# und mit 95% Wahrscheinlichkeit zwischen 34 und 86.
+# Die Fängigkeit liegt bei 50% und mit 95% Wahrscheinlichkeit zwischen 19% und 81%.
+
+# Vergleich mit Gesamtzahl gefangener Springfrösche:
+RD.total
+# Die geschätzte Populationsgröße unterschätzt die mindestens vorhandenen 
+# Springfroschkaulquappen massiv. Dies ist ein gutes Beispiel, dass die Anwendung 
+# der Seber Methode mit nur zwei Durchgängen nur dann angewendet werden sollte, 
+# wenn auch alle folgenden Durchgänge deutlich weiter abnehmen. 
+# Dies ist in unseren Daten nicht der Fall.
+
+
+# Vergleichen wir es mit der Seber Methode für drei Fanggelegenheiten:
+RD.3 <- RD[1:3]
+p5 <- removal(RD.3,method="Seber3")
+summary(p5,verbose=TRUE)
+confint(p5)
+# Die geschätzte Populationsgröße liegt bei 420 Individuen 
+# und mit 95% Wahrscheinlichkeit zwischen 0 und 2156.
+# Die Fängigkeit liegt bei 6,1% und mit 95% Wahrscheinlichkeit zwischen 0% und 32,7%.
+
+```
+Die erste Schätzung mit zwei Kescherdurchgängen unterschätzt die tatsächliche Anzahl massiv. Die zweite Schätzung mit drei Kescherdurchgängen hat ein extrem breites Konfidenzintervall, was die Anwendung in unserem Beispiel unmöglich macht. Beide Schätzer sollten nur bei tatsächlich kontinuierlich abnehmender Fangzahl verwendet werden.
+
+Dass die Methode bei tatsächlich abnehmenden Fangzahlen funktionieren kann, zeigen wir, indem wir jeweils drei Kescherdurchgänge aufaddieren.
+
+```{r}
+RD.4 <- c(sum(RD[1:3]),sum(RD[4:6]))
+p6 <- removal(RD.4,method="Seber2")
+summary(p6,verbose=TRUE)
+confint(p6)
+# Die geschätzte Populationsgröße liegt bei 167 Individuen 
+# und mit 95% Wahrscheinlichkeit zwischen 103 und 231.
+# Die Fängigkeit liegt bei 43,1% und mit 95% Wahrscheinlichkeit zwischen 21,2% und 64,9%.
+```
+Dies dient nur der Demonstration. Wenn die Fangdaten einzeln vorliegen, sollten Methoden, die die einzelnen Abfangereignisse nutzen, bessere Schätzungen liefern.
+
+## Spezialfall: Unterschiedliche Fängigkeit zwischen erstem und allen folgenden Abfangereignissen
+
+Es ist möglich, dass die Tiere bei dem ersten Kescherdurchgang eine andere Fängigkeit aufweisen als bei allen folgenden Kescherdurchgängen. Das kann zum Beispiel daran liegen, dass derjenige, der keschert, erfahrener wird. 
+Dazu gibt es eine Anpassung von Morans likelihood Methode: Die Likelihood-Methode von Schnute (1983) nutzt ein Modell, das eine unterschiedliche Fangwahrscheinlichkeit für das erste Abfangereignis, aber eine konstante Fangwahrscheinlichkeit für alle folgenden Abfangereignisse annimmt. 
+
+Zur Demonstration nutzen wir hier die Daten von Kamm- und Teichmolch, da wir hier einen solchen Unterschied annehmen. Um den Einfluss zu prüfen, berechnen wir zunächst die Populationsgröße mit der Schnute-Methode und führen dann einen Chi-Quadrat-Test der negativen Log-Likelihoods aus. Wenn das erste Abfangereignis mit ähnlicher Fangwahrscheinlichkeit geschätzt wird wie alle folgenden, sollte es keinen signifikanten Unterschied geben.
+
+```{r}
+## Schnute Methode für Kammmolchlarven
+# Schnute (1983)
+p7 <- removal(TC,method="Schnute")
+summary(p7,verbose=TRUE)
+# Die Populationsgröße wird auf 161 geschätzt.
+confint(p7,verbose=TRUE)
+# Die Populationsgröße liegt mit 95% Wahrscheinlichkeit zwischen 122 und 315.
+
+# zum Vergleich benötigen wir nun die Schätzungen nach Moran (1951)
+p8 <- removal(TC,method="Moran")
+summary(p8,verbose=TRUE)
+confint(p8,verbose=TRUE)
+# Die Populationsgröße wird auf 209 geschätzt 
+# und liegt mit 95% Wahrscheinlichkeit zwischen 137 und 315.
+
+# Chi-Quadrat-Test der negativen Log-Likelihoods
+#   von Moran (p8) und Schnute (p7)
+chi2.val <- 2*(p8$min.nlogLH-p7$min.nlogLH)
+pchisq(chi2.val,df=1,lower.tail=FALSE)
+# p = 0,12
+
+```
+Es gibt keinen signifikanten Unterschied. Das bedeutet, es gibt keinen Unterschied der ersten und aller folgenden Fängigkeiten. Daraus folgt, dass die Methode von Schnute (1983) keine bessere Schätzung liefern sollte als die oben genannten Methoden.
+
+Schauen wir uns das Gleiche für den Teichmolch an:
+
+```{r}
+## Schnute Methode für Teichmolchlarven
+# Schnute (1983)
+p9 <- removal(LV,method="Schnute")
+summary(p9,verbose=TRUE)
+# Die Populationsgröße wird auf 285 geschätzt.
+confint(p9,verbose=TRUE)
+# Die Populationsgröße liegt mit 95% Wahrscheinlichkeit zwischen 191 und Inf. - 
+# das obere KI kann nicht berechnet werden.
+
+# zum Vergleich benötigen wir nun die Schätzungen nach Moran (1951)
+p10 <- removal(LV,method="Moran")
+summary(p10,verbose=TRUE)
+confint(p10,verbose=TRUE)
+# Die Populationsgröße wird ebenfalls auf 285 geschätzt 
+# und liegt mit 95% Wahrscheinlichkeit zwischen 211 und 285.
+
+# Chi-Quadrat-Test der negativen Log-Likelihoods
+#   von Moran (p8) und Schnute (p7)
+chi2.val <- 2*(p10$min.nlogLH-p9$min.nlogLH)
+pchisq(chi2.val,df=1,lower.tail=FALSE)
+# p = 0,003
+```
+Es gibt einen signifikanten Unterschied. Das bedeutet, es gibt einen Unterschied der ersten und aller folgenden Fängigkeiten. Daraus folgt, dass die Methode von Schnute (1983) eine bessere Schätzung liefern sollte als die oben genannten Methoden. Die Ergebnisse diskutieren wir am Ende des Beispiels noch einmal.
+
+## Mehrere Gruppen gleichzeitig berechnen
+Die Populationsgrößenschätzung für jede abgefangene Art einzeln zu berechnen ist recht aufwändig. In diesem Beispiel können wir mehrere verschiedene Gruppen gleichzeitig berechnen. Vorraussetzung ist, dass sie alle den gleichen Annahmen folgen, da hierbei immer die gleiche Methode angewendet wird.
+
+```{r}
+# Alle Daten in einen Datenframe packen
+## Vektor aller Artennamen
+Art <- c("TC","LV","HA","RD")
+
+## Alle Abfangereignisse untereinander, eine Zeile pro Art
+dat <- rbind.data.frame(TC,LV,HA,RD)
+colnames(dat) <- paste("Kescher",1:7,sep="_")
+dat <- as.data.frame(cbind(Art, dat))
+dat
+
+# Die Daten müssen in ein Langformat gebracht werden.
+# Das geht am besten im tidyr-Paket (Wickham et al. 2024)
+d2l <- tidyr::pivot_longer(dat,cols=c("Kescher_1","Kescher_2","Kescher_3",
+                                      "Kescher_4","Kescher_5","Kescher_6",
+                                      "Kescher_7",),
+                           names_to="Kescher",values_to="catch")
+d2l
+
+## removal mit der Schnute Methode
+# Zum einfacheren Aufrufen nutzen wir das R-Paket dplyr (Wickham et al. 2023)
+if (require(dplyr)) {
+  res2 <- d2l %>%
+    dplyr::group_by(Art) %>%
+    dplyr::group_modify(~confint(removal(~catch,data=.x,method="Schnute"),
+                                 incl.est=TRUE,as.df=TRUE)) %>%
+    tidyr::separate_wider_delim(1,names=c("Art"),delim=".") %>%
+    as.data.frame() # die tibble und Gruppenstruktur entfernen
+  res2
+}
+
+# Zum Vergleich fügen wir noch die mit Regressionsanalyse geschätzten Werte 
+# sowie die Anzahl abgefangener Individuen hinzu
+
+res2$N.R <- c(estimated_popsize.HA,estimated_popsize.LV,estimated_popsize.RD,estimated_popsize.TC)
+res2$Fang <- c(HA.total,LV.total,RD.total,TC.total)
+res2
+```
+Die Ergebnistabelle beinhaltet nun die Spalten Art, Anzahl geschätzter Individuen (No), deren unteres (LCI) und oberes (UCI) Konfidenzintervall, deren jeweilige p-Werte, die per Regressionsgleichung geschätzte Populationsgröße (N.R) und die Anzahl gefangener Tiere insgesamt
+
+Gleiches können wir noch mit einer anderen Methode durchführen. Da die Ergebnisse der anderen Methoden sich nicht so stark voneinander unterschieden, nehmen wir hier beispielhaft die Burnham Methode.
+
+```{r}
+if (require(dplyr)) {
+  res3 <- d2l %>%
+    dplyr::group_by(Art) %>%
+    dplyr::group_modify(~confint(removal(~catch,data=.x,method="Burnham"),
+                                 incl.est=TRUE,as.df=TRUE)) %>%
+    tidyr::separate_wider_delim(1,names=c("Art"),delim=".") %>%
+    as.data.frame() # die tibble und Gruppenstruktur entfernen
+  res3
+}
+
+# Zum Vergleich fügen wir noch die mit Regressionsanalyse geschätzten Werte 
+# sowie die Anzahl abgefangener Individuen hinzu
+# Achtung, nun alphabetisch sortiert!
+
+res3$N.R <- c(estimated_popsize.HA,estimated_popsize.LV,estimated_popsize.RD,estimated_popsize.TC)
+res3$Fang <- c(HA.total,LV.total,RD.total,TC.total)
+res3
+```
+Wir können auch den Chi-Quadrat-Test für Unterschiede zwischen der ersten und aller folgenden Fängigkeiten für alle Arten durchführen. Dazu müssen wir alle Daten einmal mit der Schnute Methode und einmal mit der Moran Methode berechnen.
+
+```{r}
+# Achtung, zuerst alphabetisch sortieren
+dat2 <- dat[order(dat$Art),]
+ll1 <- apply(dat2[,2:8],MARGIN=1,FUN=removal,method="Schnute",just.ests=FALSE)
+ll2 <- apply(dat2[,2:8],MARGIN=1,FUN=removal,method="Moran",just.ests=FALSE)
+
+# Nun müssen wir für jede Art den Chi-Quadrat-Test durchführen. 
+# Dazu nutzen wir eine Schleifenfunktion.
+p.val <- rep(NA,length(ll2))
+names(p.val) <- dat2$Art
+
+for (i in 1:length(ll1)) {
+  ll1.min.nlogLH <- ll1[[i]]$min.nlogLH
+  ll2.min.nlogLH <- ll2[[i]]$min.nlogLH
+  chi2  <- 2*(ll2.min.nlogLH-ll1.min.nlogLH)
+  p.val[i] <- pchisq(chi2,df=1,lower.tail=FALSE)
+}
+
+res2$p.val <- p.val
+res3$p.val <- p.val
+
+res2
+res3
+```
+Wir sehen, dass beim Laubfrosch und beim Springfrosch die Schätzwerte sehr ähnlich sind und für diese beiden Arten die Schätzung nicht sehr viel über der Anzahl insgesamt gefangener Tiere liegt. Das Gewässer wurde also hinsichtlich dieser beiden Arten gut abgekeschert. Da der Chi-Quadrat-Test zwischen der negativen Log-Likelihood eines Modelles mit unterschiedlicher Fängigkeit im ersten Durchgang (Schnute) und eines Modelles mit konstanter Fängigkeit (Moran) für beide Arten nicht signifikant ist, ist die Schätzung mit konstanter Fängigkeit, hier im Beispiel mittels der Methode von Burnham, der ersteren Schätzung vorzuziehen. Sie liefert auch wesentlich präzisere Ergebnisse in Form eines engeren Konfidenzintervalles. Würden weitere Kescherdurchgänge durchgeführt werden, die kaum noch weitere Individuen liefern, würden sich die Methoden zunehmend annähern und noch kleinere Konfidenzintervalle bekommen.
+
+Für den Teichmolch sehen wir, dass anhand der Originaldaten keine Populationsgröße berechnet werden kann, wenn man von konstanter Fängigkeit ausgeht. Entsprechend ist auch der Chi-Quadrat-Test signifikant, beim Teichmolch gibt es also eine unterschiedliche Fängigkeit beim ersten Kescherdurchgang, das Modell von Schnute ist demnach vorzuziehen. Allerdings sind die Abfangdaten für den Teichmolch generell unzureichend und nehmen auch nach sieben Kescherdurchgängen nicht wesentlich ab. Für den Teichmolch ist demnach nach sieben Kescherdurchgängen noch keine verlässliche Populationsgrößenschätzung möglich.
+
+Deutlich schwieriger zu interpretieren ist hier der Kammmolch. Zwar ist der Chi-Quadrat-Test zwischen beiden Modellen nicht signifikant, liegt aber mit 0,1 in einem Rahmen, wo ggf. ein Trend angenommen werden kann. Im Hinblick auf die tatsächlichen Abfangdaten sowie die geschätzten Fangwahrscheinlichkeiten in beiden Modellen lässt sich ebenfalls erahnen, dass ein Unterschied zwischen dem ersten und allen folgenden Kescherdurchgängen angenommen werden kann - eventuell jedoch sogar zwischen den ersten beiden und allen folgenden, was im Modell nicht abgebildet werden kann. Die Ergebnisse beider Methoden überlappen sich in ihren Konfidenzintervallen, sind jedoch bei der Methode nach Schnute präziser. Eine klare Empfehlung ist hier schwierig abzuleiten, jedoch besteht hier im Zweifelsfall doch eine Tendenz zur Methode nach Schnute. Gegebenenfalls könnten die Daten auch ohne Kescherdurchgang 1 und 2 noch einmal berechnet werden und die Fangzahlen der ersten beiden Kescherdurchgänge im Nachgang addiert werden (nach Pollock et al. 1990). Nach der Burnham Methode berechnet, ergibt dies 138 + 26 = 164 Individuen, was sehr nahe an der Schätzung nach Schnute ist. 
+
+Die Schätzung per Regressionsgerade liegt für Laub- und Springfrosch sehr nahe an der Schätzung nach Burnham und liefert demnach für sehr gute Abfangdaten ausreichend genaue Ergebnisse - mit dem Nachteil, dass kein Konfidenzintervall berechnet werden kann. Für den Teichmolch ist keine Schätzung mit Regressionsgerade möglich, da die Abfangdaten nicht kontinuierlich abnehmen. Für den Kammmolch überschätzt die Regressionsgerade sogar noch die Methode nach Burnham, liegt jedoch noch in dessen Konfidenzintervall. Diese Überschätzung begründet sich in der Annahme konstanter Fangwahrscheinlichkeiten, die hier verletzt wird. Die Schätzer sind damit generell empfehlenswerter als eine Berechnung per Regressionsgerade.
+
+
+# Literaturverzeichnis
+Carle, F.L. and M.R. Strub. 1978. A new method for estimating population size from removal data. Biometrics, 34:621-630. 
+
+Moran, P.A.P. 1951. A mathematical theory of animal trapping. Biometrika 38:307-311.
+
+Ogle D.H., Doll, J.C., Wheeler, A.P., Dinno, A. 2025. FSA: Simple fisheries stock assessment methods. R package version 0.9.6, <https://CRAN.R-project.org/package=FSA>
+
+Pollock, K.H., Nichols, J.D., Brownie, C., Hines, J.E. 1990. Statistical inference for capture-recapture experiments. Wildlife Monographs 107:3–97.
+
+Schnute, J. 1983. A new approach to estimating populations by the removal method. Canadian Journal of Fisheries and Aquatic Sciences, 40:2153-2169.
+
+Seber, G.A.F. 2002. The estimation of animal abundance. Edward Arnold, second edition (Reprint). 
+
+Van Deventer, J.S., und W.S. Platts. 1983. Sampling and estimating fish populations from streams. Transactions of the 48th North American Wildlife and Natural Resource Conference. pp. 349-354. 
+
+Van Deventer, J.S., und W.S. Platts. 1985. A computer software system for entering, managing, and analyzing fish capture data from streams. United States Department of Agriculture. Forest Service. Research Note INT-352.
+
+Wickham, H., François, R., Henry, L., Müller, K., Vaughan, D. 2023. dplyr: A grammar of data manipulation. R package version 1.1.4,   <https://CRAN.R-project.org/package=dplyr>.
+
+Wickham, H., Vaughan, D., Girlich, M. 2024. tidyr: Tidy messy data. R package   version 1.3.1, <https://CRAN.R-project.org/package=tidyr>.
+
+Williams, B.K., Nichols, J.D., Conroy, M.J. 2002. Analysis and management of animal populations. Academic Press, San Diego, USA.
+
+Zippin, C. 1956. An evaluation of the removal method of estimating animal populations. Biometrics, 12:163-189.
+
+Zippin, C. 1958. The removal method of population estimation. Journal of Wildlife Management 22(1): 82-90.
+
