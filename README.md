@@ -4,13 +4,15 @@ UlmerBuch Beispiele
 
 In diesem Github Repository findest Du alle Beispiele aus dem Buch. Die Beispiele werden als R-package geliefert, so dass sie moeglichst einfach installiert werden koennen. Dazu benoetigst Du eine moeglichst aktuelle R/Rstudio Installation. Ein Installationsanleitung findest Du [hier - in Englisch](https://rstudio-education.github.io/hopr/starting.html). Nach der Installation, starte Rstudio und gib den folgenden Befehl in der Console ein:
 
-`install.packages("UlmerBuch")`
+`install.packages("devtools") #falls das devtools paket noch nicht installiert ist`
+`devtools::install_github("UlmerBuch/UlmerBuch")`
+
 
 Fuer die Installation benoetigst Du eine Internetverbindung. Nach erfolgreicher Installation einfach
 
 `library("UlmerBuch")`
 
-eingeben. Fuer alle zukuenftigen Sitzungen ist es nicht mehr die Installation des Package (via install.packages) durchzufuehren. Es genuegt am Anfang einer neuen Sitzung einfach den Befehl `library("Ulmerbuch")` einzugeben. Zum Ausprobieren ob das Package erfolgreich installiert wurde, am besten einfach ein Beispiel mittels des Befehls:
+eingeben. Fuer alle zukuenftigen Sitzungen ist es nicht mehr erforderlich die Installation des Package (via install.packages) durchzufuehren. Es genuegt am Anfang einer neuen Sitzung einfach den Befehl `library("Ulmerbuch")` einzugeben. Zum Ausprobieren ob das Package erfolgreich installiert wurde, am besten einfach ein Beispiel mittels des Befehls:
 
 `bespiel(bsp="4.1")`
 
