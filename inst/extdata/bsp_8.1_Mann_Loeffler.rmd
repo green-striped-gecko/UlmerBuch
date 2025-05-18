@@ -54,14 +54,14 @@ kable(t(loeffler),
 ```
 
 # Mann(-Kendal)-Test
-Wir verwenden die Methode von Mann (1945) um den Bestandszuwachs zu untersuchen. Die Methode ist in der Funktion ‘mk.test’ in dem R-Paket trend implementiert. Der Test wird im Englischen auch als ‘Mann-Kendall Trend Test’ bezeichnet. Der Test ist ein nicht-parametrischer Test, sehr einfach anzuwenden und robust gegenüber Ausreißern. Die grundsätzliche Idee ist, dass die Vorzeichen der Differenzen zwischen den aufeinanderfolgenden Beobachtungen bei Zu(Ab)nahme einem berechenbaren Muster folgen sollten. Der Test ist für Zeitreihen geeignet, die nicht normalverteilt sind. Weiterführende Literatur fundet sich in Hipel & McLeod (1994) sowie Libiseller & Grimvall (2002).
+Wir verwenden die Methode von Mann (1945), um den Bestandszuwachs zu untersuchen. Die Methode ist in der Funktion ‘mk.test’ in dem R-Paket trend implementiert. Der Test wird im Englischen auch als ‘Mann-Kendall Trend Test’ bezeichnet. Der Test ist ein nicht-parametrischer Test, sehr einfach anzuwenden und robust gegenüber Ausreißern. Die grundsätzliche Idee ist, dass die Vorzeichen der Differenzen zwischen den aufeinanderfolgenden Beobachtungen bei Zu(Ab)nahme einem berechenbaren Muster folgen sollten. Der Test ist für Zeitreihen geeignet, die nicht normalverteilt sind. Weiterführende Literatur fundet sich in Hipel & McLeod (1994) sowie Libiseller & Grimvall (2002).
 
 Der Test kann zweiseitig (alternative=“two.sided”, Hypothese: Es gibt einen Trend nach oben oder unten) und auch einseitig durchgeführt werden (alternative =“greater” oder “less”, Hypothese: Es gibt einen zunehmenden oder abnehmenden Trend). Wir verwenden hier die Version des Tests,  dass die Löfflerpopulation of Mellum einen zunehmenden Trend zeigt.
 
 ```{r}
 mk.test(loeffler$anzahl, alternative = "greater")
 ```
-Der p-Wert ist deutlich kleiner als 0.05, daher können wir die Nullhypothese, dass es keinen Trend gibt, ablehnen. Der Bestand des Löfflers auf der Insel Mellum hat zwischen 2003 und 2018 folglich signifikant zugenommen.
+Der p-Wert ist deutlich kleiner als 0,05, daher können wir die Nullhypothese, dass es keinen Trend gibt, ablehnen. Der Bestand des Löfflers auf der Insel Mellum hat zwischen 2003 und 2018 folglich signifikant zugenommen.
 
 # Literaturverzeichnis
 Gerdes, Krumbein, W.E., Reineck, H.-E. 1987. Mellum. Portrait einer Insel. Waldemar Kramer, Frankfurt/M.

@@ -136,7 +136,7 @@ sample.EK <- unmarkedMultFrame(y=y.EK,
 
 ```
 
-Unmarked hat eine Summary funktion, welche die Daten übersichtlich zusammenfasst
+Unmarked hat eine Summary Funktion, welche die Daten übersichtlich zusammenfasst
 
 ```{r, warning=FALSE, message=FALSE}
 summary(sample.EK)
@@ -200,7 +200,7 @@ Dieser Datensatz enthält einen Array mit 35 Datenframes, je eins pro Gewaesser.
 ```{r, warning=FALSE, message=FALSE}
 smoothed(occu.m1)
 ```
-Im Gegensatz zu *projected* bekommt man mit *smoothed* einen Rückschluss auf den Anteil der belegten Standorte und nicht auf die Gesamtpopulation der Standorte. Somit handelt es sich bei den *projected* Werten um Schätzungen der Populationsparameter und bei den *smoothed* Schätzungen um die Mengen endlicher Stichproben. Mit anderen Worten: Unser geglätteter Schätzer (*smoothed*) (Psi.t|Y, wobei Psi.r die jährliche Schätzung der Vorkommenswahrscheinlichkeit und Y die Beobachtungsdaten darstellt) schätzt den Anteil der Stichprobenorte, die in jedem Jahr besetzt sind, während der projektionsbasierte Schätzer (*projected*) (Psi.t) die Belegungsrate für die gesamte Population der hypothetischen Standorte, aus denen unsere Stichprobe ausgewählt wurde, schätzt (Weir et al. 2009).
+Im Gegensatz zu *projected* bekommt man mit *smoothed* einen Rückschluss auf den Anteil der belegten Standorte und nicht auf die Gesamtpopulation der Standorte. Somit handelt es sich bei den *projected* Werten um Schätzungen der Populationsparameter und bei den *smoothed* Schätzungen um die Mengen endlicher Stichproben. Mit anderen Worten: Unser projektionsbasierter Schätzer (*projected*) (Psi.t) schätzt die Belegungsrate für die gesamte Population der hypothetischen Standorte, aus denen unsere Stichprobe ausgewählt wurde, während der geglätteter Schätzer (*smoothed*) (Psi.r|Y, wobei Psi.r die jährliche Schätzung der Vorkommenswahrscheinlichkeit und Y die Beobachtungsdaten darstellt) den Anteil der Stichprobenorte, die in jedem Jahr besetzt sind, schätzt (Weir et al. 2009).
 
 Mithilfe der Bootstrap Methode bekommt man zu diesen Schätzungen auch Standardfehler. 
 
@@ -210,7 +210,7 @@ occu.m1 <- nonparboot(occu.m1, B = 10)
 # was aber eine höhere Berechnungszeit zur Folge hat
 cbind(smoothed=smoothed(occu.m1)[2,], SE=occu.m1@smoothed.mean.bsse[2,])
 ```
-Nun haben wir für jedes Jahr eine Schätzung der Vorkommenwahrscheinlichkeit und deren Standardfehler, aus dem man wiederum ein Konfidenzintervall berechnen könnte. 
+Nun haben wir für jedes Jahr eine Schätzung der Vorkommenwahrscheinlichkeit und deren Standardfehler, aus denen man wiederum ein Konfidenzintervall berechnen könnte. 
 
 
 ## Multi-Season Occupancy Modell mit Kovariablen
@@ -303,7 +303,7 @@ ggplot(data = df.det2, aes(x = Sum_Rain, y = Predicted)) +
 Auch der Niederschlag beeinflusst die Nachweiswahrscheinlichkeit positiv.
 
 ### Vorkommenswahrscheinlichkeit
-Als naechstes schauen wir uns an, welche Parameter die Vorkommenswahrscheinlichkeit von Erdkröten beeinflusst. Da diese nur den ersten Wert schätzt (initiale Occupancy), sind auch nur die Parameter des ersten Werte (2013) nötig.
+Als naechstes schauen wir uns an, welche Parameter die Vorkommenswahrscheinlichkeit von Erdkröten be-einflusst. Da diese nur den ersten Wert schätzt (initiale Occupancy), sind auch nur die Parameter des ersten Werts (2013) nötig.
 
 ```{r, warning=FALSE, message=FALSE}
 fmx2 <- colext(~ Wasserversorgung + Schwimmblattpflanzen_13 + 
@@ -323,7 +323,7 @@ mx2<-dredge(fmx2, rank="AIC", fixed = ~p(air) + p(Sum_Rain) +
               col(year) + ext(year))
 head(mx2)
 ```
-Die initiale Vorkommenswahrscheinlichkeit kann durch die Röhrichtpflanzen und die Wasserversorgung erklärt werden, wobei die Differenz zum Null-Modell extrem gering ist. Schwimmblattpflanzen könnten auch einen Einfluss haben, die Fläche jedoch scheint keinen Einfluss zu haben. 
+Die initiale Vorkommenswahrscheinlichkeit kann durch die Röhrichtpflanzen und die Wasserversorgung er-klärt werden, wobei die Differenz zum Null-Modell extrem gering ist. Schwimmblattpflanzen könnten auch einen Einfluss haben, die Fläche jedoch scheint keinen Einfluss zu haben. 
 
 ```{r, warning=FALSE, message=FALSE}
 get.models(mx2, subset = 5)
@@ -384,6 +384,8 @@ ggplot(data = df.det4, aes(x = Roehrichtguertel_13, y = Predicted)) +
 	labs(x = "Röhrichtgürtel [%]", y = "Vorkommenswahrscheinlichkeit") +
 	theme_classic()
 ```
+Anmerkung: Aufgrund des steilen Anstieges kreiert die loess Glättungsmethode einen "Haken" über 1 - selbstverständlich kann die Vorkommenswahrscheinlichkeit nicht höher als 1 sein. 
+
 Ab 25% Röhrichtgürtel kommt die Erdkröte sicher vor.
 
 Analog könnte man nun auch die Kolonisation und Extinktion mit Parametern hinterlegen.

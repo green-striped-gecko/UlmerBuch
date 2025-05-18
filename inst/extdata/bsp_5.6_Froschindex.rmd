@@ -226,7 +226,7 @@ summary(RBU$X3-RBU$X2)
 # Als Startwerte setzen wir daher -0,5, 0,5, 0,5
 
 # für Zeit b
-boxplot(RBU.data)
+boxplot(RBU.data, xlab = "Erfassung", ylab = "Häufigkeitsklasse")
 # Die Aktivität nimmt wahrscheinlich zum Mai hin ab.
 # Als Startwerte setzen wir daher 0, -0,5
 
@@ -244,13 +244,13 @@ st.RBU2 <- c(-0.5,0,0.5,-0.5,0.5,0.5,0,-0.5,-0.5, -0.5)
 
 # für den Laubfrosch schauen wir uns die Kovariaten noch einmal an
 # für Zeit b
-boxplot(LF.data)
+boxplot(LF.data, xlab = "Erfassung", ylab = "Häufigkeitsklasse")
 # Die Aktivität nimmt wahrscheinlich zum Mai hin zu.
 # Als Startwerte setzen wir daher -2, 1
 
 # für Temperatur
 plot(LF$X3~WTemp$X1)
-# mit der Temperatur könnte es steigen
+# mit der Temperatur könnte die Aktivität steigen
 # Als Startwert setzen wir 1
 # als quadratischen Term setzen wir weiterhin -0,5
 
@@ -293,7 +293,7 @@ hessian: Die Hessian-Matrix enthält Informationen über die Krümmung der negat
 
 code: Der Wert 1 für den Code bedeutet, dass die Optimierung erfolgreich war.
 
-iterations: Der Wert 64 gibt die Anzahl der Iterationen an, die zur Konvergenz des Algorithmus benötigt wurden. Dies kann Aufschluss über die Komplexität des Modells geben; eine höhere Anzahl kann auf ein schwierigeres Optimierungsproblem hinweisen.
+iterations: Der Wert 32 gibt die Anzahl der Iterationen an, die zur Konvergenz des Algorithmus benötigt wurden. Dies kann Aufschluss über die Komplexität des Modells geben; eine höhere Anzahl kann auf ein schwierigeres Optimierungsproblem hinweisen.
 
 ### Modellvergleiche
 Nutzen wir die Minima der negativen Log-Likelihood, korrigieren diese basierend auf der Anzahl Parameter, um den AIC zu berechnen (siehe Kapitel 9.3 des Buches) und die Modelle miteinander zu vergleichen:
@@ -313,7 +313,7 @@ Nun können wir die erste Funktion cp nutzen, um aus den estimates die tatsächl
 ```{r}
 cp(RBU.out3$estimate)
 ```
-In ther letzten Spalte finden sich die Belegungswahrscheinlichkeiten der HK von N = 0, 1, 2, und 3. Geschätzt haben also 32% der Gewässer keine Rufer, 19% einzelne Rufer, 25% einzelne überlappende Rufer und 24% Chöre. Vergleichen wir das mit den Beobachtungen, sehen wir, dass wohl einige Rufer überhört worden sein müssen bzw. einer zu niedrigen Klasse zugeteilt worden sind - ganz im Gegensatz zu unserer ursprünglichen Annahme, dass dies nicht zu häufig auftritt. Dies scheint vor allem bei HK 2 der Fall zu sein, weniger bei HK 1.
+In der letzten Spalte finden sich die Belegungswahrscheinlichkeiten der HK von N = 0, 1, 2, und 3. Geschätzt haben also 32% der Gewässer keine Rufer, 19% einzelne Rufer, 25% einzelne überlappende Rufer und 24% Chöre. Vergleichen wir das mit den Beobachtungen, sehen wir, dass wohl einige Rufer überhört worden sein müssen bzw. einer zu niedrigen Klasse zugeteilt worden sind - ganz im Gegensatz zu unserer ursprünglichen Annahme, dass dies nicht zu häufig auftritt. Dies scheint vor allem bei HK 2 der Fall zu sein, weniger bei HK 1.
 
 Die mittlere HK, die zu erwarten ist (= geschätzte mittlere latente HK), berechnet sich als N = 3-3*psi0 - 2*psi1 + psi2.
 ```{r}
@@ -369,4 +369,4 @@ Müller, F. 2018. Auswirkungen von Habitat-, Witterungs- und Durchflutungsparame
 
 Royle, J.A., Link, W.A. 2005. A general class of multinomial mixture models for anuran calling survey data. Ecology 86: 2505-2512.
 
-Weir, L.A., Mossman, M.J. 2005. North American Amphibian Monitoring Program. S. 307-313 in: Lannoo, M.J. Declining Amphibians: A United States Response to the Global Phenomenon. University of California Press, Berkeley.
+Weir, L.A., Mossman, M.J. 2005. North American Amphibian Monitoring Program. S. 307-313 in: Lannoo, M.J. (Hrsg.) Declining Amphibians: A United States Response to the Global Phenomenon. University of California Press, Berkeley.

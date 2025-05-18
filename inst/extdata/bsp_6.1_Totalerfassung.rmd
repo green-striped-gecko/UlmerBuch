@@ -1,7 +1,7 @@
 ---
 title: "Beispiel 6.1. Erfassung von Fischottern (*Lutra lutra*) anhand von Spuren"
 subtitle: "Kapitel 6.2.2 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
-author: "Bernd Gruber"
+author: "Bernd Gruber, Annegret Grimm-Seyfarth"
 date: "2022-12-20"
 output:
   pdf_document: default
@@ -80,4 +80,4 @@ erg2 <- var.N(TF=514, funde=funde, conf=0.95)
 Vorausgesetzt in den Probeflächen konnten alle Fischotter erfasst werden, die sich in ihnen aufhielten, liegt also die Populationsgröße im Einzugsgebiet der Warnow mit 95% Wahrscheinlichkeit zwischen 8-116 Otter.
 
 # Literaturverzeichnis
-Labes, R., Labes, S., Labes, H. 1991. Der Fischotterbestand (Lutra lutra L.) des Einzugsgebietes der Warnow (Mecklenburg) im Winter 1991. S. 22-27 in: Schutz des Fischotters, Landesumweltamt Brandenburg, Potsdam. 
+Labes, R., Labes, S., Labes, H. 1991. Der Fischotterbestand (*Lutra lutra* L.) des Einzugsgebietes der Warnow (Mecklenburg) im Winter 1991. S. 22-27 in: Schutz des Fischotters, Landesumweltamt Brandenburg, Potsdam. 

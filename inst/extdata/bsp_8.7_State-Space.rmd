@@ -47,7 +47,7 @@ data(harborSealWA, package = "MARSS")
 ```
 
 ## Graphische Darstellung
-Die Daten stammen aus fünf Regionen (oder Standorte). Darsgestellt ist jeweils ein normierter Index für die Populationsgröße. Seehunde wurden von 1978 bis 1999 gezählt, während sie an Land waren. Nachdem sie vor deren Unterschutzstellung durch die Jagd auf ein niedriges Niveau reduziert worden waren, erholten sich die Seehunde während des Zeitraums dieses Datensatzes stetig.  Wir gehen davon aus, dass der zugrundeliegende Populationsprozess ein stochastischer exponentieller Wachstumsprozess mit mittleren Wachstumsraten ist, die sich in den Jahren 1978-1999 nicht verändert haben.
+Die Daten stammen aus fünf Regionen (oder Standorte). Dargestellt ist jeweils ein normierter Index für die Populationsgröße. Seehunde wurden von 1978 bis 1999 gezählt, während sie an Land waren. Nachdem sie vor deren Unterschutzstellung durch die Jagd auf ein niedriges Niveau reduziert worden waren, erholten sich die Seehunde während des Zeitraums dieses Datensatzes stetig.  Wir gehen davon aus, dass der zugrundeliegende Populationsprozess ein stochastischer exponentieller Wachstumsprozess mit mittleren Wachstumsraten ist, die sich in den Jahren 1978-1999 nicht verändert haben.
 
 Die Erhebungsmethoden waren in den 20 Jahren der Datenerfassung einheitlich, aber wir wissen weder, welchen Anteil der Population die einzelnen Regionen repräsentieren, noch kennen wir die Varianz der Beobachtungsfehler für jede Region. In Anbetracht der unterschiedlichen Anzahl von Erfassungen in den einzelnen Regionen können die Beobachtungsfehler sehr unterschiedlich sein. Die Regionen wurden unterschiedlich stark beprobt; in der am besten beprobten Region fehlen nur 4 Jahre, während in der schlechtesten mehr als die Hälfte der Jahre fehlen. Stellen wir diese Rohdaten einmal für die verschiedenen Regionen dar.
 ```{r}
@@ -56,7 +56,7 @@ pdat <- reshape2::melt(temp, id.vars = "Year", variable.name = "region")
 p <- ggplot(pdat, aes(x = Year, y = value, col = region)) +
   geom_point() +
   geom_line()
-p + ggtitle("Puget Sound Harbor Seal Surveys")
+p + ggtitle("Puget Sound Seehundeerfassungen")
 ```
 
 ## Daten vorbereiten
@@ -66,7 +66,7 @@ Wir werden die Population am Hood Canal (HC) auslassen, da diese Region von den 
 dat <- MARSS::harborSealWA
 years <- dat[, "Year"]
 dat <- dat[, !(colnames(dat) %in% c("Year", "HC"))]
-dat <- t(dat) # transpose to have years across columns
+dat <- t(dat) # Daten transponieren, um Jahre als Spalten zu haben
 colnames(dat) <- years
 n <- nrow(dat) - 1
 ```
@@ -124,7 +124,7 @@ Zur Überprüfung des Modells schauen wir uns die Residuen an:
 par(mfrow = c(2, 2))
 resids <- MARSSresiduals(fit.0, type="tt1")
 for (i in 1:4) {
-  plot(resids$model.residuals[i, ], ylab = "model residuals", xlab = "")
+  plot(resids$model.residuals[i, ], ylab = "Modellresiduen", xlab = "")
   abline(h = 0)
   title(rownames(dat)[i])
 }
@@ -180,7 +180,7 @@ Schauen wir uns vom letzten Modell die Residuen an, um die Modellanpassung zu va
 par(mfrow = c(2, 2))
 resids <- MARSSresiduals(fit.2, type="tt1")
 for (i in 1:4) {
-  plot(resids$model.residuals[i, ], ylab = "model residuals", xlab = "")
+  plot(resids$model.residuals[i, ], ylab = "Modellresiduen", xlab = "")
   abline(h = 0)
   title(rownames(dat)[i])
 }
@@ -192,7 +192,7 @@ Nun wollen wir die einzelnen Wachstumsraten der vier Regionen noch graphisch dar
 ```{r}
 par(mfrow = c(2, 2))
 for (i in 1:4) {
-  plot(years, fit.2$states[i, ], ylab = "log subpopulation estimate", 
+  plot(years, fit.2$states[i, ], ylab = "log Teilpopulationsschätzung", 
        xlab = "", type = "l")
   lines(years, fit.2$states[i, ] - 1.96 * fit.2$states.se[i, ], 
         type = "l", lwd = 1, lty = 2, col = "red")

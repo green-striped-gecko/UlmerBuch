@@ -161,7 +161,7 @@ print(temp) # Ergebnisse darstellen
 # Achsenbeschriftungen werden automatisch erstellt und sind daher Englisch
 plot(temp) 
 ```
-Der Wald-Test ist signifikant, die Parameter haben also einen Einfluss auf das Überleben. Der Anpassungstest wiederum zeigt keine signifikanten Abweichungen von den Modellannahmen. Unser Modell passt also gut.
+Der Wald-Test ist signifikant, die Parameter haben also einen Einfluss auf das Überleben. Der Anpassungs-test wiederum zeigt keine signifikanten Abweichungen von den Modellannahmen. Unser Modell passt also gut.
 
 ## Überlebensgrafiken
 ```{r}
@@ -170,7 +170,7 @@ plot(survfit(fit2, newdata=data.frame(Alter=c(0,1), KI=mean(ARData$KI))),
      main="Mittlere Körperkondition")
 legend(40, 1, c("diesjährig", "mind. einjährig"), lty = 2:3)
 
-plot(survfit(fit2, newdata=data.frame(Alter=c(0,1), KI=min(ARData$KI))),#
+plot(survfit(fit2, newdata=data.frame(Alter=c(0,1), KI=min(ARData$KI))),
      xlab = "Tage", ylab="Überlebensrate", lty=c(2,3), 
      main="Minimale Körperkondition")
 legend(40, 1, c("diesjährig", "mind. einjährig"), lty = 2:3)

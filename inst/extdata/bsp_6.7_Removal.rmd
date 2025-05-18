@@ -93,7 +93,7 @@ abline (n.TC,m.TC, lwd = 3, col = "red") +
 axis(1, pos=0) +
 axis(2, pos=0)
 ```
-Die geschätzte Populationsgröße von Kammmolchlarven basierend auf den Originaldaten (nicht für mögliche Abweichung der Fängigkeit im ersten Kescherdurchgang korrigiert) liegt damit bei 227 Individuen (Anmerkung zum Plot: Standardmäßig gehen die Linien nicht exakt durch den Null-Punkt, daher wurden die Achsen im Code zunächst ausgeblendet mit axes = FALSE und später wieder hinzugefügt, indem man pos=0 bei der x- und y-Achse ergänzt).
+Die geschätzte Populationsgröße von Kammmolchlarven basierend auf den Originaldaten (nicht für mögliche Abweichung der Fängigkeit im ersten Kescherdurchgang korrigiert) liegt damit bei 227 Individuen (Anmerkung zum Plot: Standardmäßig gehen die Achsen nicht exakt durch den Null-Punkt (0,0), daher wurden sie im Code zunächst ausgeblendet mit axes = FALSE und später wieder hinzugefügt, indem man pos=0 bei der x- und y-Achse ergänzt).
 
 Zum Vergleich berechnen wir die Regressionsgerade für den Datensatz, bei dem wir die ersten beiden Abfangereignisse zunächst ignorieren und im Anschluss auf die geschätzte Anzahl hinzuaddieren. Dieser Ansatz wurde von Pollock et al. (1990) vorgeschlagen.
 
@@ -292,7 +292,7 @@ check.packages <- function(pkg){
 }
 
 # benoetigte R pakete
-pakete <- c("FSA")
+pakete <- c("FSA", "tidyr", "dplyr")
 
 # Pruefe und installiere
 check.packages(pakete)
@@ -382,7 +382,7 @@ res.HA <- data.frame(Methode = c("Nfang", "Nest.R", "Carle Strub", "Moran", "Bur
 
 res.HA
 ```
-Die per Regressionsgerade geschätzte Populationsgröße an Laubfroschkaulquappen liegt geringfügig unter den Schätzungen, die Anzahl gefangener Tiere liegt im Konfidenzintervall der Schätzungen, jedoch immer unter der geschätzten Populationsgröße. Die Schätzungen unterscheiden sich kaum voneinander, was für ein relativ vollständiges Abfangen spricht und keine Verletzung der Modellannahmen suggeriert.
+Die per Regressionsgerade geschätzte Populationsgröße an Laubfroschkaulquappen liegt geringfügig unter den anderen Schätzungen. Die Anzahl gefangener Tiere liegt im Konfidenzintervall der Schätzungen, außer für die Schätzung nach der Methode von Moran (1951), jedoch immer unter der geschätzten Populationsgröße. Die Schätzungen unterscheiden sich kaum voneinander, was für ein relativ vollständiges Abfangen spricht und keine Verletzung der Modellannahmen suggeriert.
 
 
 ## Spezialfall: Zwei oder drei Abfangereignisse
@@ -434,7 +434,7 @@ Dies dient nur der Demonstration. Wenn die Fangdaten einzeln vorliegen, sollten 
 
 ## Spezialfall: Unterschiedliche Fängigkeit zwischen erstem und allen folgenden Abfangereignissen
 
-Es ist möglich, dass die Tiere bei dem ersten Kescherdurchgang eine andere Fängigkeit aufweisen als bei allen folgenden Kescherdurchgängen. Das kann zum Beispiel daran liegen, dass derjenige, der keschert, erfahrener wird. Es kann aber auch eine Verhaltensanpassung der Tiere sein, z.B. war das Fangereignis für die gesamte Population sehr positiv (trap happyness) oder sehr negativ (trap shyness).
+Es ist möglich, dass die Tiere bei dem ersten Kescherdurchgang eine andere Fängigkeit aufweisen als bei allen folgenden Kescherdurchgängen. Das kann zum Beispiel daran liegen, dass derjenige, der keschert, erfahrener wird. 
 Dazu gibt es eine Anpassung von Morans likelihood Methode: Die Likelihood-Methode von Schnute (1983) nutzt ein Modell, das eine unterschiedliche Fangwahrscheinlichkeit für das erste Abfangereignis, aber eine konstante Fangwahrscheinlichkeit für alle folgenden Abfangereignisse annimmt. 
 
 Zur Demonstration nutzen wir hier die Daten von Kamm- und Teichmolch, da wir hier einen solchen Unterschied annehmen. Um den Einfluss zu prüfen, berechnen wir zunächst die Populationsgröße mit der Schnute-Methode und führen dann einen Chi-Quadrat-Test der negativen Log-Likelihoods aus. Wenn das erste Abfangereignis mit ähnlicher Fangwahrscheinlichkeit geschätzt wird wie alle folgenden, sollte es keinen signifikanten Unterschied geben.
@@ -563,7 +563,8 @@ dat2 <- dat[order(dat$Art),]
 ll1 <- apply(dat2[,2:8],MARGIN=1,FUN=removal,method="Schnute",just.ests=FALSE)
 ll2 <- apply(dat2[,2:8],MARGIN=1,FUN=removal,method="Moran",just.ests=FALSE)
 
-# Nun müssen wir für jede Art den Chi Test durchführen. Dazu nutzen wir eine Schleifenfunktion.
+# Nun müssen wir für jede Art den Chi-Quadrat-Test durchführen. 
+# Dazu nutzen wir eine Schleifenfunktion.
 p.val <- rep(NA,length(ll2))
 names(p.val) <- dat2$Art
 

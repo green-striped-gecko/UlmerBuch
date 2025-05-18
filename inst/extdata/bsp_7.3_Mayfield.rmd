@@ -112,7 +112,7 @@ Eine Zusammenfassung des Modells bekommen wir mittels *Summary*. Man kann aber a
 ```{r}
 summary(Hab)
 ```
-Wir sehen in der Zusammenfassung den Namen des Modells [S(~habitat)) ist die Überlebenswahrscheinlichkeit (Survival) in Abhängigkeit des Habitates], eine Zusammenfassung der Anzahl Parameter [Npar] und des AICc, die Beta-Schätzungen (estimate - Schätzwert, se = Standardfehler, lcl - unteres Konfidenzintervall, ucl - oberes Konfidenzintervall), die uns lediglich die Richtung des Einflusses eines Parameters zeigen, und die real geschätzten Parameter.
+Wir sehen in der Zusammenfassung den Namen des Modells [S(~habitat) ist die Überlebenswahrscheinlichkeit (Survival) in Abhängigkeit des Habitates], eine Zusammenfassung der Anzahl Parameter [Npar] und des AICc, die Beta-Schätzungen (estimate - Schätzwert, se = Standardfehler, lcl - unteres Konfidenzintervall, ucl - oberes Konfidenzintervall), die uns lediglich die Richtung des Einflusses eines Parameters zeigen, und die real geschätzten Parameter.
 
 # Modellvergleiche mit Wrapper-Funktion
 Die oben angesprochenen 9 Modelle stellen wir hier in der Wrapper-Funktion zusammen. Sie umfassen (beispielhaft für alle anderen möglichen Kombinationen) die folgenden Modelle:
@@ -156,7 +156,7 @@ run.mallard <- function() {
 }
 ```
 
-Nachfolgend werden diese neun Modell gerechnet. Dies dauert im Normalfall bis zu 2 Minuten.
+Nachfolgend werden diese neun Modelle gerechnet. Dies dauert im Normalfall bis zu 2 Minuten.
 ```{r, results='hide'}
 mallard.results <- run.mallard()
 ```

@@ -77,7 +77,7 @@ Vergleichen wir zunächst die Modelle mit jeweils linearen Kombinationen der Par
 glm.lv.mod <- dredge(glm.lv, options(na.action = "na.fail"))
 glm.lv.mod
 ```
-Wir sehen, dass die lineare Kombination aus Group und Time besser abschneidet als die Interaktion. Allerdings ist das Modell mit Interaktion nur 1,85 AICc Punkte hinten - ein Einfluss der Intervention (Freischneidung der Fläche) kann also nicht ausgeschlossen werden. Eine Einführung in Modellvergleiche findet sich in Kapitel 9.3 des Buches.
+Wir sehen, dass die lineare Kombination aus Group und Time besser abschneidet als die Interaktion. Aller-dings ist das Modell mit Interaktion nur 1,85 AICc Punkte hinten - ein Einfluss der Intervention (Freischneidung der Fläche) kann also nicht ausgeschlossen werden. Eine Einführung in Modellvergleiche findet sich in Kapitel 9.3 des Buches.
 
 Schauen wir uns die Schätzwerte der beiden besten Modelle an.
 
@@ -106,7 +106,8 @@ Im Treatment Gewässer waren also auch 2023 mehr Larven als 2024, jedoch ist der
 
 ### Graphische Darstellung
 ```{r}
-ggplot(BAdata, aes(x = Group, y = LV_larvae_Numbers_of_Individual, fill = Time, group = interaction(Group, Time))) +
+ggplot(BAdata, aes(x = Group, y = LV_larvae_Numbers_of_Individual, 
+                   fill = Time, group = interaction(Group, Time))) +
   geom_boxplot() +
   labs(
     x = "",
@@ -179,11 +180,12 @@ Die einzelnen Interaktionseffekte können wir uns auch mithilfe des emmeans Pake
 l.em <- emmeans(glm.tc, ~ Group * Time)
 l.em
 ```
-Während 2023 im Treatment Gewässer weniger Kammmolchlarven als im Kontrollgewässer waren (mit nur sehr geringem Unterschied), befanden sich nach der Maßnahme im Treatmentgewässer deutlich mehr Kammmolchlarven, im Kontrollgewässer deutlich weniger als im Vorjahr. 
+Während 2023 im Treatment Gewässer weniger Kammmolchlarven als im Kontrollgewässer waren (mit nur sehr geringem Unterschied), befanden sich nach der Maßnahme im Treatmentgewässer deutlich mehr Kamm-molchlarven, im Kontrollgewässer deutlich weniger als im Vorjahr. 
 
 ### Graphische Darstellung
 ```{r}
-ggplot(BAdata, aes(x = Group, y = TC_larvae_Numbers_of_Individual, fill = Time, group = interaction(Group, Time))) +
+ggplot(BAdata, aes(x = Group, y = TC_larvae_Numbers_of_Individual, 
+                   fill = Time, group = interaction(Group, Time))) +
   geom_boxplot() +
   labs(
     x = "",
