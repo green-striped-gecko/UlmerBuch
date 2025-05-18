@@ -1,0 +1,89 @@
+---
+title: "Beispiel 8.2. Trend einer Erdkrötenpopulation (*Bufo bufo*) an einem Amphibienschutzzaun"
+subtitle: "Kapitel 8.2 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
+author: "Annegret Grimm-Seyfarth, Bernd Gruber"
+date: "2025-04-22"
+output:
+  pdf_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+  word_document: default
+editor_options:
+  chunk_output_type: inline
+  markdown:
+    wrap: 72
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
+Dieses Beispiel illustriert die Methode von Mann (1945) mithilfe des R-Paketes trend (Pohlert 2023). Wir laden weiterhin ein Paket zur einfachen Tabellendarstellung das Paket knitr (Xie 2025).
+
+```{r}
+# check.packages function: install and load multiple R packages.
+# Function from: https://gist.github.com/smithdanielle/9913897
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE, type = "source")
+  sapply(pkg, require, character.only = TRUE)
+}
+
+# benoetigte R pakete
+pakete <- c("trend", "knitr")
+
+# Pruefe und installiere
+check.packages(pakete)
+```
+
+Weitere Informationen zur Nutzung des Paketes sowie eine Einführung in die verschiedenen Tests finden sich hier:
+
+https://cran.r-project.org/web/packages/trend/vignettes/trend.pdf
+
+# Daten einladen
+Am Wasserwerk Hedem, Preußisch-Oldendorf, wurden vom Kreis Minden von 1996 bis 2012 Erdkröten an den Amphibienschutzzäunen erfasst. Die Bestandsentwicklung ist in untenstehender Tabelle dargestellt.
+```{r}
+kroeten <- data.frame(jahr = c(1996:2007,2009:2012),
+    anzahl = c(311,564,257,645,797,589,412,177,398,138,235,265,315,138,112,37))
+kable(t(kroeten), caption = "Bestandsentwicklung der Erkröten am Wasserwerk 
+Hedem von 1996 bis 2012", digits = T)
+```
+
+# Mann(-Kendal)-Test
+Eine ausführliche Erläuterung zum Test findet sich in Beispiel 8.1 sowie im Kapitel 8.2 des Buches.
+
+Der Test kann zweiseitig (alternative=“two.sided”, Hypothese: Es gibt einen Trend nach oben oder unten) und auch einseitig durchgeführt werden (alternative =“greater” oder “less”, Hypothese: Es gibt einen zunehmenden oder abnehmenden Trend). Wir verwenden hier die Version des Tests, dass die Erdkröten-population am Wasserwerk Hedem einen abnehmenden Trend zeigt.
+
+```{r}
+mk.test(kroeten$anzahl, alternative = "less")
+```
+Der p-Wert ist mit 0,003 kleiner als 0,05, daher können wir die Nullhypothese, dass es keinen Trend gibt, ablehnen. Die Anzahl der Erdkröten am
+Wasserwerk Hedem hat zwischen 1996 und 2012 folglich signifikant abgenommen.
+
+# Sen's Slope Test
+Bei diesem Test werden sowohl die Steigung (d. h. die lineare Veränderungsrate) als auch der Achsenabschnitt nach der Sen-Methode (Sen 1968) berechnet.  
+```{r}
+sens.slope(kroeten$anzahl)
+```
+Demnach beträgt die jährlich signifikante (p = 0,005) Abnahme 31 Kröten, mit einem 95% Konfidenzintervall zwischen 12 und 52.
+
+# Pettitt's Test nach einem Wendepunkt
+Der Ansatz nach Pettitt (1979) wird in der Regel angewandt, um einen einzelnen Änderungspunkt in hydrologischen Reihen oder Klimareihen mit kontinuierlichen Daten zu entdecken. Er testet die H0: Die T Variablen folgen einer oder mehreren Verteilungen, die denselben Lageparameter haben (keine Veränderung), gegen die Alternative: Es existiert ein Veränderungspunkt.
+```{r}
+pettitt.test(kroeten$anzahl)
+```
+Der Test ist ebenfalls signifikant (p = 0,04) und zeigt, dass es einen Wendepunkt nach 7 Jahren gibt.
+
+# Literaturverzeichnis
+Mann, H.B. 1945. Nonparametric tests against trend. Econometrika 13: 245-259.
+
+Pettitt, A. N. 1979. A non-parametric approach to the change-point problem. Journal of Applied Statistics 28: 126-135.
+
+Pohlert T. 2023. trend: Non-parametric trend tests and change-point detection. R package version 1.1.6, <https://CRAN.R-project.org/package=trend>
+
+Sen, P.K. 1968. Estimates of the regression coefficient based on Kendall’s tau. Journal of the American Statistical Association 63: 1379-1389.
+
+Xie Y. 2025. knitr: A general-purpose package for dynamic report generation in R. R package version 1.50, <https://yihui.org/knitr/>.
