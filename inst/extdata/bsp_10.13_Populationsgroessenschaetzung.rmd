@@ -63,7 +63,7 @@ Bitte beachten dass der Pfad zu den Beipsieldaten korrekt gesetz ist. Wenn Sie d
 
 
 ```{r}
-beipspiel.pfad()  #setzt den Pfad zu den Beispieldaten aus dem Paket Ulmberbuch
+UlmerBuch::beispiel.pfad()  #setzt den Pfad zu den Beispieldaten aus dem Paket Ulmberbuch
 # Daten von Auwaldgebiet (RI) einlesen
 ch.RI <- read.csv2("GV_RI_2016_capture_history2.csv", header = FALSE, row.names = NULL)
 ch.RI <- as.matrix(ch.RI)

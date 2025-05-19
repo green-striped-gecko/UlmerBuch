@@ -9,6 +9,7 @@ beispiel.pfad <- function(pfad=NULL) {
 	if (is.null(pfad)) {
 		pfad <- system.file('extdata', package = "UlmerBuch")
 		setwd(pfad)
+		cat("Der Pfad zu den Beispiel Daten wurde gesetzt auf: ", pfad, "\n")
 	} else {
 		if (!dir.exists(pfad)) stop("Der angegebene Pfad existiert nicht. Bitte auf Tippfehler ueberpruefen") else setwd(pfad)
 		
