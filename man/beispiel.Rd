@@ -4,10 +4,12 @@
 \alias{beispiel}
 \title{Funktion zum Oeffnen von Beispiel code}
 \usage{
-beispiel(bsp = NULL)
+beispiel(bsp = NULL, type = "rmd")
 }
 \arguments{
-\item{bsp}{Beispiel Nummber aus dem Buch. Bitte in Anfuehrungezeichen angeben. Zum Beispiel wird Beispiel 4.1 mittles `bsp="4.1"` aufgerufen.}
+\item{bsp}{Beispiel Nummber aus dem Buch. Zum Beispiel wird Beispiel 4.1 mittles `bsp=4.1` aufgerufen.}
+
+\item{type}{Typ des Beispiel Codes. Entweder "rmd" oder "pdf". Standard ist "rmd".}
 }
 \description{
 Die Funktion oeffnet den Beispiel Code als ein Rstudio file. Das Code file kannst du beliebig veraendern und Deinen Beduerfnissen anpassen. Bitte am besten das veraenderte Beispiel unter neuen Namen und an anderer Stelle abspeichern.
