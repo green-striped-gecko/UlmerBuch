@@ -18,10 +18,17 @@ editor_options:
     wrap: 72
 ---
 
-Dieses Beispiel verwendet das R-Paket "unmarked" (Fiske & Chandler 2011, Kellner et al. 2023) für eine Demonstration, wie die Belegungswahrscheinlichkeit nach MacKenzie et al. (2018) berechnet werden kann.
+Dieses Beispiel verwendet das R-Paket "unmarked" (Fiske & Chandler 2011,
+Kellner et al. 2023) für eine Demonstration, wie die
+Belegungswahrscheinlichkeit nach MacKenzie et al. (2018) berechnet
+werden kann.
 
 # Single-Season Occupancy mittels Paktet unmarked
-Als erstes muss das unmarked Paket geladen werden. Der folgende Code schaut nach, ob es nicht schon installiert ist und installiert es gegebenenfalls. Wir laden ebenfalls die Pakete ggplot2 (Wickham 2016) zur Erstellung von Grafiken. 
+
+Als erstes muss das unmarked Paket geladen werden. Der folgende Code
+schaut nach, ob es nicht schon installiert ist und installiert es
+gegebenenfalls. Wir laden ebenfalls die Pakete ggplot2 (Wickham 2016)
+zur Erstellung von Grafiken.
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 # check.packages function: install and load multiple R packages.
@@ -39,7 +46,12 @@ pakete <- c("unmarked", "ggplot2")#, "boot", "AICcmodavg")
 # Pruefe und installiere
 check.packages(pakete)
 ```
-Für dieses Beispiel verwenden wir Daten von Koalas. Zur Entwicklung von Schutzmaßnahmen für Koalas in New South Wales wurden diese anhand von Kotfunden unter Bäumen erfasst. Hierzu wurde die Abhängigkeit der Vorkommenswahrscheinlichkeit von Umweltvariablen mithilfe von Occupancy-Modellen analysiert. 
+
+Für dieses Beispiel verwenden wir Daten von Koalas. Zur Entwicklung von
+Schutzmaßnahmen für Koalas in New South Wales wurden diese anhand von
+Kotfunden unter Bäumen erfasst. Hierzu wurde die Abhängigkeit der
+Vorkommenswahrscheinlichkeit von Umweltvariablen mithilfe von
+Occupancy-Modellen analysiert.
 
 ```{r}
 
@@ -49,6 +61,7 @@ koalas <- read.csv("extdata/koala_ss_occ.csv", row.names = "site")
 ```
 
 ## Koala an-/abwesend
+
 ```{r}
 dim(koalas)  
 #1647 sites mit 30 Besuchen pro site
@@ -57,45 +70,62 @@ barplot(table(rowSums(koalas)))
 ```
 
 ## Aufbereiten der Daten in das unmarked format
-Wir müssen die Daten noch umformatieren mittels der unmakedFrameOccu function.
+
+Wir müssen die Daten noch umformatieren mittels der unmakedFrameOccu
+function.
 
 ```{r}
 sample.koalas <- unmarkedFrameOccu(  y = as.matrix(koalas))
 ```
 
-Unmarked hat eine Summary funktion, welche die Daten übersichtlich zusammenfasst:
+Unmarked hat eine Summary funktion, welche die Daten übersichtlich
+zusammenfasst:
+
 ```{r}
 summary(sample.koalas)
 ```
 
 ## Einfaches Belegungsmodell (= Vorkommensmodell) ohne Kovariable
+
 ```{r}
 occu.m1 <- occu(formula = ~1 #detection keine Kovariable 
 													~1 #occupancy keine Kovariable
 								, data = sample.koalas)
 ```
 
-Die normale Zusammenfassung zeigt die Schätzungen auf der logit-Skala, was nicht allzusehr weiterhilft.
+Die normale Zusammenfassung zeigt die Schätzungen auf der logit-Skala,
+was nicht allzusehr weiterhilft.
+
 ```{r}
 summary(occu.m1) 
 ```
 
-Mittels der predict function können wir aber die Belegung in Anwesend/Abwesend umwandeln.
+Mittels der predict function können wir aber die Belegung in
+Anwesend/Abwesend umwandeln.
+
 ```{r}
 predict(occu.m1, newdata = data.frame(site = 1), type = "state")
 ```
-Als erstes Ergebniss erfahren wir, dass etwa 16% aller Sites besetzt waren.
 
-Weiterhin möchten wir noch die Nachweiswahrscheinlichkeit p berechnen. Da wir in unserem Model die Nachweiswahrscheinlichkeit als konstant für alle Sites angenommen haben, ist es egal, für welche Site wir die Nachweiswahrscheinlichkeit berechnen.
+Als erstes Ergebniss erfahren wir, dass etwa 16% aller Sites besetzt
+waren.
+
+Weiterhin möchten wir noch die Nachweiswahrscheinlichkeit p berechnen.
+Da wir in unserem Model die Nachweiswahrscheinlichkeit als konstant für
+alle Sites angenommen haben, ist es egal, für welche Site wir die
+Nachweiswahrscheinlichkeit berechnen.
 
 ```{r}
 predict(occu.m1, newdata = data.frame(site = 1), type = "det")
 ```
+
 Die Nachweiswahrscheinlichkeit betrug damit ca. 7,6%.
 
 # Occupancy mit Kovariablen
 
-Laden wir nun Informationen zu den Futterbäumen ein. Dargestellt ist jeweils, wie viele Futterbäume in einer Site vorhanden sind.
+Laden wir nun Informationen zu den Futterbäumen ein. Dargestellt ist
+jeweils, wie viele Futterbäume in einer Site vorhanden sind.
+
 ```{r}
 #fn <- system.file('extdata',"foodtrees.csv", package = "UlmerBuch")
 #food <- read.csv(fn, row.names = "site")
@@ -104,7 +134,10 @@ summary(food)
 ```
 
 ## Umformatierung in ein Beispiel mit Kovariable
-Das Beispiel ist ein einfaches Beispiel (nur eine Kovariable für die Sites und keine für die Erfassungen (= Observer). Zum Beispiel könnte das Wetter die Nachweiswahrscheinlichkeiten beeinflussen.
+
+Das Beispiel ist ein einfaches Beispiel (nur eine Kovariable für die
+Sites und keine für die Erfassungen (= Observer). Zum Beispiel könnte
+das Wetter die Nachweiswahrscheinlichkeiten beeinflussen.
 
 ```{r}
 sample.koalas_cov <- unmarkedFrameOccu(  y = as.matrix(koalas),  siteCovs = food)
@@ -120,10 +153,16 @@ occu.m2 <- occu(formula =~1 # konstante Erfassung (=detection)
 summary(occu.m2)
 ```
 
-In der Zusammenfassung koennen wir den "Erklärungswert" der Variablen foodtrees erkennen (p=1.56e-03 \<0.01), welcher als signifikant geschätzt wird. Die Schätzung des Effekts von 0.0363 bedeutet, dass ein positiver Zusammenhang besteht, das heist, eine Site ist eher besetzt, je mehr Nahrungsbäume vorhanden sind. 
+In der Zusammenfassung koennen wir den "Erklärungswert" der Variablen
+foodtrees erkennen (p=1.56e-03 \<0.01), welcher als signifikant
+geschätzt wird. Die Schätzung des Effekts von 0.0363 bedeutet, dass ein
+positiver Zusammenhang besteht, das heist, eine Site ist eher besetzt,
+je mehr Nahrungsbäume vorhanden sind.
 
 ## Graphische Darstellung der Abhängigkeit
-Wie zuvor verwenden wir die predict function und tragen anschließend die Anzahl foodtrees gegen die Belegungswahrscheinlichkeit graphisch auf.
+
+Wie zuvor verwenden wir die predict function und tragen anschließend die
+Anzahl foodtrees gegen die Belegungswahrscheinlichkeit graphisch auf.
 
 ```{r}
 predict_m2_food <- predict(occu.m2, newdata = data.frame(foodtrees= 0:30), type="state")
@@ -138,8 +177,17 @@ ggplot(data = predict_m2_food, aes(x = 0:30, y = Predicted)) +
 ```
 
 # Literaturverzeichnis
-Fiske, I. & R. Chandler. 2011. unmarked: An R Package for Fitting Hierarchical Models of Wildlife Occurrence and Abundance. Journal of Statistical Software, 43(10): 1-23.
 
-Kellner K.F., A.D. Smith, J.A. Royle, M. Kery, J.L. Belant, & R.B. Chandler. 2023. The unmarked R package: Twelve years of advances in occurrence and abundance modelling in ecology. Methods in Ecology and Evolution 14(6): 1408-1415.
+Fiske, I. & R. Chandler. 2011. unmarked: An R Package for Fitting
+Hierarchical Models of Wildlife Occurrence and Abundance. Journal of
+Statistical Software, 43(10): 1-23.
 
-MacKenzie, D.I., J.D. Nichols, J.A. Royle, K.H. Pollock, L.L. Bailey, & J.E. Hines. 2018. Occupancy Estimation and Modeling. Inferring Patterns and Dynamics of Species Occurence. Second Edition. Academic Press, London
+Kellner K.F., A.D. Smith, J.A. Royle, M. Kery, J.L. Belant, & R.B.
+Chandler. 2023. The unmarked R package: Twelve years of advances in
+occurrence and abundance modelling in ecology. Methods in Ecology and
+Evolution 14(6): 1408-1415.
+
+MacKenzie, D.I., J.D. Nichols, J.A. Royle, K.H. Pollock, L.L. Bailey, &
+J.E. Hines. 2018. Occupancy Estimation and Modeling. Inferring Patterns
+and Dynamics of Species Occurence. Second Edition. Academic Press,
+London

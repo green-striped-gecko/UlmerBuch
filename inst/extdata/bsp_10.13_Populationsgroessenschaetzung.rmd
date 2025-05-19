@@ -41,6 +41,13 @@ check.packages(pakete)
 
 Achtung, aktuell muss das Paket CARE1 direkt von der Website geladen werden, es ist nicht in CRAN verfügbar. Bitte hier die aktuellste Version downloaden: https://cran.r-project.org/src/contrib/Archive/CARE1/ Dann muss das Paket aus dem Verzeichnis installiert werden.
 
+Die Installation erfolgt am einfachsten ueber:
+
+```{r, eval=FALSE} 
+install.packages("https://cran.r-project.org/src/contrib/Archive/CARE1/CARE1_1.1.0.tar.gz", type="source")
+```
+
+
 Weitere Informationen zur Nutzung der Pakete finden sich hier:
 
 https://cran.r-project.org/package=RMark
@@ -52,9 +59,13 @@ CARE1: https://drive.google.com/file/d/1f7RoM8mkxa2HFmk0v1L_zfYySOWkG-Gj/view
 # Einlesen der Fangdaten
 Wir laden zunächst die Fangdaten ein. In diesem Beispiel nutzen wir ausschließlich die Daten aus der Auwaldpopulation. 
 
+Bitte beachten dass der Pfad zu den Beipsieldaten korrekt gesetz ist. Wenn Sie die Daten in einem anderen Verzeichnis gespeichert haben, muessen Sie den Pfad anpassen.
+
+
 ```{r}
+beipspiel.pfad()  #setzt den Pfad zu den Beispieldaten aus dem Paket Ulmberbuch
 # Daten von Auwaldgebiet (RI) einlesen
-ch.RI <- read.csv2("extdata/GV_RI_2016_capture_history2.csv", header = FALSE, row.names = NULL)
+ch.RI <- read.csv2("GV_RI_2016_capture_history2.csv", header = FALSE, row.names = NULL)
 ch.RI <- as.matrix(ch.RI)
 ```
 Schauen wir uns die daten einmal an:
@@ -165,7 +176,7 @@ https://pdixon.stat.iastate.edu/stat534/RMark/Intro.pdf
 ## Fanggeschichte einlesen
 Leider funktioniert die Fanggeschichte nicht so, wie wir sie für Rcapture und CARE1 einlesen. Zum Einlesen gibt es zwei Varianten: (1) die .inp Datei einlesen, die auch für MARK genutzt wird, mittels *convert.inp()*, oder (2) die reine Fanggeschichte einlesen mittels *import.chdata()*. Wir nutzen hier exemplarisch die zweite Version. Wichtig ist hier, dass die erste Zeile als *ch* bezeichnet wird
 ```{r}
-ch.RI2 <- import.chdata("extdata/GV_RI_2016_capture_history.txt")
+ch.RI2 <- import.chdata("GV_RI_2016_capture_history.txt")
 head(ch.RI2)
 ```
 
