@@ -25,6 +25,8 @@ Das Paket Ulmerbuch enthaelt alle Daten und Beispiele und kennt die foldgenden f
 - `beispiel(bsp=4.1)` - Beispiel 4.1
 - `liste.beipspiele()` - Liste aller Beispiele
 - 'beispiel.pfad()' - Pfad zu den Beispieldaten setzen.
-- `beispiele.laden(pfad="C:/bernd/Ulmerbuchdate") - Beispieldaten herunterladen falls Kopien benoetigt werden.
+- `beispiel.daten(pfad="C:/bernd/Ulmerbuchdate", unzip=TRUE) - Beispieldaten herunterladen falls Kopien benoetigt werden.
 
-Viel Spass und Erfolg beim Ausprobieren der Beispiele. Falls Ihr einen Fehler entdeckt habt bitte eine Email an: [xyz\@ulmerbuch.de](xyz@ulmerbuch.de) schicken.
+Viel Spass und Erfolg beim Ausprobieren der Beispiele. Falls Ihr einen Fehler entdeckt habt bitte eine Email an: [xyz\@ulmerbuch.de](xyz@ulmerbuch.de) schicken oder die Autoren direkt kontaktieren. Wir freuen uns auch ueber Anregungen und Verbesserungsvorschlaege. 
+
+Klaus, Annegret und Bernd
