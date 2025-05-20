@@ -21,6 +21,6 @@ beispiel.daten <- function(pfad=tempdir(), unzip=TRUE) {
 	
 if (xx==0 & !unzip) {unzip(file.path(pfad, "beispieldaten.zip"), exdir = pfad)
 		cat("Die Beispieldaten wurden heruntergeladen. Sie befinden sich als zip Datei im Ordner:\n", pfad,"\n")}
-	return(pfad)
+	return(invisible(pfad))
 	
 }

@@ -4,8 +4,10 @@
 #' Einige Beispiele sind als pdf und in rmd (code der direkt ausgefuehrt werden kann) 
 #' format vorhankden.
 #' @export
-#' @importFrom stringr str_extract
-#' @importFrom dplyr full_join arrange '%>%'
+#' @importFrom stringr str_extract str_remove 
+#' @importFrom dplyr full_join arrange '%>%' mutate distinct select 
+#' @importFrom tidyr pivot_wider
+#' @importFrom knitr kable
 #' 
 #' @examples 
 #' 
@@ -13,6 +15,7 @@
 
 liste.beispiele <- function()
 {
+	type <- pdf <- rmd <- bsp <- name  <- RMD <- PDF <- NULL
 	bsps.path <- system.file('extdata', package = "UlmerBuch")
 	cat("Es sind Beispiele zu folgenden Kapiteln vorhanden:\n\n")
 	all_files <- dir(bsps.path, pattern = "\\.(rmd|pdf)$")
@@ -34,14 +37,14 @@ liste.beispiele <- function()
 		distinct() %>%
 		pivot_wider(names_from = type, values_from = type, values_fn = length, values_fill = 0) %>%
 		mutate(
-			Rmd = ifelse(!is.na(RMD) & RMD > 0, "Yes", "No"),
-			PDF = ifelse(!is.na(PDF) & PDF > 0, "Yes", "No")
+			rmd = ifelse(!is.na(RMD) & RMD > 0, "Yes", "No"),
+			pdf = ifelse(!is.na(PDF) & PDF > 0, "Yes", "No")
 		) %>%
-		select(bsp, name, Rmd, PDF) %>%
+		select(bsp, name, rmd, pdf) %>%
 		arrange(as.numeric(str_extract(bsp, "[0-9.]+")))
 	
 	# Print table
-	print(data.frame(presence_table))
+	print(kable(data.frame(presence_table)))
 	
 }
 

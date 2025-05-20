@@ -1,7 +1,7 @@
 Package: UlmerBuch
 Type: Package
 Title: Beispiel fuer UlmerBuch Erfassung von Tierpopulationen im Naturschutz (Henle et al.)
-Version: 1.0.2
+Version: 1.0.3
 Date: 2025-05-20
 Authors@R: c(
             person("Bernd", "Gruber", email="bernd.gruber@canberra.edu.au", role=c("aut","cre")), 
@@ -12,7 +12,7 @@ Author: Bernd Gruber [aut, cre],
   			Klaus Henle [aut],
 			  Annegret Grimm Seyfarth [aut],
 Maintainer: Bernd Gruber <bernd.gruber@canberra.edu.au>
-Depends: R (>= 4.0.0), utils, usethis, stringr, dplyr
+Depends: R (>= 4.0.0), utils, usethis, stringr, dplyr, knitr, tidyr
 Description: Package zum Ausprobieren aller Beispiele welche mit BeispielCode geliefert werden. 
 						Eine ausfuehrliche Beschreibung der Beispiele befindet sich auf der Webseite
 						\url{https://github.com/green-striped-gecko/UlmerBuch}.
