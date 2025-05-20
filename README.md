@@ -1,7 +1,7 @@
 # UlmerBuch Beispiele
 
 
-Status: [![R-CMD-check.yaml](https://github.com/green-striped-gecko/UlmerBuch/actions/workflows/check.yml/badge.svg)](https://github.com/green-striped-gecko/UlmerBuch/actions/workflows/check.yml)
+Status: [![Checks](https://github.com/green-striped-gecko/UlmerBuch/actions/workflows/check.yml/badge.svg)](https://github.com/green-striped-gecko/UlmerBuch/actions/workflows/check.yml)
 
 
 
