@@ -8,7 +8,7 @@ Status: [![Checks](https://github.com/green-striped-gecko/UlmerBuch/actions/work
 In diesem Github Repository findest Du alle Beispiele aus dem Buch. Die Beispiele werden als R-package geliefert, so dass sie moeglichst einfach installiert werden koennen. Dazu benoetigst Du eine moeglichst aktuelle R/Rstudio Installation. Ein Installationsanleitung findest Du [hier - in Englisch](https://rstudio-education.github.io/hopr/starting.html). Nach der Installation, starte Rstudio und gib den folgenden Befehl in der Console ein:
 
 `install.packages("devtools") #falls das devtools paket noch nicht installiert ist`
-`devtools::install_github("UlmerBuch/UlmerBuch")`
+`devtools::install_github("green-striped-gecko/UlmerBuch")`
 
 
 Fuer die Installation benoetigst Du eine Internetverbindung. Nach erfolgreicher Installation einfach
