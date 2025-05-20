@@ -12,5 +12,6 @@ Einige Beispiele sind als pdf und in rmd (code der direkt ausgefuehrt werden kan
 format vorhankden.
 }
 \examples{
+
 liste.beispiele()
 }

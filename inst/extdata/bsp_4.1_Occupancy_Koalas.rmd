@@ -57,7 +57,8 @@ Occupancy-Modellen analysiert.
 
 #fn <- system.file('extdata',"koala_ss_occ.csv", package = "UlmerBuch")
 #koalas <- read.csv(fn, row.names = "site")
-koalas <- read.csv("extdata/koala_ss_occ.csv", row.names = "site")
+UlmerBuch::beispiel.pfad() #Setze Pfad zu dem Ordner mit den Beispieldaten
+koalas <- read.csv("koala_ss_occ.csv", row.names = "site")
 ```
 
 ## Koala an-/abwesend
@@ -129,7 +130,7 @@ jeweils, wie viele Futterbäume in einer Site vorhanden sind.
 ```{r}
 #fn <- system.file('extdata',"foodtrees.csv", package = "UlmerBuch")
 #food <- read.csv(fn, row.names = "site")
-food <- read.csv("extdata/foodtrees.csv", row.names = "site")
+food <- read.csv("foodtrees.csv", row.names = "site")
 summary(food)
 ```
 
