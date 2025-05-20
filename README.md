@@ -1,6 +1,9 @@
-# UlmerBuch
+# UlmerBuch Beispiele
 
-UlmerBuch Beispiele
+
+Status: [![R-CMD-check.yaml](https://github.com/green-striped-gecko/UlmerBuch/actions/workflows/check.yml/badge.svg)](https://github.com/green-striped-gecko/UlmerBuch/actions/workflows/check.yml)
+
+
 
 In diesem Github Repository findest Du alle Beispiele aus dem Buch. Die Beispiele werden als R-package geliefert, so dass sie moeglichst einfach installiert werden koennen. Dazu benoetigst Du eine moeglichst aktuelle R/Rstudio Installation. Ein Installationsanleitung findest Du [hier - in Englisch](https://rstudio-education.github.io/hopr/starting.html). Nach der Installation, starte Rstudio und gib den folgenden Befehl in der Console ein:
 
@@ -22,9 +25,9 @@ Nach Ausfuerung des obigen Befehls, sollte sich ein weiteres Code-Fenster oeffne
 
 Das Paket Ulmerbuch enthaelt alle Daten und Beispiele und kennt die foldgenden functionen:
 
-- `beispiel(bsp=4.1)` - Beispiel 4.1
+- `beispiel(bsp=4.1, type="rmd")` - Beispiel 4.1 als rmd (type="pdf" oeffnet ein pdf des Beispiels)
 - `liste.beipspiele()` - Liste aller Beispiele
-- 'beispiel.pfad()' - Pfad zu den Beispieldaten setzen.
+- 'beispiel.pfad()' - Pfad zu den Beispieldaten setzen. Falls kein Pfad angegeben wird, wird der interne Pfad genutzt, welcher die Daten enthält.
 - `beispiel.daten(pfad="C:/bernd/Ulmerbuchdate", unzip=TRUE) - Beispieldaten herunterladen falls Kopien benoetigt werden.
 
 Viel Spass und Erfolg beim Ausprobieren der Beispiele. Falls Ihr einen Fehler entdeckt habt bitte eine Email an: [xyz\@ulmerbuch.de](xyz@ulmerbuch.de) schicken oder die Autoren direkt kontaktieren. Wir freuen uns auch ueber Anregungen und Verbesserungsvorschlaege. 
