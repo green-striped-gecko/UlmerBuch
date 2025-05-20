@@ -4,6 +4,7 @@
 #' @param bsp Beispiel Nummber aus dem Buch. Zum Beispiel wird Beispiel 4.1 mittles `bsp=4.1` aufgerufen.  
 #' @param type Typ des Beispiel Codes. Entweder "rmd" oder "pdf". Standard ist "rmd".
 #' @export
+#' @importFrom usethis edit_file
 
 
 beispiel <- function(bsp=NULL, type="rmd") { 

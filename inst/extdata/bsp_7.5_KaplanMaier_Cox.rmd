@@ -52,7 +52,8 @@ Wir laden zunächst die Daten ein. Dazu haben wir die Tabelle von Pollock et al.
 
 ```{r}
 # Daten einlesen
-ARData <- read.csv2("extdata/AR_Pollock_et_al_1989.csv")
+UlmerBuch::beispiel.pfad() #Pfad zu den Beispieldaten
+ARData <- read.csv2("AR_Pollock_et_al_1989.csv")
 head(ARData)
 ```
 Die Daten beinhalten die Kontrolldaten telemetrierter Dunkelenten (*Anas rubripes*) in New Jersey. i: Nummer des Individuums; ti: Anzahl der Beobachtungstage ab 15. Dezember 1983 für Exemplar i; Status: H - geschossen ("hunter"), C - gefunden ("censored"), N - natürlich verstorben; Indikator:  0 = lebend, 1 = tot; Alter: 0 = diesjährig, 1 = mindestens einjährig; Masse in g; FL: Flügellänge in mm. Quelle: Pollock et al. (1989a).

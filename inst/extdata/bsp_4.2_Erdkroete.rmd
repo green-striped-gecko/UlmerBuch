@@ -58,7 +58,8 @@ Die Laichzeit stellt für Amphibien in Deutschland eine optimale Zeit für Besta
 #fn <- system.file('extdata',"Erdkroete_JV.csv", package = "UlmerBuch")
 # 35 Gewässer mit 7 Besuchen pro Gewässer und Jahr ueber 6 Jahre
 #EK <- read.csv2(fn, row.names = "Pond")
-EK <- read.csv2("extdata/Erdkroete_JV.csv", 
+UlmerBuch::beispiel.pfad() #Pfad zu den Beispieldaten
+EK <- read.csv2("Erdkroete_JV.csv", 
                 row.names = "Pond", stringsAsFactors = TRUE)
 ```
 

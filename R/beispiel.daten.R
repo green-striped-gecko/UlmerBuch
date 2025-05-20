@@ -4,6 +4,7 @@
 #' @param pfad Pfad zu dem Ordner in dem die Daten gespeichert werden sollen. Sollte der Ordner nicht existieren, wird er erstellt. Wenn kein Pfad angegeben wird, werden die Daten in einem temporären Ordner gespeichert.
 #' @param unzip Wenn TRUE, werden die Daten entpackt. Standard ist TRUE.
 #' @export
+#' @importFrom utils download.file unzip
 
 beispiel.daten <- function(pfad=tempdir(), unzip=TRUE) {
 		if (!dir.exists(pfad)) 

@@ -32,9 +32,10 @@ Die hier gezeigten Daten stammen aus einer Masterarbeit (Müller 2018) und wurde
 # Einlesen der Daten
 Zunächst lesen wir unsere Erfassungsdaten ein.
 ```{r}
-RBU <- read.csv2("extdata/Rotbauchunke.csv")
-LF <- read.csv2("extdata/Laubfrosch.csv")
-WTemp <- read.csv2("extdata/Wassertemperatur.csv")
+UlmerBuch::beispiel.pfad() #Pfad zu den Beispieldaten
+RBU <- read.csv2("Rotbauchunke.csv")
+LF <- read.csv2("Laubfrosch.csv")
+WTemp <- read.csv2("Wassertemperatur.csv")
 ```
 
 Diese Daten wurden als Datenframe eingeladen, wir benötigen aber Matritzen. Daher müssen wir sie umformatieren. Zunächst entfernen wir jedoch ein Gewässer, was im Mai bereits ausgetrocknet war: Gewässer 15.

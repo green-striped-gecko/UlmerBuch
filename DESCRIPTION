@@ -12,7 +12,8 @@ Author: Bernd Gruber [aut, cre],
   			Klaus Henle [aut],
 			  Annegret Grimm Seyfarth [aut],
 Maintainer: Bernd Gruber <bernd.gruber@canberra.edu.au>
-Description: Package zum Ausprobieren aller Beispiele welche mit BeispielCode geliefert werden
-License: TBD
+Depends: R (>= 4.0.0), utils, usethis
+Description: Package zum Ausprobieren aller Beispiele welche mit BeispielCode geliefert werden. Eine ausfuehrliche Beschreibung der Beispiele befindet sich auf der Webseite \url{https://github.com/green-striped-gecko/UlmerBuch}
 RoxygenNote: 7.3.2
 Encoding: UTF-8
+License: GPL (>= 3)

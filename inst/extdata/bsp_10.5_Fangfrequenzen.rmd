@@ -38,7 +38,8 @@ check.packages <- function(pkg){
 # Pruefe und installiere
 #check.packages(pakete)
 # Anmerkung: Bis das Update von FREQ bei CRAN akzeptiert ist, laden wir den Quellcode direkt ein als:
-source("extdata/FREQ 2.2.r")
+UlmerBuch::bespiel.pfad() # Pfad zu den Beispieldaten
+source("FREQ2.2.r")
 ```
 
 Weitere Informationen zur Nutzung des Paketes finden sich hier:
@@ -49,7 +50,8 @@ https://cran.r-project.org/web/packages/FREQ/FREQ.pdf
 Wir laden uns für dieses Beispiel die Fangzahlen der einzelnen Individuen in R ein. Es gab 6 Fanggelegenheiten, demnach können einzelne Individuen maximal sechs Mal gefangen worden sein.
 
 ```{r}
-GV.2016 <- read.csv2("extdata/GV_Station_2016_capture_frequencies.csv")
+UlmerBuch::beispiel.pfad() #Pfad zu den Beispieldaten
+GV.2016 <- read.csv2("GV_Station_2016_capture_frequencies.csv")
 head(GV.2016)
 ```
 Die Anzahl gefangener Individuen beträgt:

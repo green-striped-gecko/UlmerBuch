@@ -47,7 +47,8 @@ Beide Gewässer wurden jeweils 2023 und 2024 im Juni für fünf aufeinanderfolge
 
 Zunächst laden wir die Daten ein:
 ```{r}
-BAdata <- read.csv2("extdata/Burgaue_Larven.csv")
+UlmerBuch::beispiel.pfad() #Pfad zu den Beispieldaten
+BAdata <- read.csv2("Burgaue_Larven.csv")
 head(BAdata)
 ```
 Das Kontrollgewässer wurde hier als "Control1", das Einflussgewässer als "Treatment" benannt. Als Zeit gilt 2023 als "Before" und 2024 als "After".

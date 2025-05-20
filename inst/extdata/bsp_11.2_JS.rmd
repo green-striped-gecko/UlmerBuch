@@ -28,7 +28,8 @@ Wir nutzen dabei ein Beispiel aus einer Langzeiterfassung des australischen, bau
 Die Daten lesen wir zunächst in R ein:
 
 ```{r}
-gecko <- read.csv2("extdata/GV_RI_2012-2016.csv", stringsAsFactors=TRUE)
+UlmerBuch::beispiel.pfad() #Pfad zu den Beispieldaten
+gecko <- read.csv2("GV_RI_2012-2016.csv", stringsAsFactors=TRUE)
 head(gecko)
 nrow(gecko)
 ```

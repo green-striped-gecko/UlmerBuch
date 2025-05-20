@@ -7,7 +7,9 @@
 liste.beispiele()
 }
 \description{
-Gibt eine Lister aller vorhandener Beispiele des Ulmerbuchs aus
+Gibt eine Lister aller vorhandener Beispiele des Ulmerbuchs aus. 
+Einige Beispiele sind als pdf und in rmd (code der direkt ausgefuehrt werden kann) 
+format vorhankden.
 }
 \examples{
 liste.beispiele()
