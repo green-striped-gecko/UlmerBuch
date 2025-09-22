@@ -79,7 +79,7 @@ funde <- data.frame(anz_funde=c(0,1,2), anz_probeflaechen=c(45,4,1))
 funde
 ```
 
-Mithilfe der oben erstellten Funktion `est.N` können wir nun unter Angabe der Anzahl Teilflächen und den Erfassungsdaten die Gesamtzahl berechnet werden.
+Mithilfe der oben erstellten Funktion `est.N` können wir nun unter Angabe der Anzahl Teilflächen und den Erfassungsdaten die Gesamtzahl berechnen.
 ```{r}
 est.N(TF = 514, funde = funde)
 ```
@@ -99,5 +99,5 @@ Vorausgesetzt in den Probeflächen konnten alle Fischotter erfasst werden, die s
 
 # Literaturverzeichnis
 \begin{hangparagraph}
-Labes, R., Labes, S., Labes, H. (1991): Der Fischotterbestand (*Lutra lutra* L.) des Einzugsgebietes der Warnow (Mecklenburg) im Winter 1991. --- S. 22--27 in: Schutz des Fischotters, Landesumweltamt Brandenburg, Potsdam. 
+Labes, R., Labes, S., Labes, H. (1991): Der Fischotterbestand (\textit {Lutra lutra} L.) des Einzugsgebietes der Warnow (Mecklenburg) im Winter 1991. –-- S. 22-–27 in: Landesumweltamt Brandenburg (Hrsg.): Schutz des Fischotters. –-- Landesumweltamt Brandenburg, Potsdam.
 \end{hangparagraph}
