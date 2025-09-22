@@ -1,14 +1,21 @@
 ---
-title:  "Beispiel 10.13. Populationsgrößenschätzung in R am Beispiel des baumbewohnenden Geckos *Gehyra variegata* aus dem Kinchega Nationalpark, Australien"
+title:  "Onlinebeispiel 10.13. Populationsgrößenschätzung in R am Beispiel des baumbewohnenden Geckos *Gehyra variegata* aus dem Kinchega Nationalpark, Australien"
 subtitle: "Kapitel 10 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
 author: "Annegret Grimm-Seyfarth"
-date: "2025-04-26"
+date: "26.4.2025"
 output:
-  pdf_document: default
+  pdf_document: 
+  word_document: default
   html_document:
     self_contained: no
     df_print: paged
-  word_document: default
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{amssymb}
+  - \usepackage[none]{hyphenat} 
+  - \newlength{\hanglen}
+  - \setlength{\hanglen}{0.5cm}
+  - \newenvironment{hangparagraph}{\par\hangindent=\hanglen \hangafter=1}{\par}
 editor_options:
   chunk_output_type: inline
   markdown:
@@ -18,9 +25,11 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+knitr::opts_chunk$set(width = 80)
+options(width = 80)
 ```
 
-Im Kinchega Nationalpark befinden sich zwei räumlich getrennte, benachbarte Geckopopulationen, welche 2016 an sieben (Auwaldgebiet, RI) bzw. sechs (Feldstation, Station) Tagen in Folge mittels Fang-Markierung-Wiederfang untersucht wurden. Wir wissen, dass es keine konstante Fangwahrscheinlichkeit gibt (Beispiel 10.5), sondern individuelle Heterogenität vorliegt (Henle 1990b, Grimm et al. 2014, Grimm-Seyfarth et al. 2018). Anhand des Studiendesigns – Fang am Ende der Reproduktionssaison (d. h., keine neuen Individuen durch Geburten), nur wenige Tage andauernde Primärperiode (d. h., keine Zu- und Abwanderungen sowie vernachlässigbare Mortalität erwartet) – gehen wir von einer geschlossenen Population aus. Während die Feldstation räumlich ohnehin geschlossen ist, was Zu- und Abwanderung in wenigen Tagen unwahrscheinlich macht, untersuchten wir in der Auwaldpopulation zusätzlich 19 umliegende Bäume, um wandernde Individuen zu entdecken. Dabei werden Individuen, die mindestens einmal im Kerngebiet erfasst werden, dem Kerngebiet hinzugeschlagen, während Individuen, die ausschließlich an den 19 umliegenden Bäumen entdeckt werden, nicht zur Population gerechnet werden. Somit können wir in unserem Design bereits sicherstellen, dass die Population geschlossen ist. Dieses Beispiel wurde bereits im Kapitel 9 des Buches, Beispiele 9.1 und 9.2 genutzt und auf Geschlossenheit geprüft. Weiterhin wurde die Populationsgröße bereits mittels des R-Pakes secr (Efford 2025) und verschiedenen Methoden berechnet. Daher verzichten wir auf eine Wiederholung der Berechnung mit diesem Paket. Hier zeigen wir die Populationsgrößenschätzung mittels der Pakete RMark (Laake 2013), Rcapture (Rivest & Baillargeon 2022) und CARE1 (Hsieh 2012).
+Im Kinchega Nationalpark (Australien) befinden sich zwei räumlich getrennte, benachbarte Geckopopulationen, welche 2016 an sieben (Auwaldgebiet, RI) bzw. sechs (Feldstation, Station) Tagen in Folge mittels Fang-Markierung-Wiederfang untersucht wurden. Wir wissen, dass es keine konstante Fangwahrscheinlichkeit gibt (Onlinebeispiele 9.1, 9.2 und 10.5), sondern individuelle Heterogenität vorliegt (Henle 1990b, Grimm et al. 2014, Grimm-Seyfarth et al. 2018). Anhand des Studiendesigns – Fang am Ende der Reproduktionssaison (d. h., keine neuen Individuen durch Geburten), nur wenige Tage andauernde Primärperiode (d. h., keine Zu- und Abwanderungen sowie vernachlässigbare Mortalität erwartet) – gehen wir von einer geschlossenen Population aus. Während die Feldstation räumlich ohnehin geschlossen ist, was Zu- und Abwanderung in wenigen Tagen unwahrscheinlich macht, untersuchten wir in der Auwaldpopulation zusätzlich 19 umliegende Bäume, um wandernde Individuen zu entdecken. Dabei werden Individuen, die mindestens einmal im Kerngebiet erfasst werden, dem Kerngebiet hinzugeschlagen, während Individuen, die ausschließlich an den 19 umliegenden Bäumen entdeckt werden, nicht zur Population gerechnet werden. Somit können wir in unserem Design bereits sicherstellen, dass die Population geschlossen ist. Dieses Beispiel wurde bereits im Kapitel 9 des Buches, Onlinebeispiele 9.1 und 9.2 genutzt und auf Geschlossenheit geprüft. Weiterhin wurde die Populationsgröße bereits mittels des R-Pakes secr (Efford 2025) und verschiedenen Methoden berechnet. Daher verzichten wir auf eine Wiederholung der Berechnung mit diesem Paket. Hier zeigen wir die Populationsgrößenschätzung mittels der Pakete RMark (Laake 2013), Rcapture (Rivest & Baillargeon 2022) und CARE1 (Hsieh 2012).
 
 ```{r}
 # check.packages function: install and load multiple R packages.
@@ -33,67 +42,79 @@ check.packages <- function(pkg){
 }
 
 # benoetigte R pakete
-pakete <- c("RMark", "Rcapture", "CARE1")#
+pakete <- c("RMark", "Rcapture", "CARE1")
 
 # Pruefe und installiere
 check.packages(pakete)
 ```
 
-Achtung, aktuell muss das Paket CARE1 direkt von der Website geladen werden, es ist nicht in CRAN verfügbar. Bitte hier die aktuellste Version downloaden: https://cran.r-project.org/src/contrib/Archive/CARE1/ Dann muss das Paket aus dem Verzeichnis installiert werden.
+Achtung, aktuell muss das Paket CARE1 direkt von der Website geladen werden, es ist nicht in CRAN verfügbar. Bitte hier die aktuellste Version downloaden: \url{https://cran.r-project.org/src/contrib/Archive/CARE1/} Dann muss das Paket aus dem Verzeichnis installiert werden.
 
 Die Installation erfolgt am einfachsten ueber:
 
 ```{r, eval=FALSE} 
-install.packages("https://cran.r-project.org/src/contrib/Archive/CARE1/CARE1_1.1.0.tar.gz", type="source")
+install.packages("https://cran.r-project.org/src/contrib/Archive/CARE1/CARE1_1.1.0.tar.gz", 
+                 type="source")
 ```
 
 
 Weitere Informationen zur Nutzung der Pakete finden sich hier:
 
-https://cran.r-project.org/package=RMark
+RMark: \url{https://cran.r-project.org/package=RMark}
 
-https://cran.r-project.org/web/packages/Rcapture/Rcapture.pdf
+Rcapture: \url{https://cran.r-project.org/web/packages/Rcapture/Rcapture.pdf}
 
-CARE1: https://drive.google.com/file/d/1f7RoM8mkxa2HFmk0v1L_zfYySOWkG-Gj/view
+CARE1: \url{https://drive.google.com/file/d/1f7RoM8mkxa2HFmk0v1L_zfYySOWkG-Gj/view}
 
 # Einlesen der Fangdaten
 Wir laden zunächst die Fangdaten ein. In diesem Beispiel nutzen wir ausschließlich die Daten aus der Auwaldpopulation. 
 
-Bitte beachten dass der Pfad zu den Beipsieldaten korrekt gesetz ist. Wenn Sie die Daten in einem anderen Verzeichnis gespeichert haben, muessen Sie den Pfad anpassen.
-
+Bitte beachten, dass der Pfad zu den Beipsieldaten korrekt gesetz ist. Wenn die Daten in einem anderen Verzeichnis gespeichert sind, muss der Pfad angepasst werden.
 
 ```{r}
 UlmerBuch::beispiel.pfad()  #setzt den Pfad zu den Beispieldaten aus dem Paket Ulmberbuch
+```
+```{r}
 # Daten von Auwaldgebiet (RI) einlesen
 ch.RI <- read.csv2("GV_RI_2016_capture_history2.csv", header = FALSE, row.names = NULL)
 ch.RI <- as.matrix(ch.RI)
+
 ```
+
 Schauen wir uns die daten einmal an:
 ```{r}
 head(ch.RI)
 ```
-Wir sehen für jede Fanggelegenheit 1 bis 7 die Fanggeschichte.
+Wir sehen für jede Fanggelegenheit 1 bis 7 die Fanggeschichte. Im Vergleich zu den Daten aus Onlinebeispiel 10.5 ist dies die ausführliche Schreibweise, bei der nicht nur angegeben wird, wie oft ein Individuum gefangen wurde, sondern auch wann im Laufe der Fanggelegenheiten.
 ```{r}
 dim(ch.RI)
 ```
 Es gibt 108 Individuen. 
+
+Schauen wir uns an, wie viele Individuen pro Fanggelegenheit gefangen wurden:
 ```{r}
 colSums(ch.RI)
 ```
-Es wurden meist annähernd gleich viele Tiere gefangen, lediglich am letzten Fangtag sind es weniger.
+Es wurden meist annähernd gleich viele Tiere gefangen, lediglich am letzten Fangtag sind es weniger. Schauen wir uns das grafisch an:
 
 ```{r}
-boxplot(ch.RI)
+{boxplot(ch.RI, xlab = "Fanggelegenheit", ylab = "Fängigkeit", yaxt="n")
+  axis(
+side = 2,
+at = seq(0,1,.2),
+labels = format(seq(0,1,.2), decimal.mark = ",", nsmall = 1))
+  
+}
 ```
-Generell scheint die Fängigkeit am letzten Tag geringer zu sein. Eventuell ist es besser, den letzten Tag dann wegzulassen. Wir prüfen dies später.
+Wir sehen einen Boxplot der Fängigkeit (0 = nicht gefangen, 1 = gefangen) für alle Individuen je Fanggelegenheit. Generell scheint die Fängigkeit am letzten Tag geringer zu sein, da der Boxplot nur wenige Ausreißer mit einem Punkt auf der Höhe der 1 darstellt. Eventuell ist es besser, den letzten Tag dann wegzulassen. Wir prüfen dies später.
 
 # Deskriptive Statistik
-Mittels R-Paket Rcapture kann man sehr gut sich die deskriptive Statistik der Fangdaten anzeigen lassen:
+Mittels R-Paket Rcapture kann man sich sehr gut die deskriptive Statistik der Fangdaten anzeigen lassen:
 ```{r}
 RI.desc <- descriptive(ch.RI)
 RI.desc
 ```
-Wir sehen hier die Fangfrequenzen fi (vgl. Kapitel 10.2 des Buches), die jeweilige Anzahl erstgefangener Tiere ui, die jeweilige Anzahl letztgefangener Tiere vi, und die Gesamtzahl Tiere der Sekundärperiode ni. Stellen wir das grafisch dar (Achsenbeschriftungen werden automatisch erstellt und sind daher in Englisch):
+Wir sehen hier die Fangfrequenzen *fi* (vgl. Kapitel 10.2 des Buches), die jeweilige Anzahl erstgefangener Tiere *ui*, die jeweilige Anzahl letztgefangener Tiere *vi*, und die Gesamtzahl Tiere der Sekundärperiode *ni*. Stellen wir das grafisch dar (Achsenbeschriftungen werden automatisch erstellt und sind daher in Englisch):
 
 ```{r}
 plot(RI.desc)
@@ -102,15 +123,15 @@ plot(RI.desc)
 # Populationsgrößenschätzung in Rcapture
 Starten wir mit den Populationsgrößenschätzungen mit dem R-Paket Rcapture. Hier gibt es folgende Möglichkeiten:
 
-closedp-Funktionen: Anpassung verschiedener loglinearer Modelle für Abundanzschätzungen;
+`closedp`/`closedp.t`-Funktionen: Anpassung verschiedener log-linearer Modelle für Abundanzschätzungen;
 
-closedpCI-Funktionen: Anpassung eines angepassten loglinearen Modells und Berechnung eines Konfidenzintervalls für die Abundanzschätzung;
+`closedpCI`-Funktionen: Anpassung eines angepassten log-linearen Modells und Berechnung eines Konfidenzintervalls für die Abundanzschätzung;
 
-closedpMS.t: passt verschiedene hierarchische loglineare Modelle für eine Modellselektion;
+`closedpMS.t`: passt verschiedene hierarchische log-lineare Modelle für eine Modellselektion an;
 
-closedp.bc: führt Verzerrungskorrekturen an den Abundanzschätzungen aus angepassten loglinearen Modellen durch;
+`closedp.bc`: führt Verzerrungskorrekturen an den Abundanzschätzungen aus angepassten log-linearen Modellen durch;
 
-closedp.Mtb: passt das Modell Mtb an, das von keiner anderen Funktion angepasst werden kann.
+`closedp.Mtb`: passt das Modell Mtb an, das von keiner anderen Funktion angepasst werden kann.
 
 ## Modelle vergleichen
 Beginnen wir von oben:
@@ -118,25 +139,25 @@ Beginnen wir von oben:
 RI.closedp <- closedp.t(ch.RI)
 RI.closedp
 ```
-Folgende Modelle werden mittels AIC-Tabelle verglichen (für Abkürzungen empfehlen wir die Kapitel 9 und 10 des Buches): M0, Mt, Mh bzw. Mth Moment estimator (Chao 1987), verschiedene Mh/Mth Poisson- und Gammaverteilungen (beschrieben in Rivest and Baillargeon 2007), und Mh bzw. Mth Modelle von Darroch et al. (1993). Den niedrigsten AIC Wert weist in diesem Beispiel das Modell Mh von Chao (1987) auf, dicht gefolgt von Mh von Darroch et al. (1993).
+Folgende Modelle werden mittels AIC-Tabelle verglichen (für Abkürzungen empfehlen wir die Kapitel 9 und 10 des Buches): M0, Mt, Mh bzw. Mth Moment estimator (Chao 1987), verschiedene Mh/Mth Poisson- und Gammaverteilungen (beschrieben in Rivest and Baillargeon 2007), und Mh- bzw. Mth-Modelle von Darroch et al. (1993). Den niedrigsten AIC-Wert weist in diesem Beispiel das Modell Mh von Chao (1987) auf, dicht gefolgt von Mh von Darroch et al. (1993).
 
-## Graphisch darstellen
-Die Funktion boxplot.closedp erzeugt Boxplots der Pearson-Residuen der angepassten loglinearen Modelle, die konvergiert haben.
+## Grafisch darstellen
+Die Funktion` boxplot.closedp` erzeugt Boxplots der Pearson-Residuen der angepassten log-linearen Modelle, die konvergiert haben.
 ```{r}
 boxplot(RI.closedp)
 ```
-Die Funktion plot.closedp erzeugt Scatterplots der Pearson-Residuen in Form von fi (Fangfrequenzen) für die heterogenen Modelle Mh Poisson2, Mh Darroch und Mh Gamma3.5, sofern sie konvergieren. Achsenbeschriftungen werden automatisch erstellt und sind daher Englisch. 
+Die Funktion `plot.closedp` erzeugt Scatterplots der Pearson-Residuen in Form von *fi* (Fangfrequenzen) für die heterogenen Modelle Mh Poisson2, Mh Darroch und Mh Gamma3.5, sofern sie konvergieren. Achsenbeschriftungen werden automatisch erstellt und sind daher Englisch. Leider kann man sie nicht manuell ändern, daher sind sie oft schwierig zu lesen. Die y-Achse müsste beschriftet sein mit "Pearson residuals in terms of fi (number of units captured i times)".
 ```{r}
 plot(RI.closedp)
 ```
 
 ## Konfidenzintervalle und Berechnungen des ausgewählten Modells
-Wir wählen in jedem Fall ein Mh Modell aus. Starten wir mit dem Moment Estimator.
+Wir wählen in jedem Fall ein Mh-Modell aus. Starten wir mit dem Moment Estimator.
 ```{r}
 CI <- closedpCI.t(ch.RI, m = "Mh", h = "Chao")
 CI
 ```
-Nun wissen wir, dass die Populationsgröße bei 147 Tieren liegt und mit 95% zwischen 125 und 186. Dieses Konfidenzintervall können wir uns noch graphisch anschauen (erneut automatische Achsenbeschriftungen):
+Nun wissen wir, dass die Populationsgröße bei 147 Tieren liegt und mit 95 % zwischen 125 und 186 Individuen. Dieses Konfidenzintervall können wir uns noch grafisch anschauen (erneut automatische Beschriftungen, leider auch hier schwer zu lesende Zahlen):
 ```{r}
 plotCI(CI)
 ```
@@ -148,7 +169,7 @@ CI2
 Es werden nahezu identische Werte berechnet, das Konfidenzintervall ist lediglich etwas breiter.
 
 # Populationsgrößenschätzungen in CARE1 
-Aus der Fanggeschichte muss zunächst eine für CARE1 nutzbare Importdatei kreiert werden. Dazu gibt es die Funktion *as.record*. 
+Aus der Fanggeschichte muss zunächst eine für CARE1 nutzbare Importdatei kreiert werden. Dazu gibt es die Funktion `as.record`. 
 ```{r}
 RI.CARE <- as.record(ch.RI)
 head(RI.CARE)
@@ -156,40 +177,44 @@ head(RI.CARE)
 Bei diesem Befehl werden alle möglichen Fanggeschichten erstellt und jeweils aufaddiert, wie oft diese spezielle Fanggeschichte vorkommt.
 
 ## Modelle aufrufen
-In CARE1 werden alle Modelle zur Populationsgrößenschätzung mit einem Befehl aufgerufen. Die Ausführung dauer einen Moment.
+In CARE1 werden alle Modelle zur Populationsgrößenschätzung mit einem Befehl aufgerufen. Die Ausführung dauert einen Moment. Literatur, auf die hier im Output verwiesen wird, kann unter unter `?CARE1.print` nachgeschaut werden.
 ```{r}
 CARE1.print(RI.CARE)
 ```
-Der Output besteht aus drei Teilen. Der erste Teil der Ausgabe gibt die Anzahl der identifizierten Individuen in jeder der sieben Sekundärperioden (hier Listen genannt) an. Der zweite Teil enthält die Petersen- und Chapman-Schätzungen zusammen mit dem Standardfehler (s.e.) und den Konfidenzintervallen (cil - unteres, ciu - oberes) für jedes Paar von Sekundärperioden. Diese Schätzungen können als vorläufige Analyse verwendet werden, um mögliche Abhängigkeiten zwischen Sekundärperioden zu erkennen. 
+Der Output besteht aus drei Teilen. Der erste Teil der Ausgabe gibt die Anzahl der identifizierten Individuen in jeder der sieben Sekundärperioden (hier Listen genannt) an. Der zweite Teil enthält die Petersen- und Chapman-Schätzungen zusammen mit dem Standardfehler (`se`) und den Konfidenzintervallen (`cil` - unteres, `ciu` - oberes) für jedes Paar von Sekundärperioden. Diese Schätzungen können als vorläufige Analyse verwendet werden, um mögliche Abhängigkeiten zwischen Sekundärperioden zu erkennen. 
 
-Im dritten Teil werden die Sample Coverage Populationsgrößenschätzer (Chao et al. 2001,  Chao and Tsay 1998) zusammen mit den zugehörigen Statistiken vorgestellt. Der geschätzte Stichprobenerfassungsgrad oder Überschneidungsanteil (Sample Coverage) beträgt C = 76,1 % (Chat in der Ausgabe), was als hoch angesehen werden kann. Der Durchschnitt (über alle Listen) der sich überschneidenden Fälle ist D = 100,71. Wenn man von der Unabhängigkeit der Stichproben ausgehen würde, ergäbe sich eine geschätzte Populationsgröße von N0 = D/C = 132 (Nhat-0 in der Ausgabe), mit einem Bootstrap s.e. von 8 auf der Grundlage von 1000 Bootstrap-Replikationen. Die untere Grenze des 95%-Konfidenzintervalls (cil) beträgt 121 und die obere Grenze (ciu) beträgt 153. Achtung: Selbst bei gleichen Eingabedaten sind der Bootstrap-Schätzwert und das Konfidenzintervall bei wiederholten Durchläufen von CARE1 verschieden aufgrund von Variationen bei der Wiederholungsstichprobe in den Bootstrapverfahren. Da jedoch die Sample Coverage hoch ist und auch der Koeffizient der Kovariation (CCV, dargestellt als r12, r13 etc.) häufig relativ hoch scheint, liegt wohl individuelle Heterogenität vor und der N0-Schätzer ist bedeutungslos. Beachten wir nun die Sample Coverage und nutzen entsprechend das Modell Nhat, bekommen wir eine Populationsgröße von 160 mit einem s.e. von 23 und einem 95%-Konfidenzintervall zwischen 130 und 228. Dies liegt nur unwesentlich höher als der Moment estimator und die Schätzung nach Darroch, wobei sich alle Konfidenzintervalle überlappen und Schätzungen in den jeweils anderen Konfidenzintervallen enthalten sind.
+Im dritten Teil werden die Sample Coverage Populationsgrößenschätzer (Chao et al. 2001,  Chao and Tsay 1998) zusammen mit den zugehörigen Statistiken vorgestellt. Der geschätzte Stichprobenerfassungsgrad oder Überschneidungsanteil (Sample Coverage) beträgt *C* = 76,1 % (`Chat` in der Ausgabe), was als hoch angesehen werden kann. Der Durchschnitt (über alle Listen) der sich überschneidenden Fälle ist *D* = 100,71. Wenn man von der Unabhängigkeit der Stichproben ausgehen würde, ergäbe sich eine geschätzte Populationsgröße von *N0* = *D/C* = 132 (`Nhat-0` in der Ausgabe), mit einem Bootstrap Standardfehler (`se`) von 8 auf der Grundlage von 1000 Bootstrap-Replikationen. Die untere Grenze des 95 %-Konfidenzintervalls (`cil`) beträgt 121 und die obere Grenze (`ciu`) beträgt 153 Individuen. Achtung: Selbst bei gleichen Eingabedaten sind der Bootstrap-Schätzwert und das Konfidenzintervall bei wiederholten Durchläufen von CARE1 verschieden aufgrund von Variationen bei der Wiederholungsstichprobe in den Bootstrapverfahren. Da jedoch die Sample Coverage hoch ist und auch der Koeffizient der Kovariation (*CCV*, dargestellt als `r12`, `r13` etc.) häufig relativ hoch scheint, liegt wohl individuelle Heterogenität vor und der *N0*-Schätzer ist bedeutungslos. Beachten wir nun die Sample Coverage und nutzen entsprechend das Modell `Nhat`, bekommen wir eine Populationsgröße von 160 mit einem `se` von 23 und einem 95 %-Konfidenzintervall zwischen 130 und 228. Dies liegt nur unwesentlich höher als der Moment estimator und die Schätzung nach Darroch aus der obigen Berechnung, wobei sich alle Konfidenzintervalle überlappen und Schätzungen in den jeweils anderen Konfidenzintervallen enthalten sind.
 
-Für weitere Analysen empfehlen wir Chao 2015 sowie Chao & Yang 2006 (die Desktop-Version von CARE - diese hatte neben den Sample Coverage Schätzern auch die Estimating Equations enthalten).
+Für weitere Analysen empfehlen wir die Literatur von Chao 2015 sowie Chao & Yang 2006 (die Desktop-Version von CARE - diese enthält neben den Sample-Coverage-Schätzern auch die Estimating Equations, siehe Kapitel 10 des Buches für weitere Informationen).
 
 # Populationsgrößenschätzungen in RMark
-Anders als in Rcapture und CARE1 werden in RMark nicht eine Reihe bekannter Schätzer gerechnet, sonder über eine Parameter-Index-Matrix (PIM). Möchte man mit MARK diese Modelle rechnen, würde man ebenfalls das Programm CAPTURE innerhalb von MARK aufrufen, andernfalls nutzt man auch in MARK das PIM-Design. Daher zeigen wir hier nur relativ einfache Anwendungen. Gute Anwendungsbeispiele findet man, neben dem User-guide, hier:
+Anders als in Rcapture und CARE1 werden in RMark nicht eine Reihe bekannter Schätzer gerechnet, sonder Schätzungen erfolgen über eine Parameter-Index-Matrix (PIM). Möchte man mit MARK die oben vorgestellten Modelle rechnen, würde man ebenfalls das Programm CAPTURE innerhalb von MARK aufrufen, andernfalls nutzt man auch in MARK das PIM-Design. Daher zeigen wir hier nur relativ einfache Anwendungen. Gute Anwendungsbeispiele findet man, neben dem MARK-Benutzerhandbuch, hier:
 
-https://www.montana.edu/rotella/documents/502/lab07RMark.html
+\url{https://www.montana.edu/rotella/documents/502/lab07RMark.html}
 
-https://pdixon.stat.iastate.edu/stat534/RMark/Intro.pdf
+\url{https://pdixon.stat.iastate.edu/stat534/RMark/Intro.pdf}
 
 ## Fanggeschichte einlesen
-Leider funktioniert die Fanggeschichte nicht so, wie wir sie für Rcapture und CARE1 einlesen. Zum Einlesen gibt es zwei Varianten: (1) die .inp Datei einlesen, die auch für MARK genutzt wird, mittels *convert.inp()*, oder (2) die reine Fanggeschichte einlesen mittels *import.chdata()*. Wir nutzen hier exemplarisch die zweite Version. Wichtig ist hier, dass die erste Zeile als *ch* bezeichnet wird
+Leider funktioniert die Fanggeschichte nicht so, wie wir sie für Rcapture und CARE1 einlesen. Zum Einlesen gibt es zwei Varianten: (1) die .inp Datei einlesen, die auch für MARK genutzt wird, mittels `convert.inp()`, oder (2) die reine Fanggeschichte einlesen mittels `import.chdata()`. Wir nutzen hier exemplarisch die zweite Version. Wichtig ist hier, dass die erste Zeile als `ch` bezeichnet wird
 ```{r}
 ch.RI2 <- import.chdata("GV_RI_2016_capture_history.txt")
 head(ch.RI2)
 ```
 
 ## M0-Modell
+Wir benötigen hier immer die Parameter
+* *p* - Fangwahrscheinlichkeit (d. h. Wahrscheinlichkeit, ein noch nicht gefangenes Tier zu fangen)
+* *c* - Wiederfangwahrscheinlichkeit (d. h. Wahrscheinlichkeit, ein bereits gefangenes Tier erneut zu fangen)
+
 Ein einfaches Modell ohne Parameter (also ein M0-Modell) würde man wie folgt aufrufen:
 ```{r}
 f0 <- list(formula=~1)
 m0 <- mark(ch.RI2, model="Closed", model.parameters=list(p=f0, c=f0))
 ```
-mark() ruft eigentlich 5 Funktionen nacheinander auf, um die Daten zu verarbeiten, die Designmatrix zu erstellen, das Modell laufen lassen (durch Schreiben einer .inp-Datei auf die Festplatte und anschließendes Ausführen von MARK, das 3 Ausgabedateien erzeugt), dann das Sammeln und Organisieren dieser Ausgabe als R-Objekte. Der Output enthält Infos zum genutzten Modell, Anzahl Parameter und AICc, beta-Schätzungen (Link-Skala) und die rücktransformierten (backtransformed) Koeffizienten (als zeitspezifische Werte).
+`mark()` ruft eigentlich fünf Funktionen nacheinander auf, um die Daten zu verarbeiten, die Designmatrix zu erstellen, das Modell laufen zu lassen (durch Schreiben einer .inp-Datei auf der Festplatte und anschließendes Ausführen von MARK, das 3 Ausgabedateien erzeugt), dann das Sammeln und Organisieren dieser Ausgabe als R-Objekte. Der Output enthält Infos zum genutzten Modell, Anzahl Parameter und AICc, beta-Schätzungen (Link-Skala) und die rücktransformierten (backtransformed) Koeffizienten (als zeitspezifische Werte).
 
 ## Daten für verschiedene Modelle vorbereiten
-Wie wir es aus anderen RMark Beispielen kennen, können wir auch die Daten zuerst prozessieren, dann verschiedene Modelle in einem wrapper schreiben und schließlich alle ausführen und vergleichen lassen. Dabei kann man hier auch Kovariablen einbeziehen, was wir hier aber nicht tun. Es könnte aber z. B. die Temperatur sich auf die Nachweiswahrscheinlichkeit auswirken.
+Wie wir es aus anderen RMark-Beispielen kennen (z. B. auch Onlinebeispiele 11.6, 11.10), können wir auch die Daten zuerst prozessieren, dann verschiedene Modelle in einem `wrapper` schreiben und schließlich alle ausführen und vergleichen lassen. Dabei könnte man auch Kovariablen einbeziehen, was wir hier aber nicht tun. Es könnte sich aber z. B. die Temperatur auf die Nachweiswahrscheinlichkeit auswirken.
 ```{r}
 # Daten prozessieren
 RI.pr <- process.data(ch.RI2, begin.time = 1, model = "Closed")
@@ -209,7 +234,7 @@ RI.ddl$c$t2 <- ifelse(RI.ddl$c$Time == 0, 0, 1)
 RI.ddl
 ```
 ## Verschiedene Modelle erstellen 
-Hier richten wir die Strukturen für 'p' und 'c' ein. Wir verwenden die Optionen „share=TRUE“ oder „share=FALSE“ in jeder der Strukturen, um anzugeben, ob „p“ und „c“ dieselben Spalten der Designmatrix teilen sollen oder nicht. Obwohl dies nicht für alle der unten aufgeführten Strukturen notwendig ist, wird eine Kovariate „c“ zu den Designmatritzen hinzugefügt, wobei c=0 ist für Zeilen, die zum Parameter „p“ gehören, und c=1 für Zeilen, die zum Parameter „c“ gehören. Das ist hilfreich, denn es gibt uns die Möglichkeit, einige der additiven Strukturen zu erstellen, an denen wir interessiert sein könnten. Wir können dann die Kovariate „c“ in Formelanweisungen verwenden, wenn wir das möchten. Aber wir müssen diese Kovariate nicht einbeziehen, wenn wir das nicht wollen (siehe z. B. die p.dot-Struktur). Hinweis: formula(=~time) gibt die Zeit als Faktor an. Die Zeit muss nicht im Datenframe enthalten sein. Jede Spalte der Erfassungshistorie wird als separate Zeit behandelt (Mt). formula(=~Time) [großgeschrieben] gibt die Zeit als Regression an: f(param) = b0 + b1*Time (Mt mit steigender Nachweiswahrscheinlichkeit)
+Hier richten wir die Strukturen für *p* und *c* ein. Wir verwenden die Optionen `share = TRUE` oder `share = FALSE` in jeder der Strukturen, um anzugeben, ob *p* und *c* dieselben Spalten der Designmatrix teilen sollen oder nicht. Obwohl dies nicht für alle der unten aufgeführten Strukturen notwendig ist, wird eine Kovariate *c* zu den Designmatritzen hinzugefügt, wobei *c* = 0 ist für Zeilen, die zum Parameter *p* gehören, und *c* = 1 für Zeilen, die zum Parameter *c* gehören. Das ist hilfreich, denn es gibt uns die Möglichkeit, einige der additiven Strukturen zu erstellen, an denen wir interessiert sein könnten. Wir können dann die Kovariate *c* in Formelanweisungen verwenden, wenn wir das möchten. Aber wir müssen diese Kovariate nicht einbeziehen, wenn wir das nicht wollen (siehe z. B. die `p.dot`-Struktur). Hinweis: `formula(=~time)` gibt die Zeit als Faktor an. Die Zeit muss nicht im Datenframe enthalten sein. Jede Spalte der Erfassungshistorie wird als separate Zeit behandelt (Mt). `formula(=~Time)` [großgeschrieben] gibt die Zeit als Regression an: $f(param) = b0 + b1 \cdot Time$ (Mt mit steigender Nachweiswahrscheinlichkeit).
 ```{r}
 # Funktion zum Ausführen einer Reihe von Modellen für phi und für p
 run.RI <- function() {
@@ -217,7 +242,7 @@ run.RI <- function() {
   # verschiedene Modellformeln erstellen, Parameter definieren
   p.dot = list(formula =  ~ 1, share = TRUE)
   p.time = list(formula =  ~ time, share = TRUE)
-  p.Time <- list(formula = ~ Time, share=TRUE)
+  p.Time <- list(formula = ~ Time, share = TRUE)
   p.time.behav.add = list(formula =  ~ time + c, share = TRUE)
   p.dot.behav = list(formula =  ~ 1, share = FALSE)
   p.bh.2p = list(formula =  ~ t2, share = FALSE)
@@ -239,7 +264,7 @@ run.RI <- function() {
 ```
 
 ## Modelle laufen lassen
-Hinweis: zum Überprüfen der einzelnen Modelle entfernt man oben im mark.wrapper den Befehl ', output=FALSE'. Wir lassen uns hier die Modellvergleichstabelle anzeigen.
+Hinweis: zum Überprüfen der einzelnen Modelle entfernt man oben im `mark.wrapper` den Befehl `, output=FALSE`. Wir lassen uns hier nur die Modellvergleichstabelle anzeigen.
 ```{r, results='hide'}
 RI.results <- run.RI()
 ```
@@ -251,7 +276,9 @@ Eine umfassendere Version beinhaltet auch die einzelnen Parametereinstellungen a
 ```{r}
 model.table(RI.results)
 ```
-Auch eine Zusammenfassung der einzelnen Modelle können wir anschauen:
+Hierbei ist das Modell mit konstanter Fängigkeit am besten, gefolgt von einem, bei dem sich die Fängigkeit linear verändert.
+
+Auch eine Zusammenfassung der einzelnen Modelle können wir anschauen (Link-Skala):
 ```{r}
 summary(RI.results[[2]])
 ```
@@ -262,13 +289,13 @@ Auf die Populationsgröße kommt man schließlich folgendermaßen:
 ```{r}
 RI.results[['p.Time']]$results$derived
 ```
-In diesem Modell würde die Populationsgröße auf 128 geschätzt werden, mit einem 95% Konfidenzintervall von 119 bis 145.
+In diesem Modell würde die Populationsgröße auf 128 geschätzt werden, mit einem 95 %-Konfidenzintervall von 119 bis 145 Individuen.
 
 Schauen wir uns das M0 parallel an:
 ```{r}
 RI.results[['p.dot']]$results$derived
 ```
-Wir erhalten ganz ähnliche Schätzungen, alle unterschätzen die von uns oben bestimmte Populationsgröße, da sie die individuelle Heterogenität nicht beachten. Dafür kann man in RMark die Modelle von Pledger (2000) oder Huggins (1989, 1991) nutzen. Dies machen wir hier noch einmal mit einer wrapper Funktion und vergleichen nochmals mit dem M0 und Mt Modell.
+Wir erhalten ganz ähnliche Schätzungen, alle unterschätzen die von uns oben bereits bestimmte Populationsgröße, da sie die individuelle Heterogenität nicht beachten. Dafür kann man in RMark die Modelle von Pledger (2000) oder Huggins (1989, 1991) nutzen. Dies machen wir hier noch einmal mit einer `wrapper` Funktion und vergleichen nochmals mit dem M0- und Mt-Modell.
 
 ## Individuelle Heterogenität hinzufügen
 ```{r, results='hide'}
@@ -332,55 +359,94 @@ Schauen wir uns diese Ergebnisse an:
 ```{r}
 RI.results.het
 ```
-Auch hier ist wieder ein klassisches Mh Modell am besten. Schauen wir an, welches Modell das war (model.table funktioniert nicht, wenn verschiedene Modelltypen aufgerufen werden).
+Auch hier ist wieder ein klassisches Mh-Modell am besten. Schauen wir an, welches Modell das war (Anmerkung: `model.table` funktioniert nicht, wenn verschiedene Modelltypen aufgerufen werden):
 ```{r}
 names(RI.results.het)
 ```
-Das Modell RI.closed.Mh2, also Pledgers Mixture Modell, hat am besten abgeschnitten. Schauen wir uns die Populationsgrößenschätzung an:
+Das dritte Modell ist das Modell `RI.closed.Mh2`, also Pledgers Mixture Modell, es hat am besten abgeschnitten. Schauen wir uns die Populationsgrößenschätzung an:
 ```{r}
 RI.results.het[['RI.closed.Mh2']]$results$derived
 ```
-Die geschätzte Populationsgröße liegt bei 205 und mit 95% Wahrscheinlichkeit zwischen 119 und 971. Damit hat Pledgers Mixed Modell erneut ein sehr breites Konfidenzintervall und neigt womöglich zu einer leichten Überschätzung der tatsächlichen Populationsgröße (vgl. Grimm et al. 2014).
+Die geschätzte Populationsgröße liegt bei 205 und mit 95 %-Wahrscheinlichkeit zwischen 119 und 971 Individuen. Damit hat Pledgers gemischtes Modell erneut ein sehr breites Konfidenzintervall und neigt womöglich zu einer leichten Überschätzung der tatsächlichen Populationsgröße (vgl. Grimm et al. 2014).
+Übrigens: Pledgers gemischtes Modell haben wir im Onlinebeispiel 9.2 schon einmal mit dem R-Paket secr berechnet (als `h2` bezeichnet), die geschätzte Populationsgröße ist hier identisch.
 
 # Literaturverzeichnis
-Burnham, K.P., Overton, W.S. 1978. Estimating the size of a closed population when capture probabilities vary among animals. Biometrika 65: 625–633.
+\begin{hangparagraph}
+Chao, A. (1987): Estimating the population size for capture–recapture data with unequal catchability. --- Biometrics 43: 783–-791.
+\end{hangparagraph}
 
-Chao, A. 1987. Estimating the population size for capture–recapture data with unequal catchability. Biometrics 43: 783–791.
+\begin{hangparagraph}
+Chao, A. (2015): Capture-recapture for human populations. --- Wiley StatsRef: Statistics Reference Online, \url{https://drive.google.com/file/d/1f7RoM8mkxa2HFmk0v1L_zfYySOWkG-Gj/view}.
+\end{hangparagraph}
 
-Chao, A. 2015. Capture-recapture for human populations. Wiley StatsRef: Statistics Reference Online, https://drive.google.com/file/d/1f7RoM8mkxa2HFmk0v1L_zfYySOWkG-Gj/view.
+\begin{hangparagraph}
+Chao, A., Tsay, P.K. (1998): A sample coverage approach to multiple-system estimation with application to census undercount. --- Journal of the American Statistical Association 93: 283–-293.
+\end{hangparagraph}
 
-Chao, A., Tsay, P.K. 1998. A sample coverage approach to multiple-system estimation with application to census undercount. Journal of the American Statistical Association 93: 283–293.
+\begin{hangparagraph}
+Chao, A., Yang, H.-C. (2006): User guide for program CARE-2. \url{https://drive.google.com/file/d/1VyJfK4N3syYBk-WY411m84WKvnu2OuW4/view}.
+\end{hangparagraph}
 
-Chao, A., Yang, H.-C. 2006. User guide for program CARE-2. https://drive.google.com/file/d/1VyJfK4N3syYBk-WY411m84WKvnu2OuW4/view.
+\begin{hangparagraph}
+Chao, A., Tsay, P.K., Lin, S.H., et al. (2001): The applications of capture-recapture models to epidemiological data. --- Statistics in Medicine 20: 3123–-3157.
+\end{hangparagraph}
 
-Chao, A., Tsay, P.K., Lin, S.H., et al. 2001. The applications of capture-recapture models to epidemiological data. Statistics in Medicine 20: 3123–3157.
+\begin{hangparagraph}
+Darroch, S.E., Fienberg, G., Glonek, B., Junker, B. (1993): A three sample multiple capture-recapture approach to the census population estimation with heterogeneous catchability. --- Journal of the American Statistical Association 88: 1137-–1148.
+\end{hangparagraph}
 
-Darroch, S.E., Fienberg, G., Glonek, B. and Junker, B. 1993 A three sample multiple capture-recapture approach to the census population estimation with heterogeneous catchability. Journal of the American Statistical Association 88: 1137–1148.
+\begin{hangparagraph}
+Dorazio, R.M., Royle, J. A. (2003): Mixture models for estimating the size of a closed population when capture rates vary among individuals. --- Biometrics 59: 351-–364.
+\end{hangparagraph}
 
-Dorazio, R.M., Royle, J. A. 2003. Mixture models for estimating the size of a closed population when capture rates vary among individuals. Biometrics 59: 351–364.
-
-Efford, M.G. 2025. secr: Spatially explicit capture-recapture models. R package version 5.2.1.  https://CRAN.R-project.org/package=secr
+\begin{hangparagraph}
+Efford, M.G. (2025): secr: Spatially explicit capture-recapture models. R package version 5.2.1. \url{https://CRAN.R-project.org/package=secr}
+\end{hangparagraph}
   
-Grimm, A., Gruber, B., Henle, K. 2014. Reliability of different mark-recapture methods for population size estimation tested against reference population sizes constructed from field data. Plos One 9: e98840.
+\begin{hangparagraph}
+Grimm, A., Gruber, B., Henle, K. (2014): Reliability of different mark-recapture methods for population size estimation tested against reference population sizes constructed from field data. --- Plos One 9: e98840.
+\end{hangparagraph}
 
-Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. 2018. Some like it hot: from individual to population responses of an arboreal arid-zone gecko to local and distant climate. Ecological Monographs 88: 336–352.
+\begin{hangparagraph}
+Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. (2018): Some like it hot: from individual to population responses of an arboreal arid-zone gecko to local and distant climate. --- Ecological Monographs 88: 336–-352.
+\end{hangparagraph}
 
-Henle, K. 1990. Population ecology and life history of the arboreal gecko *Gehyra variegata* in arid Australia. Herpetological Monographs 4: 30-60.
+\begin{hangparagraph}
+Henle, K. (1990): Population ecology and life history of the arboreal gecko \textit{Gehyra variegata} in arid Australia. --- Herpetological Monographs 4: 30--60.
+\end{hangparagraph}
 
-Hsieh, T. 2012. CARE1: Statistical package for population size estimation in capture-recapture models. R package version 1.1.0,  <https://CRAN.R-project.org/package=CARE1>.
+\begin{hangparagraph}
+Hsieh, T. (2012): CARE1: Statistical package for population size estimation in capture-recapture models. R package version 1.1.0,  \url{https://CRAN.R-project.org/package=CARE1}.
+\end{hangparagraph}
 
-Huggins, R.M. 1989. On the statistical analysis of capture-recapture experiments. Biometrika 76: 133-140.
+\begin{hangparagraph}
+Huggins, R.M. (1989): On the statistical analysis of capture-recapture experiments. --- Biometrika 76: 133--140.
+\end{hangparagraph}
 
-Huggins, R.M. 1991. Some practical aspects of a conditional likelihood approach to capture experiments. Biometrics 47: 725-732.
+\begin{hangparagraph}
+Huggins, R.M. (1991): Some practical aspects of a conditional likelihood approach to capture experiments. --- Biometrics 47: 725--732.
+\end{hangparagraph}
   
-Laake, J.L. 2013. RMark: An R Interface for Analysis of capture-recapture data with MARK. AFSC Processed Rep 2013-01, 25p. Alaska Fish. Sci. Cent., NOAA, Natl. Mar. Fish. Serv., 7600 Sand Point Way NE, Seattle WA 98115.
+\begin{hangparagraph}
+Laake, J.L. (2013): RMark: An R interface for analysis of capture-recapture data with MARK. AFSC Processed Rep 2013-01, 25 Seiten. --- Alaska Fish. Sci. Cent., NOAA, Natl. Mar. Fish. Serv., Seattle WA, USA.
+\end{hangparagraph}
 
-Lee, S.-M., Chao, A. 1994. Estimating population size via sample coverage for closed capture-recapture models. Biometrics 50: 88–97.
+\begin{hangparagraph}
+Lee, S.-M., Chao, A. (1994): Estimating population size via sample coverage for closed capture-recapture models. --- Biometrics 50: 88–-97.
+\end{hangparagraph}
 
-Otis, D.L., Burnham, K.P., White, G.C., Anderson, D.R. 1978. Statistical inference from capture data on closed animal populations. Wildlife Monographs 62: 1–135.
+\begin{hangparagraph}
+Otis, D.L., Burnham, K.P., White, G.C., Anderson, D.R. (1978): Statistical inference from capture data on closed animal populations. --- Wildlife Monographs 62: 1-–135.
+\end{hangparagraph}
 
-Pledger, S. 2000. Unified maximum likelihood estimates for closed capture-recapture models using mixtures. Biometrics 56: 434–442.
+\begin{hangparagraph}
+Pledger, S. (2000): Unified maximum likelihood estimates for closed capture-recapture models using mixtures. --- Biometrics 56: 434–-442.
+\end{hangparagraph}
 
-Rivest, L.P. and Baillargeon, S. 2007. Applications and extensions of Chao’s moment estimator for the size of a closed population. Biometrics 63(4): 999–1006.
+\begin{hangparagraph}
+Rivest, L.P., Baillargeon, S. (2007): Applications and extensions of Chao’s moment estimator for the size of a closed population. --- Biometrics 63(4): 999–-1006.
+\end{hangparagraph}
 
-Rivest, L., Baillargeon, S. 2022. Rcapture: Loglinear Models for Capture-Recapture Experiments. R package version 1.4-4,  <https://CRAN.R-project.org/package=Rcapture>.
+\begin{hangparagraph}
+Rivest, L., Baillargeon, S. (2022): Rcapture: Loglinear Models for Capture-Recapture Experiments. R package version 1.4-4,  \url{https://CRAN.R-project.org/package=Rcapture}.
+\end{hangparagraph}

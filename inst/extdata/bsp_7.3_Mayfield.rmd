@@ -1,14 +1,21 @@
 ---
-title:  "Beispiel 7.3. Berechnung der Tagesüberlebensraten von Stockentennestern (*Anas platyrhynchos*) für konstante und variable Überlebensraten"
+title:  "Onlinebeispiel 7.3. Berechnung der Tagesüberlebensraten von Stockentennestern (*Anas platyrhynchos*) für konstante und variable Überlebensraten"
 subtitle: "Kapitel 7.3.1.1 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
 author: "Annegret Grimm-Seyfarth"
-date: "2025-04-18"
+date: "18.04.2025"
 output:
-  pdf_document: default
+  pdf_document: 
+  word_document: default
   html_document:
     self_contained: no
     df_print: paged
-  word_document: default
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{amssymb}
+  - \usepackage[none]{hyphenat} 
+  - \newlength{\hanglen}
+  - \setlength{\hanglen}{0.5cm}
+  - \newenvironment{hangparagraph}{\par\hangindent=\hanglen \hangafter=1}{\par}
 editor_options:
   chunk_output_type: inline
   markdown:
@@ -18,12 +25,13 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
-options(width = 90)
+knitr::opts_chunk$set(width = 80)
+options(width = 80)
 ```
 
-Die Schätzung des Nesterfolgs und die Bewertung von Faktoren, die möglicherweise mit den Überlebensraten von Nestern zusammenhängen, sind zentrale Aspekte vieler Studien über Vogelpopulationen. Eine Vielzahl verschiedener Methoden zur Schätzung der Überlebensrate von Nestern wurde entwickelt, insbesondere mit verschiedenen Modellierungsansätzen.  Trotz dieser Fortschritte wird immer noch die Ad-hoc-Methode von Mayfield (Mayfield 1961) verwendet oder, in einigen Fällen, der Maximum-Likelihood-Schätzer von Johnson (1979) und Bart & Robson (1982), so wie wir sie in Kapitel 7.3.1.1 des Buches vorstellen. Diese Methoden wurden um die Einführung von Kovariablen ergänzt (Dinsmore et al. 2002, Stephens 2003, Shaffer 2004; siehe Kap. 7.3.1.2 des Buches). Dabei wird ein generalisierter linearer gemischter Modellansatz genutzt, der die selbe binomiale Likelihood nutzt wie im Originalmodell, aber zusätzlich tägliche Nestüberlebensraten als Funktion von nest-, gruppen- oder zeitspezifischen Kovariablen modelliert werden. Multipliziert man alle Tagesüberlebensraten, erhält man den Nesterfolg. Lässt man die Kovariablen weg, erhält man die Standard-Mayfield-Methode, angepasst nach Johnson (1979) und Bart & Robson (1982). In diesem Beispiel stellen wir diese Methode anhand eines Beispieldatensatzes für Stockenten (*Anas platyrhynchos*) vor.
+Die Schätzung des Nesterfolgs und die Bewertung von Faktoren, die möglicherweise mit den Überlebensraten von Nestern zusammenhängen, sind zentrale Aspekte vieler Studien über Vogelpopulationen. Eine Vielzahl verschiedener Methoden zur Schätzung der Überlebensrate von Nestern wurde entwickelt, insbesondere mit verschiedenen Modellierungsansätzen.  Trotz dieser Fortschritte wird oft immer noch die Ad-hoc-Methode von Mayfield (Mayfield 1961) verwendet, oder, in einigen Fällen, der Maximum-Likelihood-Schätzer von Johnson (1979) und Bart & Robson (1982), so wie wir sie in Kap. 7.3.1.1 des Buches vorstellen. Diese Methoden wurden um die Einführung von Kovariablen ergänzt (Dinsmore et al. 2002, Stephens 2003, Shaffer 2004; siehe Kap. 7.3.1.2 des Buches). Dabei wird ein generalisierter linearer gemischter Modellansatz genutzt, der die selbe binomiale Likelihood nutzt wie im Originalmodell, aber zusätzlich tägliche Nestüberlebensraten als Funktion von nest-, gruppen- oder zeitspezifischen Kovariablen modelliert werden. Multipliziert man alle Tagesüberlebensraten, erhält man den Nesterfolg. Lässt man die Kovariablen weg, erhält man die Standard-Mayfield-Methode, angepasst nach Johnson (1979) und Bart & Robson (1982). In diesem Beispiel stellen wir diese Methode anhand eines Beispieldatensatzes für Stockenten (*Anas platyrhynchos*) vor.
 
-Die Daten stammen aus dem Jahr 2000 aus der Region Coteau, North Dakota, und sind Teil einer Langzeitstudie (Stephens 2003). Der Datensatz enthält Informationen aus insgesamt 1.585 Beobachtungen an 565 Nestern, die an 18 Standorten während einer Nistsaison von 90 Tagen regelmäßig aufgesucht wurden. Die Intervalllänge betrug in der Regel 4, 5 oder 6 Tage (Durchschnitt = 4,66 Tage, Standardabweichung = 1,41 Tage). Dieses Beispiel wird von Rotella et al. (2004) beschrieben. Wir nutzen dazu das R-Paket RMark (Laake 2013) und zur Visualisierung ggplot2 (Wickham 2016).
+Die Daten stammen aus dem Jahr 2000 aus der Region Coteau, North Dakota, und sind Teil einer Langzeitstudie (Stephens 2003). Der Datensatz enthält Informationen aus insgesamt 1.585 Beobachtungen an 565 Nestern, die an 18 Standorten während einer Nistsaison von 90 Tagen regelmäßig aufgesucht wurden. Die Intervalllänge betrug in der Regel 4, 5 oder 6 Tage (Durchschnitt = 4,66 Tage, Standardabweichung = 1,41 Tage). Dieses Beispiel wird von Rotella et al. (2004) beschrieben. Wir nutzen dazu das R-Paket RMark (Laake 2013), zur Datenverarbeitung dplyr (Wickham et al. 2023) und zur Visualisierung ggplot2 (Wickham 2016).
 
 ```{r}
 # check.packages function: install and load multiple R packages.
@@ -36,19 +44,19 @@ check.packages <- function(pkg){
 }
 
 # benoetigte R pakete
-pakete <- c("RMark", "ggplot2")
+pakete <- c("RMark", "dplyr","ggplot2", "scales")
 
 # Pruefe und installiere
 check.packages(pakete)
 ```
 Weitere Informationen zur Nutzung des Paketes finden sich hier:
 
-https://rdrr.io/cran/RMark/man/mallard.html
+\url{https://rdrr.io/cran/RMark/man/mallard.html}
 
-https://cran.r-project.org/web/packages/RMark/RMark.pdf
+\url{https://cran.r-project.org/web/packages/RMark/RMark.pdf}
 
 # Daten einlesen und prozessieren
-Die Daten sind unter dem Datensatz *mallard* in RMark enthalten. 
+Die Daten sind unter dem Datensatz `mallard` in RMark enthalten. 
 
 ```{r}
 data(mallard)
@@ -56,45 +64,50 @@ head(mallard)
 ```
 Folgende Variablen sind im Datensatz enthalten:
 
-*FirstFound* der Tag an dem das Nest zuerst gefunden wurde
+`FirstFound` - der Tag an dem das Nest zuerst gefunden wurde
 
-*LastPresent* der letzte Tag an dem die Küken anwesend waren
+`LastPresent` - der letzte Tag an dem die Küken anwesend waren
 
-*LastChecked* der letzte Tag an dem das Nest geprüft wurde
+`LastChecked` - der letzte Tag an dem das Nest geprüft wurde
 
-*Fate* das Schicksal des Nestes; 0=geschlüpft und 1=geplündert
+`Fate` - das Schicksal des Nestes; 0 = geschlüpft und 1 = geplündert
 
-*Freq* die Frequenz von Nestern mit Daten; immer 1 in diesem Beispiel
+`Freq` - die Frequenz von Nestern mit Daten; immer 1 in diesem Beispiel
 
-*Robel* Robel-Messung der Vegetationsdicke
+`Robel` - Robel-Messung der Vegetationsdicke
 
-*PpnGrass* Anteil Gras in der Nähe des Nests
+`PpnGrass` - Anteil Gras in der Nähe des Nests
 
-*Native* Dummy-Variable 0/1; 1 bei einheimischer Vegetation
+`Native` - Dummy-Variable 0/1; 1 bei einheimischer Vegetation
 
-*Planted* Dummy-Variable 0/1; 1 wenn Bepflanzung
+`Planted` - Dummy-Variable 0/1; 1 wenn Bepflanzung
 
-*Wetland* Dummy-Variable 0/1; 1 wenn Feuchtgebietsvegetation
+`Wetland` - Dummy-Variable 0/1; 1 wenn Feuchtgebietsvegetation
 
-*Roadside* Dummy-Variable 0/1; 1 wenn Straßenrandvegetation
+`Roadside` - Dummy-Variable 0/1; 1 wenn Straßenrandvegetation
 
-*AgeFound* Alter des Nestes in Tagen an dem Tag, an dem das Nest gefunden wurde
+`AgeFound` - Alter des Nestes in Tagen an dem Tag, an dem das Nest gefunden wurde
 
-*AgeDay1* Alter des Nestes zu Beginn der Studie
+`AgeDay1` - Alter des Nestes zu Beginn der Studie
 
-Das Beispiel führt die 9 Modelle aus, die im Kapitel "Nest Survival" der Gentle Introduction to MARK verwendet werden und die in Tabelle 3 (Seite 198) von Rotella et al. (2004) dargestellt sind. Das unten gezeigte Original-Mallard-Beispiel verwendet einzelne Aufrufe der Funktion mark. Dies ist nicht so effizient wie die Verwendung von mark.wrapper und kann zu Schwierigkeiten führen, wenn verschiedene Gruppenargumente verwendet werden und eine Modellmittelung (model averaging) versucht wird. Im Anschluss wird daher der effizientere Ansatz für das Originalbeispiel gezeigt. 
+Das Beispiel führt die 9 Modelle aus, die im Kapitel Nest Survival des MARK-Benutzerhandbuches verwendet werden und die in Tabelle 3 (Seite 198) von Rotella et al. (2004) dargestellt sind. Das unten gezeigte Original-Mallard-Beispiel verwendet einzelne Aufrufe der Funktion `mark`. Dies ist nicht so effizient wie die Verwendung von `mark.wrapper` und kann zu Schwierigkeiten führen, wenn verschiedene Gruppenargumente verwendet werden und eine Modellmittelung (model averaging) versucht wird. Im Anschluss wird daher der effizientere Ansatz für das Originalbeispiel gezeigt. 
 
-Im Datensatz beschreiben die Spalten Native, Planted, Wetland und Roadside vier verschiedenen Habitate. Wir kreieren daraus eine Habitatvariable mit vier Level, die als Gruppenvariable genutzt werden kann.
+Im Datensatz beschreiben die Spalten `Native, Planted, Wetland` und `Roadside` vier verschiedenen Habitate. Wir kreieren daraus eine Habitatvariable mit vier Leveln, die als Gruppenvariable genutzt werden kann. Dazu nutzen wir die vereinfacthe Schreibweise aus dem R-Paket dplyr (Wickham et al. 2023).
 
 ```{r}
-mallard$habitat <- ifelse(mallard$Native == 1, "Native",
-                         ifelse(mallard$Planted == 1, "Planted",
-                                ifelse(mallard$Roadside == 1, "Roadside",
-                                       "Wetland")))
-mallard$habitat <- as.factor(mallard$habitat)
+mallard <- mallard %>%
+  mutate(
+    habitat = case_when(
+      Native   == 1 ~ "Native",
+      Planted  == 1 ~ "Planted",
+      Roadside == 1 ~ "Roadside",
+      TRUE          ~ "Wetland"
+    ),
+    habitat = factor(habitat, levels = c("Native", "Planted", "Roadside", "Wetland"))
+  )
 ```
 
-Nun werden die Daten für die Analyse in RMark prozessiert. Die notwendigen Daten sind hierbei der Name des Datensatzes, die Anzahl Beobachtungen (90), das gewünschte Modell ("Nest" stellt hierbei die Mayfield Methode dar)
+Nun werden die Daten für die Analyse in RMark prozessiert. Die notwendigen Daten sind hierbei der Name des Datensatzes, die Anzahl Beobachtungen (90) und das gewünschte Modell (`Nest` stellt hierbei die Mayfield-Methode dar). Als Gruppenvariable geben wir das Habitat an.
 ```{r}
 mallard.pr <- process.data(mallard,
                           nocc=90,
@@ -108,14 +121,14 @@ Zunächst zeigen wir, wie man ein einzelnes Modell in RMark aufrufen würde.
 Hab=mark(mallard,nocc=90,model="Nest",
          model.parameters=list(S=list(formula=~habitat)), groups="habitat")
 ```
-Eine Zusammenfassung des Modells bekommen wir mittels *Summary*. Man kann aber auch den kompletten Output mit Modellstruktur als Textfile kreieren lassen und dann separat abspeichern, so wie es auch mit MARK möglich ist. Dazu ruft man das Modell *Hab* auf. 
+Eine Zusammenfassung des Modells bekommen wir mittels summary-Funktion. Man kann aber auch den kompletten Output mit Modellstruktur als Textdatensatz kreieren lassen und dann separat abspeichern, so wie es auch mit MARK möglich ist. Dazu ruft man das Modell `Hab` auf. 
 ```{r}
 summary(Hab)
 ```
-Wir sehen in der Zusammenfassung den Namen des Modells [S(~habitat) ist die Überlebenswahrscheinlichkeit (Survival) in Abhängigkeit des Habitates], eine Zusammenfassung der Anzahl Parameter [Npar] und des AICc, die Beta-Schätzungen (estimate - Schätzwert, se = Standardfehler, lcl - unteres Konfidenzintervall, ucl - oberes Konfidenzintervall), die uns lediglich die Richtung des Einflusses eines Parameters zeigen, und die real geschätzten Parameter.
+Wir sehen in der Zusammenfassung den Namen des Modells [`S(~habitat)` ist die Überlebenswahrscheinlichkeit (Survival) in Abhängigkeit des Habitates], eine Zusammenfassung der Anzahl Parameter (`Npar`) und des AICc, die Beta-Schätzungen (`estimate` = Schätzwert, `se` = Standardfehler, `lcl` = unteres Konfidenzintervall, `ucl` = oberes Konfidenzintervall), die uns lediglich die Richtung des Einflusses eines Parameters zeigen, und schließlich die real geschätzten Parameter.
 
 # Modellvergleiche mit Wrapper-Funktion
-Die oben angesprochenen 9 Modelle stellen wir hier in der Wrapper-Funktion zusammen. Sie umfassen (beispielhaft für alle anderen möglichen Kombinationen) die folgenden Modelle:
+Die oben angesprochenen 9 Modelle stellen wir hier in der `wrapper`-Funktion zusammen. Sie umfassen (beispielhaft für alle anderen möglichen Kombinationen) die folgenden Modelle:
 ```{r}
 run.mallard <- function() {
  # 1. konstante Tagesüberlebensrate SD (d. h., Standard-Mayfield-Methode)
@@ -164,9 +177,9 @@ mallard.results <- run.mallard()
 # Aufrufen der Tabelle für Modellvergleiche
 mallard.results
 ```
-Das Ergebnis ist eine Modellselektionstabelle (siehe Kapitel 9.3 des Buches). Das Modell mit dem geringsten AIC-Wert ist das beste Modell. Daher wissen wir nun, dass die Tagesüberlebensrate vom Alter des Nestes und dem Anteil Gras in der Nähe des Nestes beeinflusst wird. Das konstante Modell (Mayfield-Methode) ist ganze 6,1 AIC-Punkte hinter dem besten Modell. Die Standard-Mayfield-Methode würde also in diesem Fall nicht die präzisesten Schätzungen liefern.
+Das Ergebnis ist eine Modellselektionstabelle (siehe Kap. 9.3 des Buches). Das Modell mit dem geringsten AIC-Wert ist das beste Modell. Daher wissen wir nun, dass die Tagesüberlebensrate vom Alter des Nestes und dem Anteil Gras in der Nähe des Nestes beeinflusst wird. Das konstante Modell (Mayfield-Methode) ist ganze 6,1 AIC-Punkte hinter dem besten Modell. Die Standard-Mayfield-Methode würde also in diesem Fall nicht die präzisesten Schätzungen liefern.
 
-Die Ergebnisse könnte man exportieren (auskommentiert, # muss also entfernt werden). Außerdem kann die Modellselektionstabelle mit dem Befehl *sink* als Textfile gespeichert werden. Mit *print* lässt man es sich in R anzeigen, mit einem weiteren *sink* verschwindet es wieder.
+Die Ergebnisse könnte man exportieren (auskommentiert, # muss also entfernt werden). Außerdem kann die Modellselektionstabelle mit dem Befehl `sink` als Textdatensatz gespeichert werden. Mit `print` lässt man es sich in R anzeigen, mit einem weiteren `sink` verschwindet es wieder.
 ```{r}
 #export.MARK(mallard.results$S.Age$data,
 #            "MallDSR",
@@ -178,7 +191,7 @@ print(mallard.results)
 sink()
 ```
 
-Die Modellnamen, die wir initial vergeben haben, ruft man folgender Weise noch einmal auf: 
+Die Modellnamen, die wir initial vergeben haben, ruft man folgenderweise noch einmal auf: 
 ```{r}
 names(mallard.results)
 ```
@@ -250,11 +263,12 @@ Plotten wir das Ganze mitteles ggplot:
 ggplot(AgePpn.survival, aes(x = Age, y = DSR)) +
   geom_line() +
   geom_ribbon(aes(ymin = lclDSR, ymax = uclDSR), alpha = 0.3) +
+  scale_y_continuous(labels = label_number(decimal.mark = ",", accuracy = .01)) +
   xlab("Nestalter (Tage)") +
   ylab("Geschätzte Tagesüberlebensrate") +
-  theme_bw()
+  theme_classic()
 ```
-Wir sehen den Anstieg der Tagesüberlebensrate mit dem Nestalter. Grau hinterlegt ist das 95%-Konfidenzintervall.
+Wir sehen den Anstieg der Tagesüberlebensrate mit dem Nestalter. Grau hinterlegt ist das 95 %-Konfidenzintervall.
 
 ### Abhängigkeit vom Anteil Gras um das Nest
 Wir nutzen hier die verbleibenden Zeilen der Schätzwerte aus dem obigen Datenframe.
@@ -280,27 +294,51 @@ Plotten wir das Ganze mitteles ggplot:
 ggplot(AgePpn.survival, aes(x = PpnGrass, y = DSR)) +
   geom_line() +
   geom_ribbon(aes(ymin = lclDSR, ymax = uclDSR), alpha = 0.3) +
+  scale_y_continuous(labels = label_number(decimal.mark = ",", accuracy = .01)) +
+  scale_x_continuous(labels = label_number(decimal.mark = ",", accuracy = .01)) +
   xlab("Anteil Gras um das Nest") +
   ylab("Geschätzte Tagesüberlebensrate") +
-  theme_bw()
+  theme_classic()
 ```
-Auch hier sehen wir den Anstieg der Tagesüberlebensrate mit dem Anteil Gras um das Nest. Das 95%-Konfidenzintervall ist in grau dargestellt.
+Auch hier sehen wir den Anstieg der Tagesüberlebensrate mit dem Anteil Gras um das Nest. Das 95 %-Konfidenzintervall ist in grau dargestellt.
 
 # Literaturverzeichnis
-Bart, J., D.S. Robson. 1982. Estimating survivorship when the subjects are visited periodically. Ecology 63: 1078–1090.
+\begin{hangparagraph}
+Bart, J., Robson, D.S. (1982): Estimating survivorship when the subjects are visited periodically. --- Ecology 63: 1078-–1090.
+\end{hangparagraph}
 
-Dinsmore, S.J., G.C. White, F.L. Knopf. 2002. Advanced techniques for modeling avian nest survival. Ecology 83: 3476–3488.
+\begin{hangparagraph}
+Dinsmore, S.J., White, G.C., Knopf, F.L. (2002): Advanced techniques for modeling avian nest survival. --- Ecology 83: 3476-–3488.
+\end{hangparagraph}
 
-Johnson, D.H. 1979. Estimating nest success: the Mayfield method and an alternative. Auk 96: 651–661.
+\begin{hangparagraph}
+Johnson, D.H. (1979): Estimating nest success: the Mayfield method and an alternative. --- Auk 96: 651–-661.
+\end{hangparagraph}
 
-Laake, J.L. 2013. RMark: An R Interface for Analysis of Capture-Recapture Data with MARK. AFSC Processed Rep 2013-01, 25p. Alaska Fish. Sci. Cent., NOAA, Natl. Mar. Fish. Serv., 7600 Sand Point Way NE, Seattle WA 98115.
+\begin{hangparagraph}
+Laake, J.L. (2013): RMark: An R interface for analysis of capture-recapture data with MARK. --- AFSC Processed Rep 2013-01, 25p. Alaska Fish. Sci. Cent., NOAA, Natl. Mar. Fish. Serv., Seattle WA, USA.
+\end{hangparagraph}
 
-Mayfield, H.F. 1961. Nesting success calculated from exposure. Wilson Bulletin 73: 255–261.
+\begin{hangparagraph}
+Mayfield, H.F. (1961): Nesting success calculated from exposure. --- Wilson Bulletin 73: 255–-261.
+\end{hangparagraph}
 
-Rotella, J.J., Dnismore, S.J., Shaffer, T.L. 2004. Modeling nest–survival data: a comparison of recently developed methods that can be implemented in MARK and SAS. Animal Biodiversity and Conservation 27: 187–205.
+\begin{hangparagraph}
+Rotella, J.J., Dnismore, S.J., Shaffer, T.L. (2004): Modeling nest–survival data: a comparison of recently developed methods that can be implemented in MARK and SAS. --- Animal Biodiversity and Conservation 27: 187–-205.
+\end{hangparagraph}
 
-Shaffer, T.L. 2004. A unified approach to analyzing nest success. Auk 121: 526–540.
+\begin{hangparagraph}
+Shaffer, T.L. (2004): A unified approach to analyzing nest success. --- Auk 121: 526-–540.
+\end{hangparagraph}
 
-Stephens, S.E. 2003. The influence of landscape characteristics on duck nesting success in the Missouri Coteau Region of North Dakota. Ph.D. Dissertation, Montana State University.
+\begin{hangparagraph}
+Stephens, S.E. (2003): The influence of landscape characteristics on duck nesting success in the Missouri Coteau Region of North Dakota. --- Ph.D. Dissertation, Montana State University.
+\end{hangparagraph}
 
-Wickham, H. 2016. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag New York.
+\begin{hangparagraph}
+Wickham, H. (2016): ggplot2: Elegant graphics for data analysis. --- Springer-Verlag New York.
+\end{hangparagraph}
+
+\begin{hangparagraph}
+Wickham, H., François, R., Henry, L., Müller, K., Vaughan, D. (2023): dplyr: A grammar of data manipulation. R package version 1.1.4, \url{https://CRAN.R-project.org/package=dplyr}.
+\end{hangparagraph}

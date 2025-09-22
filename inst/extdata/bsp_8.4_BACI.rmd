@@ -1,14 +1,21 @@
 ---
-title: "Beispiel 8.4. Einfluss einer Vegetationsentfernung auf die Molchlarven in Auengewässern"
+title: "Onlinebeispiel 8.4. Einfluss einer Vegetationsentfernung auf die Molchlarven in Auengewässern"
 subtitle: "Kapitel 8.3.1 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
 author: "Annegret Grimm-Seyfarth"
-date: "2025-04-22"
+date: "22.04.2025"
 output:
-  pdf_document: default
+  pdf_document: 
+  word_document: default
   html_document:
     self_contained: no
     df_print: paged
-  word_document: default
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{amssymb}
+  - \usepackage[none]{hyphenat} 
+  - \newlength{\hanglen}
+  - \setlength{\hanglen}{0.5cm}
+  - \newenvironment{hangparagraph}{\par\hangindent=\hanglen \hangafter=1}{\par}
 editor_options:
   chunk_output_type: inline
   markdown:
@@ -18,10 +25,11 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+knitr::opts_chunk$set(width = 80)
+options(width = 80)
 ```
 
-In diesem Beispiel zeigen wir eine einfache BACI-Analyse in R. Für klassische Regressionsanalysen mittels *lm* und *glm* sind keine weiteren Pakete nötig. Allerdings erleichtern die Pakete MuMIn (Bartón 2024) und emmeans (Lenth 2025) den Umgang mit Modellselektion und Interaktionen. Außerden nutzen wir das Paket ggplot2 für Visualisierungen (Wickham 2016). Als Datensatz nutzen wir ein Larvenmonitoring im Leipziger Auwald, nachdem ein Gewässer von Vegetation freigeschnitten wurde. 
-
+In diesem Beispiel zeigen wir eine einfache Vorher-Nachher-Kontrolle-Effekt-Analyse (engl. Before-After-Control-Impact Assessment, oder kurz BACI-Analyse) in R. Für klassische Regressionsanalysen mittels `lm` und `glm` sind keine weiteren R-Pakete nötig, jedoch für die `glm.nb` Modelle das Paket MASS (Venables & Ripley 2002). Allerdings erleichtern die Pakete MuMIn (Bartón 2024) und emmeans (Lenth 2025) den Umgang mit Modellselektion und Interaktionen. Für die Modelldiagnostik nutzen wir die Pakete DHARMa (Hartig 2024) und performance (Lüdecke et al. 2021). Außerden nutzen wir das Paket ggplot2 für Visualisierungen (Wickham 2016). Als Datensatz nutzen wir ein Larvenmonitoring im Leipziger Auwald aus zwei aufeinanderfolgenden Jahren, in dem ein Gewässer zwischen den Erfassungen von Vegetation freigeschnitten wurde. 
 
 ```{r}
 # check.packages function: install and load multiple R packages.
@@ -34,14 +42,14 @@ check.packages <- function(pkg){
 }
 
 # benoetigte R pakete
-pakete <- c("MuMIn", "emmeans", "ggplot2")
+pakete <- c("MASS", "MuMIn", "emmeans", "ggplot2", "DHARMa", "performance")
 
 # Pruefe und installiere
 check.packages(pakete)
 ```
 
 # Daten einladen
-Im Leipziger Auwald leben viele Amphibien in den temporären Gewässern (Lachen). Im Zuge eines Renaturierungsprojektes stehen die Larven von Kamm- (*Triturus cristatus*) und Teichmolchen (*Lissotriton vulgaris*) im Fokus. Im Herbst 2023 wurde ein Gewässer im Zuge einer Pflegemaßnahme für eine Oberleitung komplett von Vegetation freigeschnitten. Wir wollen nun die Auswirkungen auf den Reproduktionserfolg der beiden Molcharten testen. Dazu nutzen wir neben dem Einflussgewässer noch ein weiteres in naher Umgebung, das jedoch weit genug weg ist, dass es von der Maßnahme nicht betroffen sein dürfte.
+Im Leipziger Auwald leben viele Amphibien in den temporären Gewässern (Lachen). Im Zuge eines Renaturierungsprojektes stehen die Larven von Kamm- (*Triturus cristatus*) und Teichmolchen (*Lissotriton vulgaris*) im Fokus. Im Herbst 2023 wurde ein Gewässer im Zuge einer Pflegemaßnahme für eine Oberleitung komplett von Vegetation freigeschnitten. Wir wollen nun die Auswirkungen auf den Reproduktionserfolg der beiden Molcharten testen. Dazu nutzen wir neben dem Einflussgewässer noch ein weiteres Gewässer in naher Umgebung, das jedoch weit genug weg ist, um von der Maßnahme nicht betroffen zu sein.
 
 Beide Gewässer wurden jeweils 2023 und 2024 im Juni für fünf aufeinanderfolgende Tage mittels Minnow Traps befangen. Da jeweils die gleiche Fallenzahl genutzt wurde (6 Fallen, jeweils 2 Öffnungen), können die Daten direkt als relative Häufigkeiten verglichen werden. Andernfalls hätte man einen Index berechnen müssen, der die Anzahl Fallen bzw. Fallenöffnungen und Fangtage berücksichtigt.
 
@@ -51,7 +59,7 @@ UlmerBuch::beispiel.pfad() #Pfad zu den Beispieldaten
 BAdata <- read.csv2("Burgaue_Larven.csv")
 head(BAdata)
 ```
-Das Kontrollgewässer wurde hier als "Control1", das Einflussgewässer als "Treatment" benannt. Als Zeit gilt 2023 als "Before" und 2024 als "After".
+Das Kontrollgewässer wurde hier als "Control1", das Einflussgewässer als "Treatment" benannt (Parameter `Group`). Als Zeit gilt 2023 als "Before" und 2024 als "After" (Parameter `Time`).
 
 Da in R standardmäßig alle Faktoren alphanumerisch sortiert werden, müssen wir für die Zeit die Sortierung ändern.
 ```{r}
@@ -59,7 +67,7 @@ BAdata$Time <- factor(BAdata$Time, levels = c("Before", "After"))
 ```
 
 # Generalisiertes lineares Modell
-Da wir hier als Ergebnisvariable Zähldaten verwenden, sind die Residuen in unserem Modell Poissonverteilt. Wir bauen nun die beiden Modelle mit der Interaktion Group und Time, dargestellt durch ein "*".
+Da wir hier als Ergebnisvariable Zähldaten verwenden, sind die Residuen in unserem Modell Poissonverteilt. Wir bauen nun die beiden Modelle mit der Interaktion aus `Group` und `Time`, dargestellt durch ein `*`.
 ```{r}
 # Teichmolch
 glm.lv <- glm(LV_larvae_Numbers_of_Individual ~ Group * Time, 
@@ -69,23 +77,44 @@ glm.tc <- glm(TC_larvae_Numbers_of_Individual ~ Group * Time,
                data = BAdata, family = "poisson")
 ```
 
-Schauen wir uns die Arten im Detail an.
+Bevor wir weitermachen, müssen wir noch prüfen, dass die Modelle tatsächlich valide sind. Dazu nutzen wir den Verteilungstest aus dem R-Paket DHARMa (Hartig 2024) und prüfen auf sogenannte Zero-inflation (d.h., zu viele 0en im Datensatz) mithilfe des R-Paketes performance (Lüdecke et al. 2021). Mittels `simulationOutput` kann man den Verteilungstest auch grafisch darstellen. Hierbei werden automatisch Achsenbeschriftungen erstellt, diese sind daher in Englisch.
+```{r}
+testDispersion(glm.lv) # kein signifikanter Unterschied, Modell ist ok
+check_zeroinflation(glm.lv) # keine Zero-inflation, Modell ist ok
+simulationOutput <- simulateResiduals(fittedModel = glm.lv, plot = T)
+
+testDispersion(glm.tc) # signifikanter Unterschied, Verteilung falsch
+check_zeroinflation(glm.tc) # keine Zero-inflation, Modell ist ok
+simulationOutput <- simulateResiduals(fittedModel = glm.tc, plot = T)
+```
+Für den Teichmolch ist das Modell unauffällig, für den Kammmolch gibt es jedoch eine signifikante Abweichung hinsichtlich der Verteilung (p = 0,024). Daher nutzen wir alternativ zur Poisson-Verteilung die Negativbinomialverteilung.
+
+```{r}
+glm.tc <- glm.nb(TC_larvae_Numbers_of_Individual ~ Group * Time, 
+               data = BAdata)
+testDispersion(glm.tc) # signifikanter Unterschied, Verteilung falsch
+check_zeroinflation(glm.tc) # keine Zero-inflation, Modell ist ok
+simulationOutput <- simulateResiduals(fittedModel = glm.tc, plot = T)
+```
+Nun gibt es keine weiteren Abweichungen, das Modell für den Kammmolch ist ebenfalls ok.
+
+Schauen wir uns nun die Arten nun im Detail an.
 
 ## Teichmolch
-Vergleichen wir zunächst die Modelle mit jeweils linearen Kombinationen der Parameter. Dazu nutzen wir die *dredge* Funktion aus dem R-Paket MuMIn. 
+Vergleichen wir zunächst die Modelle mit jeweils linearen Kombinationen der Parameter. Dazu nutzen wir die *dredge* Funktion aus dem R-Paket MuMIn. Eine Einführung in Modellvergleiche findet sich in Kapitel 9.3 des Buches.
 ```{r}
 # Modellvergleich
 glm.lv.mod <- dredge(glm.lv, options(na.action = "na.fail"))
 glm.lv.mod
 ```
-Wir sehen, dass die lineare Kombination aus Group und Time besser abschneidet als die Interaktion. Aller-dings ist das Modell mit Interaktion nur 1,85 AICc Punkte hinten - ein Einfluss der Intervention (Freischneidung der Fläche) kann also nicht ausgeschlossen werden. Eine Einführung in Modellvergleiche findet sich in Kapitel 9.3 des Buches.
+Wir sehen, dass die lineare Kombination aus `Group` und `Time` besser abschneidet als die Interaktion. Allerdings ist das Modell mit Interaktion nur 1,85 AICc Punkte schlechter - ein Einfluss der Intervention (Freischneidung der Fläche) kann also nicht ausgeschlossen werden. 
 
 Schauen wir uns die Schätzwerte der beiden besten Modelle an.
 
 ```{r}
 get.models(glm.lv.mod, subset = 1:2)
 ```
-Im "Treatment" Gewässer gab es mehr Teichmolchlarven, ebenso 2024 ggü. 2023. 
+Im `Treatment`-Gewässer gab es mehr Teichmolchlarven, ebenso gab es 2024 mehr als 2023. 
 
 Schauen wir noch nach möglicher Signifikanz der Parameter
 
@@ -95,15 +124,15 @@ drop1(glm(LV_larvae_Numbers_of_Individual ~ Group + Time,
                data = BAdata, family = "poisson"), 
       test="Chi")
 ```
-Während die Gesamtinteraktion nicht signifikant ist, sind es die Einzelparameter. Wenn es einen Interaktionseffekt (also Einfluss der Intervention) gibt, ist dieser schwächer als die Effekte der einzelnen Parameter.
+Während die Gesamtinteraktion nicht signifikant ist, sind es die Einzelparameter ohne Interaktion. Wenn es einen Interaktionseffekt (also Einfluss der Intervention) gibt, ist dieser schwächer als die Effekte der einzelnen Parameter.
 
 ### Interaktionseffekte
-Die einzelnen Interaktionseffekte können wir uns auch mithilfe des emmeans Paketes anschauen.
+Die einzelnen Interaktionseffekte können wir uns auch mithilfe des emmeans-Paketes anschauen.
 ```{r}
 l.em <- emmeans(glm.lv, ~ Group * Time)
 l.em
 ```
-Im Treatment Gewässer waren also auch 2023 mehr Larven als 2024, jedoch ist der Unterschied 2024 deutlich stärker zu sehen. In beiden Gewässern gibt es 2024 allerdings mehr Larven als 2023, weshalb der mögliche positive Effekt der Pflegemaßnahme maskiert sein könnte. 
+Im `Treatment`-Gewässer waren also auch 2023 mehr Larven als im `Control1`-Gewässer, jedoch ist der Unterschied 2024 deutlich stärker zu sehen. In beiden Gewässern gibt es 2024 allerdings mehr Larven als 2023, weshalb der mögliche positive Effekt der Pflegemaßnahme maskiert sein könnte. 
 
 ### Graphische Darstellung
 ```{r}
@@ -156,24 +185,24 @@ Vergleichen wir zunächst die Modelle mit jeweils linearen Kombinationen der Par
 glm.tc.mod <- dredge(glm.tc, options(na.action = "na.fail"))
 glm.tc.mod
 ```
-Wir sehen, dass es hier keinen statistischen Unterschied zwischen dem Null-Modell (ohne Parameter), der Group bzw. deren Interaktion mit Time gibt. Alle Modelle liegen nur wenige AICc Punkte auseinander. Ein Einfluss der Intervention (Freischneidung der Fläche) kann also nicht ausgeschlossen werden. 
+Wir sehen, dass es hier eigentlich keinen Einfluss der Intervention oder der Zeit gibt, da das zweitbeste Modell bereits mehr als 2 AICc-Punkte dahinter liegt. 
 
-Schauen wir uns die Schätzwerte der drei besten Modelle an.
+Schauen wir uns dennoch die Schätzwerte der drei besten Modelle an.
 
 ```{r}
 get.models(glm.tc.mod, subset = c(1:3))
 ```
-Im "Treatment" Gewässer gab es insgesamt über beide Jahre mehr Teichmolchlarven. Der Zeiteffekt steckt jedoch in der Interaktion, dies ist schwierig zu interpretieren - zur Sicherheit schaut man sich unten die Interaktionseffekte an. 
+Im `Treatment`-Gewässer gab es insgesamt über beide Jahre tendenziell mehr Teichmolchlarven. Der Zeiteffekt ist nur schwach ausgeprägt, es gibt aber ebenfalls den Trend, dass 2024 mehr Larven vorhanden waren. 
 
 Schauen wir noch nach möglicher Signifikanz der Parameter
 
 ```{r}
 drop1(glm.tc, test="Chi")
-drop1(glm(TC_larvae_Numbers_of_Individual ~ Group + Time, 
-               data = BAdata, family = "poisson"), 
+drop1(glm.nb(TC_larvae_Numbers_of_Individual ~ Group + Time, 
+               data = BAdata), 
       test="Chi")
 ```
-In diesem Modell ist die Gesamtinteraktion signifikant, während die Einzelparameter (eines Modelles ohne Interaktion) es nicht wären. Es gibt also mit großer Sicherheit einen Interaktionseffekt und damit einen Effekt der Maßnahme.
+In diesem Modell ist die Gesamtinteraktion signifikant, während die Einzelparameter (eines Modelles ohne Interaktion) es nicht wären. Der Likelihood-Ratio-Test zeigt also doch einen möglichen Interaktionseffekt und damit einen Effekt der Maßnahme.
 
 ### Interaktionseffekte
 Die einzelnen Interaktionseffekte können wir uns auch mithilfe des emmeans Paketes anschauen.
@@ -181,7 +210,7 @@ Die einzelnen Interaktionseffekte können wir uns auch mithilfe des emmeans Pake
 l.em <- emmeans(glm.tc, ~ Group * Time)
 l.em
 ```
-Während 2023 im Treatment Gewässer weniger Kammmolchlarven als im Kontrollgewässer waren (mit nur sehr geringem Unterschied), befanden sich nach der Maßnahme im Treatmentgewässer deutlich mehr Kamm-molchlarven, im Kontrollgewässer deutlich weniger als im Vorjahr. 
+Während 2023 im `Treatment`-Gewässer weniger Kammmolchlarven als im Kontrollgewässer waren (mit nur geringem Unterschied), befanden sich nach der Maßnahme im `Treatment`-Gewässer deutlich mehr Kammmolchlarven, im Kontrollgewässer deutlich weniger als im Vorjahr. Die Unterschiede sind jedoch nicht sehr groß.
 
 ### Graphische Darstellung
 ```{r}
@@ -225,15 +254,34 @@ ggplot(BAdata, aes(x = Group, y = TC_larvae_Numbers_of_Individual,
 
 
 ```
-Schauen wir uns nur die Boxplots an (also die Mediane, nicht die Mittelwerte der Interaktionen), sehen wir, dass die Kammmolchlarven von 2023 nach 2024 eigentlich zurückgegangen sind, wie im Kontrollgewässer sichtbar. Im Gewässer mit der Pflegemaßnahme sind sie jedoch nicht zurückgegangen, was darauf schließen lässt, dass die Maßnahme für die Kammmolche positiv war.
+Schauen wir uns nur die Boxplots an (also die Mediane, nicht die Mittelwerte der Interaktionen), sehen wir, dass die Kammmolchlarven von 2023 nach 2024 eigentlich zurückgegangen sind, wie im Kontrollgewässer sichtbar. Im Gewässer mit der Pflegemaßnahme sind sie jedoch nicht zurückgegangen, was darauf schließen lässt, dass die Maßnahme für die Kammmolche ebenfalls positiv war.
 
-Insgesamt hatte die Freischneidung also vor allem auf die Kammmmolche einen positiven Effekt, wobei auch die Teichmolche etwas davon profitiert haben.
+Insgesamt hatte die Freischneidung also auf die Molchlarven einen positiven Effekt.
 
-Bei Analysen mit mehreren Gebieten vor und nach dem Eingriff mit jeweils mehreren Beobachtungen sollte man ggf. statt eines (generalisierten) linearen Modells ein gemischtes (generalisiertes) lineares Modell nutzen, bei dem das Gebiet als Random Intercept eingegeben wird.
+Bei Analysen mit mehreren Gebieten vor und nach dem Eingriff mit jeweils mehreren Beobachtungen sollte man ggf. statt eines (generalisierten) linearen Modells ein gemischtes (generalisiertes) lineares Modell nutzen, bei dem das Gebiet als sogenannter `Random Intercept` eingegeben wird.
 
 # Literaturverzeichnis
-Bartoń, K. 2024. MuMIn: Multi-model inference. R package version 1.48.9/r534, <https://R-Forge.R-project.org/projects/mumin/>
+\begin{hangparagraph}
+Bartoń, K. (2024): MuMIn: Multi-model inference. R package version 1.48.9/r534, \url{https://R-Forge.R-project.org/projects/mumin/}
+\end{hangparagraph}
 
-Lenthm R. 2025. emmeans: Estimated marginal means, aka least-squares means. R package version 1.11.0, <https://CRAN.R-project.org/package=emmeans>
+\begin{hangparagraph}
+Hartig, F. (2024): DHARMa: Residual diagnostics for hierarchical (multi-level / mixed) regression models. R package version 0.4.7,
+  \url{https://CRAN.R-project.org/package=DHARMa}
+\end{hangparagraph}
 
-Wickham, H. 2016. ggplot2: Elegant graphics for data analysis. Springer-Verlag New York.
+\begin{hangparagraph}
+Lenthm, R. (2025): emmeans: Estimated marginal means, aka least-squares means. R package version 1.11.0, \url{https://CRAN.R-project.org/package=emmeans}
+\end{hangparagraph}
+
+\begin{hangparagraph}
+Lüdecke, L., Ben-Shachar, M.S., Patil, I., Waggoner, P., Makowski, D. (2021): performance: An R package for assessment, comparison and testing of statistical models. --- Journal of Open Source Software 6(60): 3139.
+\end{hangparagraph}
+
+\begin{hangparagraph}
+Venables, W.N., Ripley, B.D. (2002): Modern applied statistics with S. Fourth Edition. --- Springer, New York.
+\end{hangparagraph}
+
+\begin{hangparagraph}
+Wickham, H. (2016): ggplot2: Elegant graphics for data analysis. --- Springer-Verlag New York.
+\end{hangparagraph}

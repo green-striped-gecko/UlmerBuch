@@ -1,8 +1,8 @@
 ---
-title: "Beispiel 4.3 Wann ist ein Baufeld frei von einer umzusiedelnden Art?"
+title: "Onlinebeispiel 4.3 Wann ist ein Baufeld frei von einer umzusiedelnden Art?"
 subtitle: "Kapitel 4.2 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
 author: "Bernd Gruber"
-date: 2022-08-29
+date: 29.08.2022
 output:
   pdf_document: 
   word_document: default
@@ -12,43 +12,60 @@ output:
   latex_engine: xelatex
 header-includes:
   - \usepackage{amssymb}
+  - \usepackage[none]{hyphenat} 
+  - \newlength{\hanglen}
+  - \setlength{\hanglen}{0.5cm}
+  - \newenvironment{hangparagraph}{\par\hangindent=\hanglen \hangafter=1}{\par}
 editor_options:
   chunk_output_type: inline
   markdown:
     wrap: 72
 ---
 
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+knitr::opts_chunk$set(width = 80)
+options(width = 80)
+```
+
+
+
 # Wann ist ein fehlender Nachweis ein Fehlen?
 
-Dieses Beispiel erlaubt die Berechnung der Anzahl der Erfassungen, die notwendig sind, um die Abwesenheit einer Art fest zu stellen. Die Berechnung hat als Annahme, dass die Nachweisewahrscheinlichkeit einer Art während einer Erfassung bekannt und über den Untersuchungszeitraum konstant ist (siehe hierzu Kapitel 4.2 des Buches). Der Beispiel Code erlaubt, die Nachweisewahrscheinlichkeit *p* und die gewünschte Sicherheit *P* (sicher) anzupassen.
+Dieses Beispiel erlaubt die Berechnung der Anzahl der Erfassungen, die notwendig sind, um die Abwesenheit einer Art fest zu stellen. Die Berechnung hat als Annahme, dass die Nachweiswahrscheinlichkeit einer Art während einer Erfassung bekannt und über den Untersuchungszeitraum konstant ist (siehe hierzu Kapitel 4.2 des Buches). Der Beispielcode erlaubt, die Nachweiswahrscheinlichkeit *p* und die gewünschte Sicherheit *P* (sicher) anzupassen.
 
 ```{r}
 n.erfass <- function(p, sicher) {
 	res <- (log(1-sicher))/log(1-p)
-	if (length(res)==1) cat("Es sind ", round(res,4),"[gerundet",ceiling(res),"]", 
+	if (length(res)==1) cat("Es sind ", format(round(res,4), decimal.mark = ",", 
+	                                                 nsmall = 2),
+	                        "[gerundet",format(ceiling(res), decimal.mark = ",", 
+	                                                 nsmall = 2),"]", 
 	                        "Erfassungen notwendig, um eine Sicherheit von",
 	                        sicher*100,"% zu haben","\n","(bei einer einmaligen", 
 	                        "Erfassungswahrscheinlichkeit von ",p*100,"%), dass", 
 	                        "eine Art,","\n", "welche vorher anwesend war,", 
 	                        "nun abwesend ist.", 
-	                        "Bitte beachten dass die Anzahl der Erfassungen", "\n",
-	                        "aufgerundet, werden sollten.")
+	                        "Bitte beachten, dass die Anzahl der Erfassungen", "\n",
+	                        "aufgerundet werden sollte.", "\n")
 	return(ceiling(res))
 }
 ```
 
 ### Berechnung für eine bestimmte Kombination von Werten
 
-Du kannst die Werte für `p` und `sicher` verändern. Bei einer Nachweiswahrscheinlichkeit von p = 0,96 und einer gewünschten Sicherheit von P = 90% rufst du das Modell folgendermaßen auf:
+Du kannst die Werte für `p` und `sicher` verändern. Bei einer Nachweiswahrscheinlichkeit von *p* = 0,95 und einer gewünschten Sicherheit von *P* = 90 % rufst du das Modell folgendermaßen auf:
 
 ```{r}
 n.erfass(p=0.95, sicher=0.9)
 ```
 
-### Plot für verschieden Werte von p
+### Plot für verschieden Werte von *p*
 
 ```{r}
-# Wahrscheinlichkeiten eine Art während einer Erfassung zu finden 
+# Wahrscheinlichkeiten, eine Art während einer Erfassung zu finden 
 # zwischen 0.05 bis 0.95 in 0,05er Schritten
 ps <- seq(0.05,0.95, 0.05) 
 ```
@@ -56,7 +73,7 @@ ps <- seq(0.05,0.95, 0.05)
 ```{r}
 # Sicherheit für das Ereignis, 
 # dass die Art abwesend ist, wenn die Fläche vorher besiedelt war 
-# 95%
+# 95 %
 sicher <- 0.95
 ```
 
@@ -64,6 +81,11 @@ sicher <- 0.95
 #Berechnung und Darstellung für 1:n Erfassungen
 
 is <- n.erfass(p=ps, sicher=0.9)
-plot(ps,is, ylab="# Erfassungen", xlab="Nachweiswahrscheinlichkeit", 
-     type="b", pch=16)
+{plot(ps,is, ylab="# Erfassungen", xlab="Nachweiswahrscheinlichkeit", 
+     type="b", pch=16, xaxt="n")
+axis(
+  side = 1,                     
+  at = pretty(ps),               
+  labels = format(pretty(ps), decimal.mark = ",", nsmall = 2))   
+}
 ```

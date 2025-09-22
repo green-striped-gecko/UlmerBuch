@@ -1,14 +1,21 @@
 ---
-title: "Beispiel 8.5. Wachstumsrate einer Erdkrötenpopulation an einem Amphibienschutzzaun"
+title: "Onlinebeispiel 8.5. Wachstumsrate einer Erdkrötenpopulation an einem Amphibienschutzzaun"
 subtitle: "Kapitel 8.3.2 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
 author: "Annegret Grimm-Seyfarth"
-date: "2025-04-22"
+date: "22.04.2025"
 output:
-  pdf_document: default
+  pdf_document: 
+  word_document: default
   html_document:
     self_contained: no
     df_print: paged
-  word_document: default
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{amssymb}
+  - \usepackage[none]{hyphenat} 
+  - \newlength{\hanglen}
+  - \setlength{\hanglen}{0.5cm}
+  - \newenvironment{hangparagraph}{\par\hangindent=\hanglen \hangafter=1}{\par}
 editor_options:
   chunk_output_type: inline
   markdown:
@@ -18,31 +25,136 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+knitr::opts_chunk$set(width = 80)
+options(width = 80)
 ```
 
 In diesem Beispiel zeigen wir eine Regressionsanalyse in R. Für klassische Regressionsanalysen mittels *lm* und *glm* sind keine weiteren Pakete nötig. Als Datensatz nutzen wir das Beispiel aus 8.2. Wir laden hier die Daten noch einmal neu ein, mit leichten Anpassungen.
 
 # Daten einladen
-Am Wasserwerk Hedem, Preußisch-Oldendorf, wurden vom Kreis Minden von 1996 bis 2012 Erdkröten an den Amphibienschutzzäunen erfasst. Die Bestandsentwicklung ist in untenstehender Tabelle dargestellt. Zusätzlich kreieren wir die Zeitspalte, die die Datenlücke von 2008 berücksichtigt. 
+Am Wasserwerk Hedem, Preußisch-Oldendorf, wurden vom Kreis Minden von 1996 bis 2012 Erdkröten an den Amphibienschutzzäunen erfasst. Die Bestandsentwicklung ist in untenstehender Tabelle dargestellt (Seyring et al. 2024). Zusätzlich kreieren wir die Zeitspalte, die die Datenlücke von 2008 berücksichtigt. 
 ```{r}
-kroeten <- data.frame(jahr = c(1996:2007,2009:2012),
+kroeten <- data.frame(Jahr = c(1996:2007,2009:2012),
                       t = c(0:11,13:16),
-    anzahl = c(311,564,257,645,797,589,412,177,398,138,235,265,315,138,112,37))
+    Anzahl = c(311,564,257,645,797,589,412,177,398,138,235,265,315,138,112,37))
 kroeten
 ```
 
 Alternativ hätten wir einen Datensatz kreieren können, in dem das fehlende Jahr 2008 als NA dargestellt wird. Dies macht für die Analyse keinen Unterschied. 
 ```{r}
-kroeten2 <- data.frame(jahr = c(1996:2012),
+kroeten2 <- data.frame(Jahr = c(1996:2012),
                        t = 0:16,
-    anzahl = c(311,564,257,645,797,589,412,177,398,138,235,265,NA,315,138,112,37))
+    Anzahl = c(311,564,257,645,797,589,412,177,398,138,235,265,NA,315,138,112,37))
 kroeten2
 ```
+
 # Logarithmisches Wachstumsmodell
 Wir logarithmieren die Populationsgröße und lassen sie von der Zeit abhängen. Dabei ist wichtig, dass das fehlende Jahr berücksichtigt wird (ein Zeitschritt in t wird übersprungen). 
 ```{r}
-mod1 <- lm(log(anzahl)~t, data=kroeten)
+mod1 <- lm(log(Anzahl)~t, data=kroeten)
 # Zusammenfassung des Modells
 summary(mod1)
 ```
-Das Modell ist signifikant (gesamt-p-Wert: 0,001, in diesem Fall kann der p-Wert aus der summary Funktion genutzt werden) und zeigt einen Wachstumsfaktor von -0,11. Eine Nicht-Beachtung des fehlenden Jahres würde jedoch einen stärkeren Trend ergeben.
+Das Modell ist signifikant (gesamt-p-Wert: 0,001, in diesem Fall kann der p-Wert aus der summary-Funktion genutzt werden) und zeigt einen Wachstumsfaktor von -0,11. Eine Nicht-Beachtung des fehlenden Jahres würde jedoch einen stärkeren Trend ergeben.
+
+# Granger-Kausalitätstest (Granger-Causality-Test)
+Eine weitere parametrische Analysemethode, wenn man mehrere Zeitreihen vorliegen hat, ist der Granger-Kausalitätstest oder Granger-Causality-Test (Granger 1969). Er stammt eigentlich aus ökonomischen Analysen, kann aber auch für ökologische Analysen angewendet werden. 
+
+Wir benötigen hierzu das R-Paket lmtest (Zeileis & Hothorn 2002). Außerdem nutzen wir dplyr (Wickham et al. 2023) zur Datenmanipulation.
+
+```{r, warning=FALSE, message=FALSE}
+# check.packages function: install and load multiple R packages.
+# Function from: https://gist.github.com/smithdanielle/9913897
+check.packages <- function(pkg){
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) 
+    install.packages(new.pkg, dependencies = TRUE)
+  sapply(pkg, require, character.only = TRUE)
+}
+
+# benoetigte R pakete
+pakete <- c("lmtest","dplyr")
+
+# Pruefe und installiere
+check.packages(pakete)
+```
+
+Zur Demonstation erstellen wir eine Zählspalte in unserem Krötendatensatz, die dem gleichen Wachstumsmodell folgt. Dazu benötigen wir zunächst die Koeffizienten des Wachstumsmodells, sowie den Zufallseffekt (geschätzte Fehlerstreuung):
+```{r}
+alpha <- coef(mod1)[1]
+beta  <- coef(mod1)[2]
+sigma <- summary(mod1)$sigma  # Residuen-Std auf Log-Skala
+```
+Das Modell hieße $log(Anzahl) = a + b \cdot t$, folglich berechnet sich die Anzahl mit:
+
+$Anzahl = exp(a + b \cdot t)$
+
+Als Zeitpunkte nutzen wir *t* aus dem Datensatz `kroeten2`. 
+```{r}
+t_new <- kroeten2$t
+n <- length(t_new)
+```
+
+Stochastische Simulation der Anzahl:
+```{r}
+set.seed(123)  
+
+log_Anzahl_sim <- rnorm(n, mean = alpha + beta * t_new, sd = sigma)
+Anzahl_sim <- exp(log_Anzahl_sim)
+
+hypodata_sim <- data.frame(t = t_new, Anzahl_sim = round(Anzahl_sim,0))
+head(hypodata_sim)
+```
+
+Bringen wir die Daten zusammen, fügen eine einjährige Verzögerung ein (`lag = 1`) und streichen Zeilen mit NA-Werten heraus.
+```{r}
+kroeten3 <- kroeten2 %>%
+  mutate(Anzahl_sim = hypodata_sim$Anzahl_sim,
+         Anzahl_sim_lag1 = lag(Anzahl_sim, n = 1),
+         Anzahl_lag1 = lag(Anzahl, n = 1)) %>%
+  filter(!is.na(Anzahl_sim_lag1) & !is.na(Anzahl_lag1)  & !is.na(Anzahl))
+
+kroeten3
+```
+
+Der Granger-Kausalitätstest hat folgende Hypothesen:
+
+Nullhypothese (H0): Die Zeitreihe x ist keine Granger-Ursache für die Zeitreihe y
+
+Alternativhypothese (HA): Die Zeitreihe x ist eine Granger-Ursache für die Zeitreihe y
+
+Der Begriff „Granger-Kausalität“ bedeutet, dass die Kenntnis des Wertes der Zeitreihe x zu einem bestimmten Zeitpunkt nützlich ist, um den Wert der Zeitreihe y zu einem späteren Zeitpunkt vorherzusagen. Um einen Granger-Kausalitätstest in R durchzuführen, können wir die Funktion `grangertest()` aus dem R-Paket lmtest verwenden, die folgende Syntax verwendet:
+
+`grangertest(x, y, order = 1)`
+
+wobei:
+
+`x`: Die erste Zeitreihe
+
+`y`: Die zweite Zeitreihe
+
+`order`: Die Anzahl der Zeitverschiebungen (Lags), die in der ersten Zeitreihe verwendet werden sollen. Der Standardwert ist 1 (also Einfluss aus dem Jahr *t*-1).
+
+Der Test wird folglich gerichtet aufgerufen, die Reihenfolge bestimmt also die Kausalität. Wir wollen hier wissen, ob die Erdkrötenzahl die Anzahl hypothetischer Kröten vorhersagen kann:
+```{r}
+grangertest(Anzahl_sim ~ Anzahl, order = 1, data = kroeten3)
+```
+Wir bekommen hier einen signifikanten Zusammenhang der beiden Zeitreihen mit der Verzögerung (lag) von einem Jahr. 
+Achtung: Der Granger-Kausalitätstest kann durch vorhandene Trends verunschärft werden (was hier auch ein Grund dafür sein könnte, dass keine starke Signifikanz vorliegt). Wir können hier daher also auch zwei Zeitreihen vergleichen, wenn keinerlei Trends vorliegen.
+
+# Literaturverzeichnis
+\begin{hangparagraph}
+Granger, C.W.J. (1969): Investigating causal relations by econometric models and cross-spectral methods. --- Econometrica 37(3): 424--438.
+\end{hangparagraph}
+
+\begin{hangparagraph}
+Seyring, M., Henle, K., Barth, B. et al. (2024): Empfehlungen für ein bundeseinheitliches Vorgehen bei der Erfassung von Amphibien-Schutzzaun-Daten zur Unterstützung von Bestandstrendanalysen. --– S. 114-–133 in: Henle, K., Pogoda, P., Podloucky, R. et al. (Hrsg.): Neue Methoden der Feldherpetologie. --– Chimaira, Frankfurt/M. (Mertensiella 32). 
+\end{hangparagraph}
+
+\begin{hangparagraph}
+Wickham, H., François, R., Henry, L., Müller, K., Vaughan, D. (2023): dplyr: A grammar of data manipulation. R package version 1.1.4, \url{https://CRAN.R-project.org/package=dplyr}.
+\end{hangparagraph}
+
+\begin{hangparagraph}
+Zeileis, A., Hothorn, T. (2002): Diagnostic checking in regression relationships. --- R News 2(3): 7.-10.
+\end{hangparagraph}

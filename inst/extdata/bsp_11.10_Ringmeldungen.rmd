@@ -1,14 +1,21 @@
 ---
-title: "Beispiel 11.10. Ringfundanalysen zur Mortalitätsschätzung von juvenilen und adulten Stockenten (*Anas platyrhynchos*) "
+title: "Onlinebeispiel 11.10. Ringfundanalysen zur Mortalitätsschätzung von juvenilen und adulten Stockenten (*Anas platyrhynchos*) "
 subtitle: "Kapitel 11.11 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
 author: "Annegret Grimm-Seyfarth"
-date: "2025-03-17"
+date: "17.03.2025"
 output:
-  pdf_document: default
+  pdf_document: 
+  word_document: default
   html_document:
     self_contained: no
     df_print: paged
-  word_document: default
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{amssymb}
+  - \usepackage[none]{hyphenat} 
+  - \newlength{\hanglen}
+  - \setlength{\hanglen}{0.5cm}
+  - \newenvironment{hangparagraph}{\par\hangindent=\hanglen \hangafter=1}{\par}
 editor_options:
   chunk_output_type: inline
   markdown:
@@ -18,9 +25,11 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+knitr::opts_chunk$set(width = 80)
+options(width = 80)
 ```
 
-Hier stellen wir einen Ringfund-Datensatz von Stockenten im San Luis Valley in Colorado vor. Beim diesem Datensatz werden Jung- und Alttiere unterschieden [Modell H1 von Brownie et al. (1985)]. Dazu nutzen wir den Datensatz von brownie, der im R-Paket RMark enthalten ist (Laake 2013). Erläuterungen finden sich in Laake und Rexstad (2013).
+Hier stellen wir einen Ringfund-Datensatz von Stockenten im San Luis Valley in Colorado vor. Bei diesem Datensatz werden Jung- und Alttiere unterschieden [Modell H1 von Brownie et al. (1985)]. Dazu nutzen wir den Datensatz `brownie`, der im R-Paket RMark enthalten ist (Laake 2013). Erläuterungen finden sich in Laake und Rexstad (2013).
 
 ```{r}
 # check.packages function: install and load multiple R packages.
@@ -33,7 +42,7 @@ check.packages <- function(pkg){
 }
 
 # benoetigte R pakete
-pakete <- c("RMark", "ggplot2")
+pakete <- c("RMark", "ggplot2", "scales")
 
 # Pruefe und installiere
 check.packages(pakete)
@@ -41,9 +50,9 @@ check.packages(pakete)
 
 Weitere Informationen zur Nutzung des Paketes finden sich hier:
 
-https://cran.r-project.org/web/packages/RMark/RMark.pdf
+\url{https://cran.r-project.org/web/packages/RMark/RMark.pdf}
 
-Die Annahmen des Modells entsprechen denjenigen von Kap. 11.11 Modell 1, außer dass Jungvögel im ersten Lebensjahr und adulte Vögel eine unterschiedliche Überlebens- und Rückmelderate aufweisen. Damit kann dem Umstand Rechnung getragen werden, dass Jungvögel häufig eine erheblich höhere Mortalität aufweisen als Altvögel.
+Die Annahmen des Modells entsprechen denjenigen von Kap. 11.11 Modell 1, außer, dass Jungvögel im ersten Lebensjahr und adulte Vögel eine unterschiedliche Überlebens- und Rückmelderate aufweisen. Damit kann dem Umstand Rechnung getragen werden, dass Jungvögel häufig eine erheblich höhere Mortalität aufweisen als Altvögel.
 
 Der Datensatz ist im RMark-Paket (Laake 2013) als Beispiel integriert.
 
@@ -52,10 +61,10 @@ data("brownie")
 head(brownie)
 ```
 
-Die Standardsortierreihenfolge von RealeaseAge (also Alter der Beringung) ist alphabetisch, folglich: Adult, Young. Daher ist initial.ages=c(1,0)
+Die Standardsortierreihenfolge von `RealeaseAge` (also Alter der Beringung) ist alphabetisch, folglich: Adult, Young. Daher ist `initial.ages=c(1,0)`.
 
-# Seber Modell
-Das Modell wird indiziert mit model = "Recovery" und geht auf Seber (1982) zurück. Details finden sich in Kapitel 11.11 des Buches.
+# Seber-Modell
+Das Modell wird indiziert mit `model = "Recovery"` und geht auf Seber (1982) zurück. Details finden sich in Kap. 11.11 des Buches.
 
 ```{r}
 br <- process.data(brownie,model="Recovery",groups="ReleaseAge",
@@ -72,8 +81,8 @@ mod.seber <- mod$results$real
 ```
 Die Überlebensraten der adulten beringten Vögel ist höher als der jung beringten Vögel.
 
-# Brownie Modell
-Das Modell wird indiziert mit model = "Brownie" und geht auf Brownie et al. (1985) zurück. Details finden sich in Kapitel 11.11 des Buches.
+# Brownie-Modell
+Das Modell wird indiziert mit `model = "Brownie"` und geht auf Brownie et al. (1985) zurück. Details finden sich in Kap. 11.11 des Buches.
 
 ```{r}
 br=process.data(brownie,model="Brownie",groups="ReleaseAge",
@@ -113,7 +122,11 @@ ggplot(mod.seber.adult,aes(Occasion,estimate,
        geom_errorbar(width=0.2)+geom_point()+geom_line()+
        geom_point(data=mod.brownie.adult, 
                   aes(Occasion, estimate, ymin=lcl,ymax=ucl), color="red") +
-       xlab("\nFanggelegenheit")+ylab("Ueberlebensrate\n") 
+       scale_y_continuous(labels = label_number(decimal.mark = ",")) +
+       scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1),
+                           labels = number_format(accuracy = 1)) +
+       theme_classic() +
+       xlab("\nFanggelegenheit")+ylab("Überlebensrate\n") 
 
 # Juvenil markierte Tiere
 ggplot(mod.seber.young,aes(Occasion,estimate,
@@ -121,18 +134,32 @@ ggplot(mod.seber.young,aes(Occasion,estimate,
        geom_errorbar(width=0.2)+geom_point()+geom_line()+
        geom_point(data=mod.brownie.young, 
                   aes(Occasion, estimate, ymin=lcl,ymax=ucl), color="red") +
-       xlab("\nFanggelegenheit")+ylab("Ueberlebensrate\n") 
+        scale_y_continuous(labels = label_number(decimal.mark = ",")) +
+        scale_x_continuous(breaks = function(x) seq(floor(min(x)), ceiling(max(x)), by = 1),
+                           labels = number_format(accuracy = 1)) +
+        theme_classic() +
+        xlab("\nFanggelegenheit")+ylab("Überlebensrate\n") 
 
 ```
-Die berechneten Überlebensraten sind nahezu identisch. 
+Die schwarzen verbundenen Punkte stellen die Schätzungen von Seber (und deren 95 %-Konfidenzintervall) dar, die roten Punkte die Schätzungen von Brownie. Die berechneten Überlebensraten sind folglich nahezu identisch. 
 
 # Literaturverzeichnis
-Brownie, C., Anderson, D.R., Burnham, K.P., Robson, D.S. 1985. Statistical inference from band recovery data - A handbook (2nd ed.). US Dept. Inter. Fish Wildl. Serv. Resource Publ. 156: 1-305. 
+\begin{hangparagraph}
+Brownie, C., Anderson, D.R., Burnham, K.P., Robson, D.S. (1985): Statistical inference from band recovery data - A handbook (2nd ed.). --- US Dept. Inter. Fish Wildl. Serv. Resource Publ. 156: 1--305. 
+\end{hangparagraph}
 
-Laake, J. & E. Rexstad. 2013. RMark – an alternative approach to building linear models in MARK. In: Program MARK: A Gentle Introduction, edited by E. Cooch & G.C. White. 
+\begin{hangparagraph}
+Laake, J., Rexstad, E. (2008): RMark – an alternative approach to building linear models in MARK. --- In: Cooch, E., White, G.C. (Hrsg.): --- Program MARK: A Gentle Introduction.
+\end{hangparagraph}
 
-Laake, J.L. 2013. RMark: An R Interface for Analysis of Capture-Recapture Data with MARK. AFSC Processed Rep 2013-01, 25p. Alaska Fish. Sci. Cent., NOAA, Natl. Mar. Fish. Serv., 7600 Sand Point Way NE, Seattle WA 98115.
+\begin{hangparagraph}
+Laake, J.L. (2013): RMark: An R interface for analysis of capture-recapture data with MARK. --- AFSC Processed Rep 2013-01, 25p. Alaska Fish. Sci. Cent., NOAA, Natl. Mar. Fish. Serv., Seattle WA, USA.
+\end{hangparagraph}
 
-Seber, G.A.F. 1982. The estimation of animal abundance and related parameters, 2nd ed. Griffin, London.
+\begin{hangparagraph}
+Seber, G.A.F. (1982): The estimation of animal abundance and related parameters, Second Edition. --- Griffin, London.
+\end{hangparagraph}
 
-Wickham, H. 2016. ggplot2: Elegant Graphics for Data Analysis. Springer-Verlag, New York.
+\begin{hangparagraph}
+Wickham, H. (2016): ggplot2: Elegant graphics for data analysis. --- Springer-Verlag, New York.
+\end{hangparagraph}

@@ -1,14 +1,21 @@
 ---
-title: "Beispiel 8.7. Wachstumsmodelle von Seehunden (*Phoca vitulina*) mittels multivariaten State-Space-Modellen"
+title: "Onlinebeispiel 8.7. Wachstumsmodelle von Seehunden (*Phoca vitulina*) mittels multivariaten State-Space-Modellen"
 subtitle: "Kapitel 8.3.1 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
 author: "Annegret Grimm-Seyfarth"
-date: "2025-04-22"
+date: "22.04.2025"
 output:
-  pdf_document: default
+  pdf_document: 
+  word_document: default
   html_document:
     self_contained: no
     df_print: paged
-  word_document: default
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{amssymb}
+  - \usepackage[none]{hyphenat} 
+  - \newlength{\hanglen}
+  - \setlength{\hanglen}{0.5cm}
+  - \newenvironment{hangparagraph}{\par\hangindent=\hanglen \hangafter=1}{\par}
 editor_options:
   chunk_output_type: inline
   markdown:
@@ -18,6 +25,8 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+knitr::opts_chunk$set(width = 80)
+options(width = 80)
 ```
 
 In diesem Beispiel zeigen wir multivariate State-Space-Modelle (MARSS) unter Verwendung des MARSS-Pakets (Holmes et al. 2012, 2024a,b). Diese Klasse von Zeitreihenmodellen wird auch als vektorautoregressive State-Space-Modelle (VARSS) bezeichnet. Hier zeigen wir ein Beispiel, bei dem die Modellauswahl verwendet wird, um verschiedene Populationsstrukturen bei Seehunden (*Phoca vitulina*) an der Westküste Nordamerikas zu testen. Dieses und viele weitere Beispiele können mithilfe von Holmes et al. (2021) nachgelesen und erstellt werden.
@@ -33,27 +42,30 @@ check.packages <- function(pkg){
 }
 
 # benoetigte R pakete
-pakete <- c("MARSS", "ggplot2")
+pakete <- c("MARSS", "ggplot2","scales")
 
 # Pruefe und installiere
 check.packages(pakete)
 ```
 
 # Daten einladen
-Die Daten sind im R-Paket MARSS als Beispieldatensatz integriert (Jeffries et al. 2003). Inzwischen wurde aber auch eine umfangreichere Version der Daten bis einschließlich 2023 publiziert (Pearson et al. 2024). Dort gibt es jedoch viele fehlende Datenpunkte, weshalb wir den Datensatz bis 1999 verwenden.
+Die Daten sind im R-Paket MARSS als Beispieldatensatz integriert (Jeffries et al. 2003). Inzwischen wurde aber auch eine umfangreichere Version der Daten bis einschließlich 2023 publiziert (Pearson et al. 2024). Dort gibt es jedoch viele fehlende Datenpunkte, weshalb wir in diesem Beispiel den Datensatz bis 1999 verwenden.
 
 ```{r}
 data(harborSealWA, package = "MARSS")
 ```
 
-## Graphische Darstellung
-Die Daten stammen aus fünf Regionen (oder Standorte). Dargestellt ist jeweils ein normierter Index für die Populationsgröße. Seehunde wurden von 1978 bis 1999 gezählt, während sie an Land waren. Nachdem sie vor deren Unterschutzstellung durch die Jagd auf ein niedriges Niveau reduziert worden waren, erholten sich die Seehunde während des Zeitraums dieses Datensatzes stetig.  Wir gehen davon aus, dass der zugrundeliegende Populationsprozess ein stochastischer exponentieller Wachstumsprozess mit mittleren Wachstumsraten ist, die sich in den Jahren 1978-1999 nicht verändert haben.
+## Grafische Darstellung
+Die Daten stammen aus fünf Regionen (oder Standorten). Dargestellt ist jeweils ein normierter Index für die Populationsgröße. Seehunde wurden von 1978 bis 1999 gezählt, während sie an Land waren. Nachdem sie vor deren Unterschutzstellung durch die Jagd auf ein niedriges Niveau reduziert worden waren, erholten sich die Seehunde während des Zeitraums dieses Datensatzes stetig. Wir gehen davon aus, dass der zugrundeliegende Populationsprozess ein stochastischer exponentieller Wachstumsprozess mit mittleren Wachstumsraten ist, die sich in den Jahren 1978-1999 nicht verändert haben.
 
 Die Erhebungsmethoden waren in den 20 Jahren der Datenerfassung einheitlich, aber wir wissen weder, welchen Anteil der Population die einzelnen Regionen repräsentieren, noch kennen wir die Varianz der Beobachtungsfehler für jede Region. In Anbetracht der unterschiedlichen Anzahl von Erfassungen in den einzelnen Regionen können die Beobachtungsfehler sehr unterschiedlich sein. Die Regionen wurden unterschiedlich stark beprobt; in der am besten beprobten Region fehlen nur 4 Jahre, während in der schlechtesten mehr als die Hälfte der Jahre fehlen. Stellen wir diese Rohdaten einmal für die verschiedenen Regionen dar.
 ```{r}
 temp <- as.data.frame(MARSS::harborSealWA)
 pdat <- reshape2::melt(temp, id.vars = "Year", variable.name = "region")
 p <- ggplot(pdat, aes(x = Year, y = value, col = region)) +
+  xlab("Jahr") +
+  ylab("Index der Populationsgröße") +
+  labs(color = "Region") +
   geom_point() +
   geom_line()
 p + ggtitle("Puget Sound Seehundeerfassungen")
@@ -72,32 +84,33 @@ n <- nrow(dat) - 1
 ```
 
 # Eine große Population
-Wenn wir Daten über eine große geografische Region betrachten, können wir davon ausgehen, dass die verschiedenen Erhebungsregionen eine einzige Population messen, wenn wir glauben, dass sich die Tiere ausreichend bewegen, so dass das gesamte Gebiet (mehrere Regionen zusammen) „gut durchmischt“ ist. Außerdem gehen wir davon aus, dass es sich bei allen vier regionalen Zeitreihen um Beobachtungen dieser einen Population handelt, die jedoch relativ zu dieser Entwicklung nach oben oder unten skaliert sind. Folglich betrachten wir jede regionale Erhebung als einen Index der Gesamtpopulationsgröße. Bei diesem Modell gehen wir nicht davon aus, dass die Regionen unabhängige Teilpopulationen darstellen, sondern vielmehr unabhängige Beobachtungen einer Population. 
+Wenn wir Daten über eine große geografische Region betrachten, könnten wir davon ausgehen, dass die verschiedenen Erhebungsregionen eine einzige Population messen, wenn wir glauben, dass sich die Tiere ausreichend bewegen, sodass das gesamte Gebiet (mehrere Regionen zusammen) „gut durchmischt“ ist. Außerdem gehen wir davon aus, dass es sich bei allen vier regionalen Zeitreihen um Beobachtungen dieser einen Population handelt, die jedoch relativ zu dieser Entwicklung nach oben oder unten skaliert sind. Folglich betrachten wir jede regionale Erhebung als einen Index der Gesamtpopulationsgröße. Bei diesem Modell gehen wir nicht davon aus, dass die Regionen unabhängige Teilpopulationen darstellen, sondern vielmehr unabhängige Beobachtungen einer Population. 
 
 In MARSS wird folgendes Modell angepasst:
-xt = B*xt-1+u+wt mit wt abhängig von N(0,Q),
 
-yt = Z*xt+1+vt mit vt abhängig von N(0,R),
+$xt = B \cdot xt-1+u+wt$ mit *wt* abhängig von *N(0,Q)*,
 
-x0 = my.
+$yt = Z*xt+1+vt$ mit *vt* abhängig von *N(0,R)*,
+
+$x0 = my$.
 
 Dabei ist:
 
-xt eine mxT Matrix ("states"), jedes xt ist eine Realisierung der Zufallsvariablen Xt zum Zeitpunkt t;
+*xt* eine $m \times T$-Matrix (`states`), jedes *xt* ist eine Realisierung der Zufallsvariablen *Xt* zum Zeitpunkt *t*;
 
-w eine m×T-Matrix der Prozessfehler; Die Prozessfehler zum Zeitpunkt t sind multivariat normalverteilt mit Mittelwert 0 und Kovarianzmatrix Qt;
+*w* eine $m \times T$-Matrix der Prozessfehler; Die Prozessfehler zum Zeitpunkt *t* sind multivariat normalverteilt mit Mittelwert 0 und Kovarianzmatrix *Qt*;
 
-y eine n×T-Matrix der Beobachtungen (einige Beobachtungen können fehlen);
+*y* eine $n \times T$-Matrix der Beobachtungen (einige Beobachtungen können fehlen);
 
-v ein n × T-Spaltenvektor der prozessunabhängigen Fehler; die Beobachtungsfehler zum Zeitpunkt t sind multivariat normalverteilt mit Mittelwert 0 und Kovarianzmatrix Rt;
+*v* ein $n \times T$-Spaltenvektor der prozessunabhängigen Fehler; die Beobachtungsfehler zum Zeitpunkt *t* sind multivariat normalverteilt mit Mittelwert 0 und Kovarianzmatrix *Rt*;
 
-Bt und Zt sind Parameter und m × m bzw. n × m Matrizen;
+*Bt* und *Zt* sind Parameter und $m \times m$ bzw. $n \times m$ Matrizen;
 
-u und a sind Parameter und m × 1 bzw. n × 1 Spaltenvektoren;
+*u* und *a* sind Parameter und $m \times 1$ bzw. $n \times 1$ Spaltenvektoren;
 
-Q und R sind Parameter und g × g (typischerweise m × m) bzw. h × h (typischerweise n × n) Varianz-Kovarianz-Matrizen;
+*Q* und *R* sind Parameter und $g \times g$ (typischerweise $m \times m$) bzw. $h \times h$ (typischerweise $n \times n$) Varianz-Kovarianz-Matrizen.
 
-Zur Anpassung unseres Modells mit MARSS() erstellen wir eine Liste, die die Größe und Struktur jeder Parametermatrix genau beschreibt. Feste Werte in einer Matrix werden mit ihrem numerischen Wert be-zeichnet, und geschätzte Werte werden mit einem Namen versehen und in Anführungszeichen gesetzt. Unsere Modellliste für eine einzelne gut gemischte Population lautet:
+Zur Anpassung unseres Modells mit MARSS() erstellen wir eine Liste, die die Größe und Struktur jeder Parametermatrix genau beschreibt. Feste Werte in einer Matrix werden mit ihrem numerischen Wert bezeichnet, und geschätzte Werte werden mit einem Namen versehen und in Anführungszeichen gesetzt. Unsere Modellliste für eine einzelne gut gemischte Population lautet:
 ```{r}
 mod.list.0 <- list(
   B = matrix(1),
@@ -111,7 +124,7 @@ mod.list.0 <- list(
 )
 ```
 
-Hierbei bedeutet die Abkürzung „diagonal and unequal“ eine Diagonalmatrix, bei der jedes Diagonalelement einen anderen Wert hat. Die Abkürzung „scaling“ bedeutet die Form von a, wobei ein Wert auf 0 gesetzt und der Rest geschätzt wird. Wir sollten den Code in der Liste ausführen, um sicherzustellen, dass jeder Parameter in der Liste die gleiche Form hat wie in unserer mathematischen Gleichung für das Modell.
+Hierbei bedeutet die Abkürzung `diagonal and unequal` eine Diagonalmatrix, bei der jedes Diagonalelement einen anderen Wert hat. Die Abkürzung `scaling` bezeichnet die Form von *a*, wobei ein Wert auf 0 gesetzt und der Rest geschätzt wird. Wir sollten den Code in der Liste ausführen, um sicherzustellen, dass jeder Parameter in der Liste die gleiche Form hat wie in unserer mathematischen Gleichung für das Modell.
 
 Dann passen wir das Modell an:
 ```{r}
@@ -124,17 +137,24 @@ Zur Überprüfung des Modells schauen wir uns die Residuen an:
 par(mfrow = c(2, 2))
 resids <- MARSSresiduals(fit.0, type="tt1")
 for (i in 1:4) {
-  plot(resids$model.residuals[i, ], ylab = "Modellresiduen", xlab = "")
+  plot(resids$model.residuals[i, ], yaxt = "n", 
+       ylab = "Modellresiduen", xlab = "Jahre")
   abline(h = 0)
   title(rownames(dat)[i])
+  axis(
+  side = 2,
+  at = pretty(resids$model.residuals[i, ]),
+  labels = format(pretty(resids$model.residuals[i, ]),
+                         decimal.mark = ",", nsmall = 2)  
+)
 }
 ```
-Auf der x-Achse sind die Jahre aufgetragen, auf der y-Achse die Residuen. Das Modell sieht nicht schlecht aus, aber die Residuen für SJI und EBays sind problematisch.
+Auf der x-Achse sind die Jahre aufgetragen, auf der y-Achse die Residuen. Das Modell sieht nicht schlecht aus, aber die Residuen für SJI und EBays sind problematisch, da sie eine Form aufweisen.
 
 # Vier Einzelpopulationen ohne zeitliche Autokorrelation
-Das Modell für eine gut gemischte Population war nicht sehr gut. Eine weitere vernünftige Annahme wäre, dass die verschiedenen Regionen vier verschiedene, zeitlich unabhängige Teilpopulationen darstellen.
+Das Modell für eine gut gemischte Population war laut Modellvalidierung mittels Residuen nicht sehr gut. Eine weitere vernünftige Annahme wäre, dass die verschiedenen Regionen vier verschiedene, zeitlich unabhängige Teilpopulationen darstellen.
 
-Die Q-Matrix ist diagonal mit einem Varianzwert. Das bedeutet, dass die Prozessvarianz (Varianz der jährlichen Wachstumsraten) unabhängig ist (gute und schlechte Jahre sind nicht korreliert), aber der Grad der Variabilität ist in allen Regionen gleich. Wir erstellen die u-Matrix mit einem u Wert. Dies bedeutet, dass wir davon ausgehen, dass die Wachstumsraten in allen Regionen gleich sind. Wir setzen die B-Matrix gleich einer Diagonalmatrix mit 1 auf der Diagonalen (d. h., keine Dichteabhängigkeit). Dies ist die „Identitäts“-Matrix und entspricht einer 1, allerdings für Matrizen. Wir brauchen B nicht für unser Modell, aber MARSS() benötigt einen Wert. Hinsichtlich der Erfassungen setzen wir in diesem Modell jede Erfassung (x) verschieden. Die Modellliste lautet dann:
+Die *Q*-Matrix ist diagonal mit einem Varianzwert. Das bedeutet, dass die Prozessvarianz (Varianz der jährlichen Wachstumsraten) unabhängig ist (gute und schlechte Jahre sind nicht korreliert), aber der Grad der Variabilität ist in allen Regionen gleich. Wir erstellen die *u*-Matrix mit einem *u* Wert (`equal`). Dies bedeutet, dass wir davon ausgehen, dass die Wachstumsraten in allen Regionen gleich sind. Wir setzen die *B*-Matrix gleich einer Diagonalmatrix mit 1 auf der Diagonalen (d. h., keine Dichteabhängigkeit). Dies ist die Identitäts-Matrix (`identity`) und entspricht einer 1, allerdings für Matrizen. Wir brauchen *B* nicht für unser Modell, aber MARSS() benötigt einen Wert. Hinsichtlich der Erfassungen setzen wir in diesem Modell jede Erfassung (*x*) verschieden (`unequal`). Die Modellliste lautet dann:
 ```{r}
 mod.list.1 <- list(
   B = "identity",
@@ -147,7 +167,7 @@ mod.list.1 <- list(
   tinitx = 0
 )
 ```
-Die neuen Abkürzungen bedeuten das Folgende: "identity" entspricht dem Wert 1 für Matritzen; „equal“ bedeutet, dass alle Werte in der Matrix gleich sind; „diagonal and equal“ bedeutet, dass die Matrix diagonal ist und ein Wert auf der Diagonale liegt; „unequal“ bedeutet, dass alle Werte in der Matrix unterschiedlich sind.
+Die neuen Abkürzungen bedeuten das Folgende: `identity` entspricht dem Wert 1 für Matritzen; `equal` bedeutet, dass alle Werte in der Matrix gleich sind; `diagonal and equal` bedeutet, dass die Matrix diagonal ist und ein Wert auf der Diagonale liegt; `unequal` bedeutet, dass alle Werte in der Matrix unterschiedlich sind.
 
 Modell anpassen:
 ```{r}
@@ -155,12 +175,12 @@ fit.1 <- MARSS(dat, model = mod.list.1)
 ```
 
 # Vier Einzelpopulationen mit zeitlicher Autokorrelation
-Eine weitere vernünftige Annahme wäre, dass die verschiedenen Regionen unterschiedliche Teilpopulationen darstellen, dass aber die jährlichen Wachstumsraten korreliert sind (gutes und schlechtes Jahr fallen zusammen). Der einzige Parameter, der sich ändert, ist die Q-Matrix. Dies passen wir wie folgt an:
+Eine weitere vernünftige Annahme wäre, dass die verschiedenen Regionen unterschiedliche Teilpopulationen darstellen, dass aber die jährlichen Wachstumsraten korreliert sind (gutes und schlechtes Jahr fallen zusammen). Der einzige Parameter, der sich ändert, ist die *Q*-Matrix. Dies passen wir wie folgt an:
 ```{r}
 mod.list.2 <- mod.list.1
 mod.list.2$Q <- "equalvarcov"
 ```
-Die Abkürzung "equalvarcov" modelliert zeitliche Autokorrelation.
+Die Abkürzung `equalvarcov` modelliert zeitliche Autokorrelation.
 
 Wir passen das Modell an:
 ```{r}
@@ -168,56 +188,88 @@ fit.2 <- MARSS(dat, model = mod.list.2)
 ```
 
 ## Modellvergleiche
-Wie bei anderen Modellen auch, können diese über AICc verglichen werden (siehe Kapitel 9.3 im Buch).
+Wie bei anderen Modellen auch, können diese Modelle über AICc verglichen werden (siehe Kapitel 9.3 im Buch).
 ```{r}
 c(fit.0$AICc, fit.1$AICc, fit.2$AICc)
 ```
 Wir sehen, dass das letzte Modell deutlich das beste ist und den geringsten AICc aufweist.
 
 ## Residuen
-Schauen wir uns vom letzten Modell die Residuen an, um die Modellanpassung zu validieren:
+Schauen wir uns nun die Residuen des letzten Modells an, um die Modellanpassung zu validieren:
 ```{r}
 par(mfrow = c(2, 2))
 resids <- MARSSresiduals(fit.2, type="tt1")
 for (i in 1:4) {
-  plot(resids$model.residuals[i, ], ylab = "Modellresiduen", xlab = "")
+  plot(resids$model.residuals[i, ],  yaxt = "n",
+       ylab = "Modellresiduen", xlab = "Jahre")
   abline(h = 0)
   title(rownames(dat)[i])
+  axis(
+  side = 2,
+  at = pretty(resids$model.residuals[i, ]),
+  labels = format(pretty(resids$model.residuals[i, ]),
+                         decimal.mark = ",", nsmall = 2)  
+)
+
 }
 ```
 Die Residuen sehen wesentlich besser aus. 
 
-## Graphische Darstellung
-Nun wollen wir die einzelnen Wachstumsraten der vier Regionen noch graphisch darstellen:
+## Grafische Darstellung
+Nun wollen wir die einzelnen Wachstumsraten der vier Regionen noch grafisch darstellen:
 ```{r}
-par(mfrow = c(2, 2))
+par(mfrow = c(2, 2), mar=c(6,6,4,2))
 for (i in 1:4) {
-  plot(years, fit.2$states[i, ], ylab = "log Teilpopulationsschätzung", 
-       xlab = "", type = "l")
+  plot(years, fit.2$states[i, ],  yaxt = "n",
+       ylab = "log Teilpopulationsschätzung", 
+       xlab = "", type = "l"#,
+       #cex=2,cex.lab=2,cex.axis=2
+       )
   lines(years, fit.2$states[i, ] - 1.96 * fit.2$states.se[i, ], 
         type = "l", lwd = 1, lty = 2, col = "red")
   lines(years, fit.2$states[i, ] + 1.96 * fit.2$states.se[i, ], 
         type = "l", lwd = 1, lty = 2, col = "red")
-  title(rownames(dat)[i])
+  title(rownames(dat)[i], cex.main =1.2)
+  axis(
+  side = 2,#cex.axis=2,
+  at = pretty(fit.2$states[i, ]),
+  labels = format(pretty(fit.2$states[i, ]),
+                         decimal.mark = ",", nsmall = 2)  
+)
+
 }
 ```
-Die schwarze Linie zeigt das Wachstum der Populationen, die roten gestrichelten Linien die 95% Konfidenzintervalle.
+Die schwarze Linie zeigt das Wachstum der Populationen, die roten gestrichelten Linien die 95 %- Konfidenzintervalle.
 
-Dieses Modell kann auch um räumliche Strukturen erweitert werden. Ideen dafür finden sich hier: https://atsa-es.github.io/atsa-labs/sec-mss-using-marss-models-to-study-spatial-structure.html
+Dieses Modell kann auch um räumliche Strukturen erweitert werden. Ideen dafür finden sich hier: \url{https://atsa-es.github.io/atsa-labs/sec-mss-using-marss-models-to-study-spatial-structure.html}
 
-Der User Guide von Holmes et al. (2021) beinhaltet auch Anpassungen über Baysische Modelle und Bootstrapping mittels JAGS und stan. Bei weiterführenden Analysen ist diese Literatur sehr empfehlenswert.
+Das Benutzerhandbuch von Holmes et al. (2021) beinhaltet auch Anpassungen über Baysische Modelle und Bootstrapping mittels JAGS und stan. Bei weiterführenden Analysen ist diese Literatur sehr empfehlenswert.
 
 # Literaturverzeichnis
-Holmes, E.E., Ward, E.J., Wills, K. 2012. MARSS: Multivariate autoregressive state-space models for analyzing time-series data. The R Journal. 4(1): 11-19.
+\begin{hangparagraph}
+Holmes, E.E., Ward, E.J., Wills, K. (2012): MARSS: Multivariate autoregressive state-space models for analyzing time-series data. --- The R Journal 4(1): 11--19.
+\end{hangparagraph}
 
-Holmes, E.E., Scheuerell, M.D., Ward, E.J. 2021. Applied time series analysis for fisheries and environmental data. Edition 2021. <https://atsa-es.github.io/atsa-labs/>
+\begin{hangparagraph}
+Holmes, E.E., Scheuerell, M.D., Ward, E.J. (2021): Applied time series analysis for fisheries and environmental data. Edition 2021. --- University of Washington, \url{https://atsa-es.github.io/atsa-labs/}
+\end{hangparagraph}
 
-Holmes, E.E., Ward, E.J., Scheuerell, M.D., Wills, K. 2024a. MARSS: Multivariate autoregressive state-space modeling. R package version 3.11.9.
+\begin{hangparagraph}
+Holmes, E.E., Ward, E.J., Scheuerell, M.D., Wills, K. (2024a): MARSS: Multivariate autoregressive state-space modeling. R package version 3.11.9.
+\end{hangparagraph}
 
-Holmes, E.E., Scheuerell, M.D., Ward, E.J. 2024b. Analysis of multivariate time-series using the MARSS package. Version 3.11.9. NOAA Fisheries, Northwest Fisheries Science Center, 2725 Montlake Blvd E., Seattle, WA 98112.
+\begin{hangparagraph}
+Holmes, E.E., Scheuerell, M.D., Ward, E.J. (2024b): Analysis of multivariate time-series using the MARSS package. Version 3.11.9. --- NOAA Fisheries, Northwest Fisheries Science Center, Seattle, Washington.
+\end{hangparagraph}
 
-Jeffries, S., Huber, H., Calambokidis, J., Laake, J. 2003. Trends and status of harbor seals in Washington State: 1978–1999. Journal of Wildlife Management, 67(1), 207–218.
+\begin{hangparagraph}
+Jeffries, S., Huber, H., Calambokidis, J., Laake, J. (2003): Trends and status of harbor seals in Washington State: 1978–1999. --- Journal of Wildlife Management 67(1): 207-–218.
+\end{hangparagraph}
 
-Pearson, S.F., Amburgey, S.M., Clark, C.T., Tanedo, S.A., Londin, J.M., Huber, H.R., Jeffries, S.J. 2024. Trends and status of harbor seals in Washington State, USA (1977–2023). Marine Mammals Science 41: e13161.
+\begin{hangparagraph}
+Pearson, S.F., Amburgey, S.M., Clark, C.T., Tanedo, S.A., Londin, J.M., Huber, H.R., Jeffries, S.J. (2024): Trends and status of harbor seals in Washington State, USA (1977–2023). --- Marine Mammals Science 41: e13161.
+\end{hangparagraph}
 
-Wickham, H. 2016. ggplot2: Elegant graphics for data analysis. Springer-Verlag New York.
+\begin{hangparagraph}
+Wickham, H. (2016): ggplot2: Elegant graphics for data analysis. Springer-Verlag New York.
+\end{hangparagraph}

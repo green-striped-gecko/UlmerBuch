@@ -1,14 +1,21 @@
 ---
-title: "Beispiel 10.5-Schätzung der Größe einer Geckopopulation, *Gehyra variegata*, durch Anpassung der Fangfrequenzen an die Geometrische Verteilung mit Programm FREQ"
+title: "Onlinebeispiel 10.5. Schätzung der Größe einer Geckopopulation, *Gehyra variegata*, durch Anpassung der Fangfrequenzen an die Geometrische Verteilung mit Programm FREQ"
 subtitle: "Kapitel 10.2 aus Henle, K., A. Grimm-Seyfarth & B. Gruber: Erfassung und Analyse von Tierpopulationen. Ulmer Verlag"
 author: "Annegret Grimm-Seyfarth"
-date: "2025-03-28"
+date: "28.03.2025"
 output:
-  pdf_document: default
+  pdf_document: 
+  word_document: default
   html_document:
     self_contained: no
     df_print: paged
-  word_document: default
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{amssymb}
+  - \usepackage[none]{hyphenat} 
+  - \newlength{\hanglen}
+  - \setlength{\hanglen}{0.5cm}
+  - \newenvironment{hangparagraph}{\par\hangindent=\hanglen \hangafter=1}{\par}
 editor_options:
   chunk_output_type: inline
   markdown:
@@ -18,9 +25,11 @@ editor_options:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+knitr::opts_chunk$set(width = 80)
+options(width = 80)
 ```
 
-Im semi-ariden Kinchega Nationalpark, Australien, wurden 2016 Geckos an einer Feldstation in sechs Fangnächsten per Hand gefangen. Per Fotoidentifikation können die Individuen bestimmt werden. Zusätzlich erhielten alle gefangenen Tiere Farbmarkierungen, die jedoch aufgrund von Häutungen nur wenige Tage erhalten blieben. Farbmarkierte Geckos wurden als Wiederfänge notiert, aber nicht erneut gefangen. Am Computer wurden zusätzlich Wiederfänge per Foto zugeordnet, die ihre Farbmarkierung verloren hatten. Somit wurde der Fehler durch Verlust der Markierung beseitigt. Die Untersuchung war eine Fortsetzung eines 30-jährigen Populationsmonitorings, um die Auswirkungen des Klimawandels zu erforschen (Henle 1990, Grimm-Seyfarth et al. 2018). In diesem Beispiel wollen wir die Anwendung der Fangfrequenzmodelle zeigen.
+Im semi-ariden Kinchega Nationalpark, Australien, wurden 2016 Geckos der Art *Gehyra variegata* an einer Feldstation in sechs Fangnächsten per Hand gefangen. Per Fotoidentifikation können die Individuen bestimmt werden. Zusätzlich erhielten alle gefangenen Tiere Farbmarkierungen, die jedoch aufgrund von Häutungen nur wenige Tage erhalten blieben. Farbmarkierte Geckos wurden als Wiederfänge notiert, aber nicht erneut gefangen. Am Computer wurden zusätzlich Wiederfänge per Foto-ID zugeordnet, die ihre Farbmarkierung verloren hatten. Somit wurde der Fehler durch Verlust der Markierung beseitigt. Die Untersuchung war eine Fortsetzung eines 30-jährigen Populationsmonitorings, um die Auswirkungen des Klimawandels zu erforschen (Henle 1990, Grimm-Seyfarth et al. 2018). In diesem Beispiel wollen wir die Anwendung der Fangfrequenzmodelle zeigen.
 
 ```{r}
 # check.packages function: install and load multiple R packages.
@@ -35,19 +44,20 @@ check.packages <- function(pkg){
 # benoetigte R pakete
 #pakete <- c("FREQ")
 
-# Pruefe und installiere
+# Prüfe und installiere
 #check.packages(pakete)
-# Anmerkung: Bis das Update von FREQ bei CRAN akzeptiert ist, laden wir den Quellcode direkt ein als:
-UlmerBuch::bespiel.pfad() # Pfad zu den Beispieldaten
+# Anmerkung: Bis das Update von FREQ bei CRAN akzeptiert ist, 
+# laden wir den Quellcode direkt ein als:
+UlmerBuch::beispiel.pfad() # Pfad zu den Beispieldaten
 source("FREQ2.2.r")
 ```
 
 Weitere Informationen zur Nutzung des Paketes finden sich hier:
 
-https://cran.r-project.org/web/packages/FREQ/FREQ.pdf
+\url{https://cran.r-project.org/web/packages/FREQ/FREQ.pdf}
 
 # Daten einladen
-Wir laden uns für dieses Beispiel die Fangzahlen der einzelnen Individuen in R ein. Es gab 6 Fanggelegenheiten, demnach können einzelne Individuen maximal sechs Mal gefangen worden sein.
+Wir laden uns für dieses Beispiel die Fangzahlen der einzelnen Individuen (d. h., die Anzahl an Fanggelegenheiten, an denen ein Individuum gefangen oder per Farbmarkierung gesichtet wurde) in R ein. Es gab 6 Fanggelegenheiten, demnach können einzelne Individuen maximal sechs Mal gefangen worden sein.
 
 ```{r}
 UlmerBuch::beispiel.pfad() #Pfad zu den Beispieldaten
@@ -64,7 +74,7 @@ Die als Input benötigte Zusammenfassung aller einzelnen Fangfrequenzen erhalten
 table(GV.2016)
 f <- as.vector(table(GV.2016))
 ```
-Es wurden 35 Individuen einmal, 20 zweimal, 21 dreimal, 15 viermal, 15 fünfmal und 9 sechsmal gefangen. Nach der Empfehlung, bei größeren Populationen mindestens zehn Exemplare mindestens viermal gefangen zu haben, können wir also alle Verteilungen nutzen. Diese Fangfrequenzen haben wir im Vektor *f* gespeichert. Würde es mehr als sechs Fanggelegenheiten geben, müsste man für alle verbleibenden Fanggelegenheiten eine 0 hinzufügen.
+Es wurden 35 Individuen einmal, 20 zweimal, 21 dreimal, 15 viermal, 15 fünfmal und 9 sechsmal gefangen. Nach der Empfehlung, bei größeren Populationen mindestens zehn Exemplare mindestens viermal gefangen zu haben, können wir also alle Verteilungen nutzen. Diese Fangfrequenzen haben wir im Vektor `f` gespeichert. Würde es mehr als sechs Fanggelegenheiten geben, müsste man für alle verbleibenden Fanggelegenheiten eine 0 hinzufügen.
 
 # Berechnung der Erwartungswerte
 Die verschiedenen Erwartungswerte bei Anpassung an die verschiedenen Verteilungen erhält man folgendermaßen:
@@ -73,9 +83,9 @@ Die verschiedenen Erwartungswerte bei Anpassung an die verschiedenen Verteilunge
 f.freq <- freq(f)
 f.freq
 ```
-Der erste Datensatz  (expected_values) beinhaltet die Erwartungswerte nach den verschiedenen Verteilungen. Der zweite Datensatz (estimations) beinhaltet die entsprechenden Schätzwerte. 
+Der erste Datensatz  (`expected_values`) beinhaltet die Erwartungswerte der Fangfrequenzen nach den verschiedenen Verteilungen. Der zweite Datensatz (`estimations`) beinhaltet die entsprechenden Schätzwerte. Zunächst müssen wir aber die optimalste Verteilung finden.
 
-Nun vergleichen wir die tatsächlichen Fangfrequenzen mit den Erwartungswerten. Wir nutzen den Fisher-Test als Alternative zum Chi-Test, da dieser hier exaktere Werte liefern sollte.
+Dazu vergleichen wir die tatsächlichen Fangfrequenzen mit den Erwartungswerten. Wir nutzen den Fisher-Test als Alternative zum Chi-Quadrat-Test, da dieser hier exaktere Werte liefern sollte.
 ```{r}
 f.freq$expected_values
 # mit geometrischer Verteilung
@@ -87,7 +97,7 @@ fisher.test(round(f.freq$expected_values[,c(1,4)]))
 # mit Negativ Binomialverteilung
 fisher.test(round(f.freq$expected_values[,c(1,5)]))
 ```
-Kein Test ist signifikant, doch die Poissonverteilung weist den geringsten p-Wert auf. Eventuell liegt individuelle Heterogenität vor.
+Kein Test ist signifikant, doch die Poissonverteilung weist den geringsten p-Wert auf. Es besteht also womöglich ein Unterschied zwischen beobachteten und erwarteten Fangfrequenzen einer Poisonverteilung, was bedeutet, es liegt wahrscheinlich individuelle Heterogenität vor (vgl. auch Onlinebeispiele 9.1 und 9.2).
 
 Schauen wir uns die Differenz von beobachteter und erwarteter Fangfrequenz an:
 ```{r}
@@ -103,16 +113,20 @@ summary(f.freq$expected_values[,1] - f.freq$expected_values[,5])
 Die geringste Streuung weist die doppelt abgeschnittene geometrische Verteilung auf. 
 
 # Populationsgrößenschätzung
-Schauen wir noch einmal genauer auf die Schätzwerte.
+Die größte Übereinstimmung (höchster p-Wert, geringste Streuung) bestand mit der doppelt abgeschnittenen geometrischen Verteilung, daher schauen wir hier einmal genauer auf die Schätzwerte.
 ```{r}
 f.freq$estimations
 ```
-Laut der Schätzung der doppelt abgeschnittenen geometrischen Verteilung liegt die Populationsgröße bei 145 Individuen, und mit 95% Wahrscheinlichkeit zwischen 139 und 151 bzw. 140 und 152, womit die symmetrische und asymetrische Schätzung sehr nahe beieinander liegen. 
+Laut der Schätzung der doppelt abgeschnittenen geometrischen Verteilung (`Truncated Geometric Distribution`) liegt die Populationsgröße bei 145 Individuen, und mit 95 %-Wahrscheinlichkeit zwischen 139 und 151 bzw. 140 und 152 Individuen, womit die symmetrische und asymetrische Schätzung sehr nahe beieinander liegen. 
 
-Neben der Populationsgröße *N* und dem Konfidenzintervall (*CI*) gibt die Ergebnistabelle noch den Wert für die Verteilung (q bzw. lambda) sowie die Anzahl insgesamt gefangener Individuen an. 
+Neben der Populationsgröße *N* und dem Konfidenzintervall (`CI`) gibt die Ergebnistabelle noch den Wert für die Verteilung (`q` bzw. `lambda`) sowie die Anzahl insgesamt gefangener Individuen an. 
 
 
 # Literaturverzeichnis
-Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. 2018. Some like it hot: from individual to population responses of an arboreal arid-zone gecko to local and distant climate. Ecological Monographs 88: 336–352.
+\begin{hangparagraph}
+Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. (2018): Some like it hot: from individual to population responses of an arboreal arid-zone gecko to local and distant climate. --- Ecological Monographs 88: 336–-352.
+\end{hangparagraph}
 
-Henle, K. 1990. Population ecology and life history of the arboreal gecko *Gehyra variegata* in arid Australia. Herpetological Monographs 4: 30-60.
+\begin{hangparagraph}
+Henle, K. (1990): Population ecology and life history of the arboreal gecko \textit{Gehyra variegata} in arid Australia. --- Herpetological Monographs 4: 30--60.
+\end{hangparagraph}
