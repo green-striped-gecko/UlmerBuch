@@ -29,9 +29,9 @@ knitr::opts_chunk$set(width = 80)
 options(width = 80)
 ```
 
-Conroy et al. (1989) untersuchten die Wintermortalität von Dunkelenten (*Anas rubripes*) in zwei Untersuchungsgebieten in New Jersey. Zur Illustration des Cox-Modells des relativen Risikos werden nur die Daten im ersten Untersuchungsjahr ausgewertet. Zwischen Enten im ersten Lebensjahr (Jungenten) und älteren Enten (Adulte) wurde unterschieden. Im Zeitraum vom 8. November und 14. Dezember 1983 wurden 50 Enten besendert. Die besenderten Tiere wurden zu Fuß, mit Fahrzeugen, Boot und Flugzeug verfolgt, und ihr Status (lebend, tot, vermisst) wurde täglich bis zum 15. Februar 1984 kontrolliert. Die Analyse erfolgt für die 63 Tage ab 15. Dezember 1983, da zu diesem Zeitpunkt die Besenderung abgeschlossen war. In diesem Fall lebten zu diesem Zeitpunkt noch alle besenderten Enten. Die Körperkondition wurde beim Fang bestimmt. Pollock et al. (1989a) verwendeten bei ihrer Auswertung der Daten von Conroy et al. (1989) als Index der Körperkondition das Verhältnis von Masse zu Flügellänge. Abweichend hierzu werden nachfolgend als Konditionsindex (KI) die Residuen – d.h. die Abweichungen vom Erwartungswert – aus einer Regressionsanalyse mit der dritten Wurzel der Masse als abhängiger und Flügellänge als unabhängiger Variablen benutzt. Die dritte Wurzel wird verwendet, da die Masse mit der dritten Potenz der Länge wachsen sollte. Der Index von Pollock et al. (1989a) gewichtet die Länge stärker und stellt daher mehr einen Größenindex der relativen Flügellänge als ein Konditionsindex dar. Der hier verwendete Ansatz hat außerdem den Vorteil, dass sich das Basisrisiko auf Enten bezieht, deren Masse dem Erwartungswert für ihre Größe (Kondition = 0) entspricht und somit das relative Risiko bei gleicher Abweichung der Kondition nach oben und unten direkt miteinander verglichen werden kann.
+Conroy et al. (1989) untersuchten die Wintermortalität von Dunkelenten (*Anas rubripes*) in zwei Untersuchungsgebieten in New Jersey. Zur Illustration des Cox-Modells des relativen Risikos werden nur die Daten im ersten Untersuchungsjahr ausgewertet. Zwischen Enten im ersten Lebensjahr (Jungenten) und älteren Enten (Adulte) wurde unterschieden. Im Zeitraum vom 8. November bis 14. Dezember 1983 wurden 50 Enten besendert. Die besenderten Tiere wurden zu Fuß, mit Fahrzeugen, Boot und Flugzeug verfolgt, und ihr Status (lebend, tot, vermisst) wurde täglich bis zum 15. Februar 1984 kontrolliert. Die Analyse erfolgt für die 63 Tage ab 15. Dezember 1983, da zu diesem Zeitpunkt die Besenderung abgeschlossen war. In diesem Fall lebten zu diesem Zeitpunkt noch alle besenderten Enten. Die Körperkondition wurde beim Fang bestimmt. Pollock et al. (1989) verwendeten bei ihrer Auswertung der Daten von Conroy et al. (1989) als Index der Körperkondition das Verhältnis von Masse zu Flügellänge. Abweichend hierzu werden nachfolgend als Konditionsindex (KI) die Residuen – d.h. die Abweichungen vom Erwartungswert – aus einer Regressionsanalyse mit der dritten Wurzel der Masse als abhängiger und Flügellänge als unabhängiger Variablen benutzt. Die dritte Wurzel wird verwendet, da die Masse mit der dritten Potenz der Länge wachsen sollte. Der Index von Pollock et al. (1989) gewichtet die Länge stärker und stellt daher mehr einen Größenindex der relativen Flügellänge als ein Konditionsindex dar. Der hier verwendete Ansatz hat außerdem den Vorteil, dass sich das Basisrisiko auf Enten bezieht, deren Masse dem Erwartungswert für ihre Größe (Kondition = 0) entspricht und somit das relative Risiko bei gleicher Abweichung der Kondition nach oben und unten direkt miteinander verglichen werden kann.
 
-Für diese beiden Beispiele nutzen wir das R-Paket survival (Therneau & Grambsch 2000, Therneau 2024a). Für die Darstellung der Kaplan-Meier-Überlebensgrafiken nutzen wir das Paket ggsurvfit (Sjoberg et al. 2024).
+Für diese beiden Beispiele nutzen wir das R-Paket survival (Therneau & Grambsch 2000, Therneau 2024). Für die Darstellung der Kaplan-Meier-Überlebensgrafiken nutzen wir das Paket ggsurvfit (Sjoberg et al. 2024).
 
 ```{r}
 # check.packages function: install and load multiple R packages.
@@ -57,7 +57,7 @@ https://cran.r-project.org/web/packages/survival/survival.pdf
 https://cran.r-project.org/web/packages/ggsurvfit/ggsurvfit.pdf
 
 # Einlesen der Fangdaten
-Wir laden zunächst die Daten ein. Dazu haben wir die Tabelle von Pollock et al. (1989a) um den Index der Körperkondition ergänzt.
+Wir laden zunächst die Daten ein. Dazu haben wir die Tabelle von Pollock et al. (1989) um den Index der Körperkondition ergänzt.
 
 ```{r}
 # Daten einlesen
@@ -65,7 +65,7 @@ UlmerBuch::beispiel.pfad() #Pfad zu den Beispieldaten
 ARData <- read.csv2("AR_Pollock_et_al_1989.csv")
 head(ARData)
 ```
-Die Daten beinhalten die Kontrolldaten telemetrierter Dunkelenten (*Anas rubripes*) in New Jersey. `i`: Nummer des Individuums; `ti`: Anzahl der Beobachtungstage ab 15. Dezember 1983 für Exemplar `i`; `Status`: H - geschossen ("hunter"), C - gefunden ("censored"), N - natürlich verstorben; `Indikator`:  0 = lebend, 1 = tot; `Alter`: 0 = diesjährig, 1 = mindestens einjährig; `Masse` in g; `FL`: Flügellänge in mm. Quelle: Pollock et al. (1989a).
+Die Daten beinhalten die Kontrolldaten telemetrierter Dunkelenten (*Anas rubripes*) in New Jersey. `i`: Nummer des Individuums; `ti`: Anzahl der Beobachtungstage ab 15. Dezember 1983 für Exemplar `i`; `Status`: H - geschossen ("hunter"), C - gefunden ("censored"), N - natürlich verstorben; `Indikator`:  0 = lebend, 1 = tot; `Alter`: 0 = diesjährig, 1 = mindestens einjährig; `Masse` in g; `FL`: Flügellänge in mm. Quelle: Pollock et al. (1989).
 
 # Berechnung Konditionsindex
 Zur Berechnung des Konditionsindex benötigen wir eine Regressionsanalyse mit der dritten Wurzel der Masse als abhängiger und Flügellänge als unabhängiger Variable. 
@@ -230,7 +230,7 @@ Conroy, M.J., Costanzo, G.R., Stotts, D.B. (1989): Winter survival of female Ame
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Pollock, K.H., Winterstein, S.R., Conroy, M.J. (1989a): Estimation and analysis of survival distributions for radio-tagged animals. --- Biometrics 45: 99--109.
+Pollock, K.H., Winterstein, S.R., Conroy, M.J. (1989): Estimation and analysis of survival distributions for radio-tagged animals. --- Biometrics 45: 99--109.
 \end{hangparagraph}
 
 \begin{hangparagraph}
@@ -238,7 +238,7 @@ Sjoberg, D., Baillie, M., Fruechtenicht, C., Haesendonckx, S., Treis, T. (2024):
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Therneau, T. (2024a): A package for survival analysis in R. R package version 3.8-3, \url{https://CRAN.R-project.org/package=survival}
+Therneau, T. (2024): A package for survival analysis in R. R package version 3.8-3, \url{https://CRAN.R-project.org/package=survival}
 \end{hangparagraph}
 
 \begin{hangparagraph}

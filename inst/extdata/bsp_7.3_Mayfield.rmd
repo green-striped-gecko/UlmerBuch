@@ -92,7 +92,7 @@ Folgende Variablen sind im Datensatz enthalten:
 
 Das Beispiel führt die 9 Modelle aus, die im Kapitel Nest Survival des MARK-Benutzerhandbuches verwendet werden und die in Tabelle 3 (Seite 198) von Rotella et al. (2004) dargestellt sind. Das unten gezeigte Original-Mallard-Beispiel verwendet einzelne Aufrufe der Funktion `mark`. Dies ist nicht so effizient wie die Verwendung von `mark.wrapper` und kann zu Schwierigkeiten führen, wenn verschiedene Gruppenargumente verwendet werden und eine Modellmittelung (model averaging) versucht wird. Im Anschluss wird daher der effizientere Ansatz für das Originalbeispiel gezeigt. 
 
-Im Datensatz beschreiben die Spalten `Native, Planted, Wetland` und `Roadside` vier verschiedenen Habitate. Wir kreieren daraus eine Habitatvariable mit vier Leveln, die als Gruppenvariable genutzt werden kann. Dazu nutzen wir die vereinfacthe Schreibweise aus dem R-Paket dplyr (Wickham et al. 2023).
+Im Datensatz beschreiben die Spalten `Native, Planted, Wetland` und `Roadside` vier verschiedenen Habitate. Wir kreieren daraus eine Habitatvariable mit vier Leveln, die als Gruppenvariable genutzt werden kann. Dazu nutzen wir die vereinfachte Schreibweise aus dem R-Paket dplyr (Wickham et al. 2023).
 
 ```{r}
 mallard <- mallard %>%
@@ -215,7 +215,7 @@ Analog können wir uns die Ergebnisse variierend nach Habitattyp anschauen.
 mallard.results$S.Hab$design.matrix
 
 # die Schätzwerte
-# neben den Schnittpunkt mit der y-Achse je einen pro Habitattyp
+# neben dem Schnittpunkt mit der y-Achse je einen pro Habitattyp
 # wobei "Native" im Schnittpunkt mit der y-Achse versteckt ist
 mallard.results$S.Hab$results$beta
 
@@ -324,7 +324,7 @@ Mayfield, H.F. (1961): Nesting success calculated from exposure. --- Wilson Bull
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Rotella, J.J., Dnismore, S.J., Shaffer, T.L. (2004): Modeling nest–survival data: a comparison of recently developed methods that can be implemented in MARK and SAS. --- Animal Biodiversity and Conservation 27: 187–-205.
+Rotella, J.J., Dnismore, S.J., Shaffer, T.L. (2004): Modeling nest–survival data: A comparison of recently developed methods that can be implemented in MARK and SAS. --- Animal Biodiversity and Conservation 27: 187–-205.
 \end{hangparagraph}
 
 \begin{hangparagraph}
