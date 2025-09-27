@@ -29,7 +29,7 @@ knitr::opts_chunk$set(width = 80)
 options(width = 80)
 ```
 
-Im Kinchega Nationalpark (Australien) befinden sich zwei räumlich getrennte, benachbarte Geckopopulationen, welche 2016 an sieben (Auwaldgebiet, RI) bzw. sechs (Feldstation, Station) Tagen in Folge mittels Fang-Markierung-Wiederfang untersucht wurden. Wir wissen, dass es keine konstante Fangwahrscheinlichkeit gibt (Onlinebeispiele 9.1, 9.2 und 10.5), sondern individuelle Heterogenität vorliegt (Henle 1990b, Grimm et al. 2014, Grimm-Seyfarth et al. 2018). Anhand des Studiendesigns – Fang am Ende der Reproduktionssaison (d. h., keine neuen Individuen durch Geburten), nur wenige Tage andauernde Primärperiode (d. h., keine Zu- und Abwanderungen sowie vernachlässigbare Mortalität erwartet) – gehen wir von einer geschlossenen Population aus. Während die Feldstation räumlich ohnehin geschlossen ist, was Zu- und Abwanderung in wenigen Tagen unwahrscheinlich macht, untersuchten wir in der Auwaldpopulation zusätzlich 19 umliegende Bäume, um wandernde Individuen zu entdecken. Dabei werden Individuen, die mindestens einmal im Kerngebiet erfasst werden, dem Kerngebiet hinzugeschlagen, während Individuen, die ausschließlich an den 19 umliegenden Bäumen entdeckt werden, nicht zur Population gerechnet werden. Somit können wir in unserem Design bereits sicherstellen, dass die Population geschlossen ist. Dieses Beispiel wurde bereits im Kapitel 9 des Buches, Onlinebeispiele 9.1 und 9.2 genutzt und auf Geschlossenheit geprüft. Weiterhin wurde die Populationsgröße bereits mittels des R-Pakes secr (Efford 2025) und verschiedenen Methoden berechnet. Daher verzichten wir auf eine Wiederholung der Berechnung mit diesem Paket. Hier zeigen wir die Populationsgrößenschätzung mittels der Pakete RMark (Laake 2013), Rcapture (Rivest & Baillargeon 2022) und CARE1 (Hsieh 2012).
+Im Kinchega Nationalpark (Australien) befinden sich zwei räumlich getrennte, benachbarte Geckopopulationen, welche 2016 an sieben (Auwaldgebiet, RI) bzw. sechs (Feldstation, Station) Tagen in Folge mittels Fang-Markierung-Wiederfang untersucht wurden. Wir wissen, dass es keine konstante Fangwahrscheinlichkeit gibt (Onlinebeispiele 9.1, 9.2 und 10.5), sondern individuelle Heterogenität vorliegt (Henle 1990, Grimm et al. 2014, Grimm-Seyfarth et al. 2018). Anhand des Studiendesigns – Fang am Ende der Reproduktionssaison (d. h., keine neuen Individuen durch Geburten), nur wenige Tage andauernde Primärperiode (d. h., keine Zu- und Abwanderungen sowie vernachlässigbare Mortalität erwartet) – gehen wir von einer geschlossenen Population aus. Während die Feldstation räumlich ohnehin geschlossen ist, was Zu- und Abwanderung in wenigen Tagen unwahrscheinlich macht, untersuchten wir in der Auwaldpopulation zusätzlich 19 umliegende Bäume, um wandernde Individuen zu entdecken. Dabei werden Individuen, die mindestens einmal im Kerngebiet erfasst werden, dem Kerngebiet hinzugeschlagen, während Individuen, die ausschließlich an den 19 umliegenden Bäumen entdeckt werden, nicht zur Population gerechnet werden. Somit können wir in unserem Design bereits sicherstellen, dass die Population geschlossen ist. Dieses Beispiel wurde bereits im Kapitel 9 des Buches, Onlinebeispiele 9.1 und 9.2 genutzt und auf Geschlossenheit geprüft. Weiterhin wurde die Populationsgröße bereits mittels des R-Pakes secr (Efford 2025) und verschiedenen Methoden berechnet. Daher verzichten wir auf eine Wiederholung der Berechnung mit diesem Paket. Hier zeigen wir die Populationsgrößenschätzung mittels der Pakete RMark (Laake 2013), Rcapture (Rivest & Baillargeon 2022) und CARE1 (Hsieh 2012).
 
 ```{r}
 # check.packages function: install and load multiple R packages.
@@ -69,7 +69,7 @@ CARE1: \url{https://drive.google.com/file/d/1f7RoM8mkxa2HFmk0v1L_zfYySOWkG-Gj/vi
 # Einlesen der Fangdaten
 Wir laden zunächst die Fangdaten ein. In diesem Beispiel nutzen wir ausschließlich die Daten aus der Auwaldpopulation. 
 
-Bitte beachten, dass der Pfad zu den Beipsieldaten korrekt gesetz ist. Wenn die Daten in einem anderen Verzeichnis gespeichert sind, muss der Pfad angepasst werden.
+Bitte beachten, dass der Pfad zu den Beispieldaten korrekt gesetz ist. Wenn die Daten in einem anderen Verzeichnis gespeichert sind, muss der Pfad angepasst werden.
 
 ```{r}
 UlmerBuch::beispiel.pfad()  #setzt den Pfad zu den Beispieldaten aus dem Paket Ulmberbuch
@@ -81,7 +81,7 @@ ch.RI <- as.matrix(ch.RI)
 
 ```
 
-Schauen wir uns die daten einmal an:
+Schauen wir uns die Daten einmal an:
 ```{r}
 head(ch.RI)
 ```
@@ -139,14 +139,14 @@ Beginnen wir von oben:
 RI.closedp <- closedp.t(ch.RI)
 RI.closedp
 ```
-Folgende Modelle werden mittels AIC-Tabelle verglichen (für Abkürzungen empfehlen wir die Kapitel 9 und 10 des Buches): M0, Mt, Mh bzw. Mth Moment estimator (Chao 1987), verschiedene Mh/Mth Poisson- und Gammaverteilungen (beschrieben in Rivest and Baillargeon 2007), und Mh- bzw. Mth-Modelle von Darroch et al. (1993). Den niedrigsten AIC-Wert weist in diesem Beispiel das Modell Mh von Chao (1987) auf, dicht gefolgt von Mh von Darroch et al. (1993).
+Folgende Modelle werden mittels AIC-Tabelle verglichen (für Abkürzungen empfehlen wir die Kapitel 9 und 10 des Buches): M0, Mt, Mh bzw. Mth Moment estimator (Chao 1987), verschiedene Mh/Mth Poisson- und Gammaverteilungen (beschrieben in Rivest & Baillargeon 2007) und Mh- bzw. Mth-Modelle von Darroch et al. (1993). Den niedrigsten AIC-Wert weist in diesem Beispiel das Modell Mh von Chao (1987) auf, dicht gefolgt von Mh von Darroch et al. (1993).
 
 ## Grafisch darstellen
-Die Funktion` boxplot.closedp` erzeugt Boxplots der Pearson-Residuen der angepassten log-linearen Modelle, die konvergiert haben.
+Die Funktion ` boxplot.closedp` erzeugt Boxplots der Pearson-Residuen der angepassten log-linearen Modelle, die konvergiert haben.
 ```{r}
-boxplot(RI.closedp)
+boxplot(RI.closedp, ylab="Residuen")
 ```
-Die Funktion `plot.closedp` erzeugt Scatterplots der Pearson-Residuen in Form von *fi* (Fangfrequenzen) für die heterogenen Modelle Mh Poisson2, Mh Darroch und Mh Gamma3.5, sofern sie konvergieren. Achsenbeschriftungen werden automatisch erstellt und sind daher Englisch. Leider kann man sie nicht manuell ändern, daher sind sie oft schwierig zu lesen. Die y-Achse müsste beschriftet sein mit "Pearson residuals in terms of fi (number of units captured i times)".
+Die Funktion `plot.closedp` erzeugt Scatterplots der Pearson-Residuen in Form von *fi* (Fangfrequenzen) für die heterogenen Modelle Mh Poisson2, Mh Darroch und Mh Gamma3.5, sofern sie konvergieren. Achsenbeschriftungen werden automatisch erstellt und sind daher Englisch. Leider kann man sie nicht manuell ändern, daher sind sie oft schwierig zu lesen. Die y-Achse müsste beschriftet sein mit "Pearson residuals in terms of *fi* (number of units captured *i* times)".
 ```{r}
 plot(RI.closedp)
 ```
@@ -177,18 +177,18 @@ head(RI.CARE)
 Bei diesem Befehl werden alle möglichen Fanggeschichten erstellt und jeweils aufaddiert, wie oft diese spezielle Fanggeschichte vorkommt.
 
 ## Modelle aufrufen
-In CARE1 werden alle Modelle zur Populationsgrößenschätzung mit einem Befehl aufgerufen. Die Ausführung dauert einen Moment. Literatur, auf die hier im Output verwiesen wird, kann unter unter `?CARE1.print` nachgeschaut werden.
+In CARE1 werden alle Modelle zur Populationsgrößenschätzung mit einem Befehl aufgerufen. Die Ausführung dauert einen Moment. Literatur, auf die hier im Output verwiesen wird, kann unter `?CARE1.print` nachgeschaut werden.
 ```{r}
 CARE1.print(RI.CARE)
 ```
 Der Output besteht aus drei Teilen. Der erste Teil der Ausgabe gibt die Anzahl der identifizierten Individuen in jeder der sieben Sekundärperioden (hier Listen genannt) an. Der zweite Teil enthält die Petersen- und Chapman-Schätzungen zusammen mit dem Standardfehler (`se`) und den Konfidenzintervallen (`cil` - unteres, `ciu` - oberes) für jedes Paar von Sekundärperioden. Diese Schätzungen können als vorläufige Analyse verwendet werden, um mögliche Abhängigkeiten zwischen Sekundärperioden zu erkennen. 
 
-Im dritten Teil werden die Sample Coverage Populationsgrößenschätzer (Chao et al. 2001,  Chao and Tsay 1998) zusammen mit den zugehörigen Statistiken vorgestellt. Der geschätzte Stichprobenerfassungsgrad oder Überschneidungsanteil (Sample Coverage) beträgt *C* = 76,1 % (`Chat` in der Ausgabe), was als hoch angesehen werden kann. Der Durchschnitt (über alle Listen) der sich überschneidenden Fälle ist *D* = 100,71. Wenn man von der Unabhängigkeit der Stichproben ausgehen würde, ergäbe sich eine geschätzte Populationsgröße von *N0* = *D/C* = 132 (`Nhat-0` in der Ausgabe), mit einem Bootstrap Standardfehler (`se`) von 8 auf der Grundlage von 1000 Bootstrap-Replikationen. Die untere Grenze des 95 %-Konfidenzintervalls (`cil`) beträgt 121 und die obere Grenze (`ciu`) beträgt 153 Individuen. Achtung: Selbst bei gleichen Eingabedaten sind der Bootstrap-Schätzwert und das Konfidenzintervall bei wiederholten Durchläufen von CARE1 verschieden aufgrund von Variationen bei der Wiederholungsstichprobe in den Bootstrapverfahren. Da jedoch die Sample Coverage hoch ist und auch der Koeffizient der Kovariation (*CCV*, dargestellt als `r12`, `r13` etc.) häufig relativ hoch scheint, liegt wohl individuelle Heterogenität vor und der *N0*-Schätzer ist bedeutungslos. Beachten wir nun die Sample Coverage und nutzen entsprechend das Modell `Nhat`, bekommen wir eine Populationsgröße von 160 mit einem `se` von 23 und einem 95 %-Konfidenzintervall zwischen 130 und 228. Dies liegt nur unwesentlich höher als der Moment estimator und die Schätzung nach Darroch aus der obigen Berechnung, wobei sich alle Konfidenzintervalle überlappen und Schätzungen in den jeweils anderen Konfidenzintervallen enthalten sind.
+Im dritten Teil werden die Sample Coverage Populationsgrößenschätzer (Chao et al. 2001,  Chao & Tsay 1998) zusammen mit den zugehörigen Statistiken vorgestellt. Der geschätzte Stichprobenerfassungsgrad oder Überschneidungsanteil (Sample Coverage) beträgt *C* = 76,1 % (`Chat` in der Ausgabe), was als hoch angesehen werden kann. Der Durchschnitt (über alle Listen) der sich überschneidenden Fälle ist *D* = 100,71. Wenn man von der Unabhängigkeit der Stichproben ausgehen würde, ergäbe sich eine geschätzte Populationsgröße von *N0* = *D/C* = 132 (`Nhat-0` in der Ausgabe), mit einem Bootstrap Standardfehler (`se`) von 8 auf der Grundlage von 1000 Bootstrap-Replikationen. Die untere Grenze des 95 %-Konfidenzintervalls (`cil`) beträgt 121 und die obere Grenze (`ciu`) beträgt 153 Individuen. Achtung: Selbst bei gleichen Eingabedaten sind der Bootstrap-Schätzwert und das Konfidenzintervall bei wiederholten Durchläufen von CARE1 verschieden aufgrund von Variationen bei der Wiederholungsstichprobe in den Bootstrapverfahren. Da jedoch die Sample Coverage hoch ist und auch der Koeffizient der Kovariation (*CCV*, dargestellt als `r12`, `r13` etc.) häufig relativ hoch scheint, liegt wohl individuelle Heterogenität vor und der *N0*-Schätzer ist bedeutungslos. Beachten wir nun die Sample Coverage und nutzen entsprechend das Modell `Nhat`, bekommen wir eine Populationsgröße von 160 mit einem `se` von 23 und einem 95 %-Konfidenzintervall zwischen 130 und 228. Dies liegt nur unwesentlich höher als der Moment estimator und die Schätzung nach Darroch aus der obigen Berechnung, wobei sich alle Konfidenzintervalle überlappen und Schätzungen in den jeweils anderen Konfidenzintervallen enthalten sind.
 
-Für weitere Analysen empfehlen wir die Literatur von Chao 2015 sowie Chao & Yang 2006 (die Desktop-Version von CARE - diese enthält neben den Sample-Coverage-Schätzern auch die Estimating Equations, siehe Kapitel 10 des Buches für weitere Informationen).
+Für weitere Analysen empfehlen wir die Literatur von Chao (2015) sowie Chao & Yang (2006) (die Desktop-Version von CARE - diese enthält neben den Sample-Coverage-Schätzern auch die Estimating Equations, siehe Kapitel 10 des Buches für weitere Informationen).
 
 # Populationsgrößenschätzungen in RMark
-Anders als in Rcapture und CARE1 werden in RMark nicht eine Reihe bekannter Schätzer gerechnet, sonder Schätzungen erfolgen über eine Parameter-Index-Matrix (PIM). Möchte man mit MARK die oben vorgestellten Modelle rechnen, würde man ebenfalls das Programm CAPTURE innerhalb von MARK aufrufen, andernfalls nutzt man auch in MARK das PIM-Design. Daher zeigen wir hier nur relativ einfache Anwendungen. Gute Anwendungsbeispiele findet man, neben dem MARK-Benutzerhandbuch, hier:
+Anders als in Rcapture und CARE1 werden in RMark nicht eine Reihe bekannter Schätzer gerechnet, sondern Schätzungen erfolgen über eine Parameter-Index-Matrix (PIM). Möchte man mit MARK die oben vorgestellten Modelle rechnen, würde man ebenfalls das Programm CAPTURE innerhalb von MARK aufrufen, andernfalls nutzt man auch in MARK das PIM-Design. Daher zeigen wir hier nur relativ einfache Anwendungen. Gute Anwendungsbeispiele findet man, neben dem MARK-Benutzerhandbuch, hier:
 
 \url{https://www.montana.edu/rotella/documents/502/lab07RMark.html}
 
@@ -392,11 +392,11 @@ Chao, A., Tsay, P.K., Lin, S.H., et al. (2001): The applications of capture-reca
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Darroch, S.E., Fienberg, G., Glonek, B., Junker, B. (1993): A three sample multiple capture-recapture approach to the census population estimation with heterogeneous catchability. --- Journal of the American Statistical Association 88: 1137-–1148.
+Darroch, S.E., Fienberg, G., Glonek, B., Junker, B. (1993): A three sample multiple capture-recapture approach to the census population estimation with heterogeneous catchability. --- Journal of the American Statistical Association 88: 1137–-1148.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Dorazio, R.M., Royle, J. A. (2003): Mixture models for estimating the size of a closed population when capture rates vary among individuals. --- Biometrics 59: 351-–364.
+Dorazio, R.M., Royle, J. A. (2003): Mixture models for estimating the size of a closed population when capture rates vary among individuals. --- Biometrics 59: 351–-364.
 \end{hangparagraph}
 
 \begin{hangparagraph}
@@ -408,11 +408,11 @@ Grimm, A., Gruber, B., Henle, K. (2014): Reliability of different mark-recapture
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. (2018): Some like it hot: from individual to population responses of an arboreal arid-zone gecko to local and distant climate. --- Ecological Monographs 88: 336–-352.
+Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. (2018): Some like it hot: From individual to population responses of an arboreal arid-zone gecko to local and distant climate. --- Ecological Monographs 88: 336–-352.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Henle, K. (1990): Population ecology and life history of the arboreal gecko \textit{Gehyra variegata} in arid Australia. --- Herpetological Monographs 4: 30--60.
+Henle, K. (1990): Population ecology and life history of the arboreal gecko \textit{Gehyra variegata} in arid Australia. --- Herpetological Monographs 4: 30–-60.
 \end{hangparagraph}
 
 \begin{hangparagraph}
@@ -420,11 +420,11 @@ Hsieh, T. (2012): CARE1: Statistical package for population size estimation in c
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Huggins, R.M. (1989): On the statistical analysis of capture-recapture experiments. --- Biometrika 76: 133--140.
+Huggins, R.M. (1989): On the statistical analysis of capture-recapture experiments. --- Biometrika 76: 133–-140.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Huggins, R.M. (1991): Some practical aspects of a conditional likelihood approach to capture experiments. --- Biometrics 47: 725--732.
+Huggins, R.M. (1991): Some practical aspects of a conditional likelihood approach to capture experiments. --- Biometrics 47: 725–-732.
 \end{hangparagraph}
   
 \begin{hangparagraph}
@@ -436,7 +436,7 @@ Lee, S.-M., Chao, A. (1994): Estimating population size via sample coverage for 
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Otis, D.L., Burnham, K.P., White, G.C., Anderson, D.R. (1978): Statistical inference from capture data on closed animal populations. --- Wildlife Monographs 62: 1-–135.
+Otis, D.L., Burnham, K.P., White, G.C., Anderson, D.R. (1978): Statistical inference from capture data on closed animal populations. --- Wildlife Monographs 62: 1–-135.
 \end{hangparagraph}
 
 \begin{hangparagraph}

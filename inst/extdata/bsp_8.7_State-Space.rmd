@@ -88,23 +88,23 @@ Wenn wir Daten über eine große geografische Region betrachten, könnten wir da
 
 In MARSS wird folgendes Modell angepasst:
 
-$xt = B \cdot xt-1+u+wt$ mit *wt* abhängig von *N(0,Q)*,
+$x_t = B_t \cdot x_{t-1}+u+w_t$ mit $w_t$ ~ *N(0,Q)*,
 
-$yt = Z*xt+1+vt$ mit *vt* abhängig von *N(0,R)*,
+$y_t = Z_t \cdot x_{t}+a+v_t$ mit $v_t$ ~ *N(0,R)*,
 
-$x0 = my$.
+$x_0 = \mu$.
 
 Dabei ist:
 
-*xt* eine $m \times T$-Matrix (`states`), jedes *xt* ist eine Realisierung der Zufallsvariablen *Xt* zum Zeitpunkt *t*;
+$x_t$ eine $m \times T$-Matrix (`states`), jedes $x_t$ ist eine Realisierung der Zufallsvariablen $X_t$ zum Zeitpunkt *t*;
 
-*w* eine $m \times T$-Matrix der Prozessfehler; Die Prozessfehler zum Zeitpunkt *t* sind multivariat normalverteilt mit Mittelwert 0 und Kovarianzmatrix *Qt*;
+$w_t$ eine $m \times T$-Matrix der Prozessfehler; Die Prozessfehler zum Zeitpunkt *t* sind multivariat normalverteilt mit Mittelwert 0 und Kovarianzmatrix $Q_t$;
 
-*y* eine $n \times T$-Matrix der Beobachtungen (einige Beobachtungen können fehlen);
+$y_T$ eine $n \times T$-Matrix der Beobachtungen (einige Beobachtungen können fehlen);
 
-*v* ein $n \times T$-Spaltenvektor der prozessunabhängigen Fehler; die Beobachtungsfehler zum Zeitpunkt *t* sind multivariat normalverteilt mit Mittelwert 0 und Kovarianzmatrix *Rt*;
+$v_t$ ein $n \times T$-Spaltenvektor der prozessunabhängigen Fehler; die Beobachtungsfehler zum Zeitpunkt *t* sind multivariat normalverteilt mit Mittelwert 0 und Kovarianzmatrix $R_t$;
 
-*Bt* und *Zt* sind Parameter und $m \times m$ bzw. $n \times m$ Matrizen;
+$B_t$ und $Z_t$ sind Parameter und $m \times m$ bzw. $n \times m$ Matrizen;
 
 *u* und *a* sind Parameter und $m \times 1$ bzw. $n \times 1$ Spaltenvektoren;
 
@@ -124,7 +124,7 @@ mod.list.0 <- list(
 )
 ```
 
-Hierbei bedeutet die Abkürzung `diagonal and unequal` eine Diagonalmatrix, bei der jedes Diagonalelement einen anderen Wert hat. Die Abkürzung `scaling` bezeichnet die Form von *a*, wobei ein Wert auf 0 gesetzt und der Rest geschätzt wird. Wir sollten den Code in der Liste ausführen, um sicherzustellen, dass jeder Parameter in der Liste die gleiche Form hat wie in unserer mathematischen Gleichung für das Modell.
+Hierbei bedeutet die Abkürzung `diagonal and unequal` eine Diagonalmatrix, bei der jedes Diagonalelement einen anderen Wert hat. Die Abkürzung `scaling` bezeichnet die Form von *a* (in der Gleichung $y_t = Z_t \cdot x_{t}+a+v_t$), wobei ein Wert auf 0 gesetzt und der Rest geschätzt wird. Wir sollten den Code in der Liste ausführen, um sicherzustellen, dass jeder Parameter in der Liste die gleiche Form hat wie in unserer mathematischen Gleichung für das Modell.
 
 Dann passen wir das Modell an:
 ```{r}
@@ -149,7 +149,7 @@ for (i in 1:4) {
 )
 }
 ```
-Auf der x-Achse sind die Jahre aufgetragen, auf der y-Achse die Residuen. Das Modell sieht nicht schlecht aus, aber die Residuen für SJI und EBays sind problematisch, da sie eine Form aufweisen.
+Auf der x-Achse sind die Jahre aufgetragen, auf der y-Achse die Residuen. Das Modell sieht nicht schlecht aus, aber die Residuen für SJI und EBays sind problematisch, da sie eine bestimme Form (hier: Korrelation mit den Jahren) aufweisen.
 
 # Vier Einzelpopulationen ohne zeitliche Autokorrelation
 Das Modell für eine gut gemischte Population war laut Modellvalidierung mittels Residuen nicht sehr gut. Eine weitere vernünftige Annahme wäre, dass die verschiedenen Regionen vier verschiedene, zeitlich unabhängige Teilpopulationen darstellen.
@@ -271,5 +271,5 @@ Pearson, S.F., Amburgey, S.M., Clark, C.T., Tanedo, S.A., Londin, J.M., Huber, H
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Wickham, H. (2016): ggplot2: Elegant graphics for data analysis. Springer-Verlag New York.
+Wickham, H. (2016): ggplot2: Elegant graphics for data analysis. --- Springer-Verlag New York.
 \end{hangparagraph}

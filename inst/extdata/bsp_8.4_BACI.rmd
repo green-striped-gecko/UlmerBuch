@@ -29,7 +29,7 @@ knitr::opts_chunk$set(width = 80)
 options(width = 80)
 ```
 
-In diesem Beispiel zeigen wir eine einfache Vorher-Nachher-Kontrolle-Effekt-Analyse (engl. Before-After-Control-Impact Assessment, oder kurz BACI-Analyse) in R. Für klassische Regressionsanalysen mittels `lm` und `glm` sind keine weiteren R-Pakete nötig, jedoch für die `glm.nb` Modelle das Paket MASS (Venables & Ripley 2002). Allerdings erleichtern die Pakete MuMIn (Bartón 2024) und emmeans (Lenth 2025) den Umgang mit Modellselektion und Interaktionen. Für die Modelldiagnostik nutzen wir die Pakete DHARMa (Hartig 2024) und performance (Lüdecke et al. 2021). Außerden nutzen wir das Paket ggplot2 für Visualisierungen (Wickham 2016). Als Datensatz nutzen wir ein Larvenmonitoring im Leipziger Auwald aus zwei aufeinanderfolgenden Jahren, in dem ein Gewässer zwischen den Erfassungen von Vegetation freigeschnitten wurde. 
+In diesem Beispiel zeigen wir eine einfache Vorher-Nachher-Kontrolle-Effekt-Analyse (engl. Before-After-Control-Impact Assessment, oder kurz BACI-Analyse) in R. Für klassische Regressionsanalysen mittels `lm` und `glm` sind keine weiteren R-Pakete nötig, jedoch für die `glm.nb` Modelle das Paket MASS (Venables & Ripley 2002). Allerdings erleichtert das R-Paket MuMIn (Bartón 2024) den Umgang mit Modellselektion und das R-Paket emmeans (Lenth 2025) die Interpretation von Interaktionen. Für die Modelldiagnostik nutzen wir die Pakete DHARMa (Hartig 2024) und performance (Lüdecke et al. 2021). Außerden nutzen wir das Paket ggplot2 für Visualisierungen (Wickham 2016). Als Datensatz nutzen wir ein Larvenmonitoring im Leipziger Auwald aus zwei aufeinanderfolgenden Jahren, in dem ein Gewässer zwischen den Erfassungen von Vegetation freigeschnitten wurde. 
 
 ```{r}
 # check.packages function: install and load multiple R packages.
@@ -77,31 +77,73 @@ glm.tc <- glm(TC_larvae_Numbers_of_Individual ~ Group * Time,
                data = BAdata, family = "poisson")
 ```
 
-Bevor wir weitermachen, müssen wir noch prüfen, dass die Modelle tatsächlich valide sind. Dazu nutzen wir den Verteilungstest aus dem R-Paket DHARMa (Hartig 2024) und prüfen auf sogenannte Zero-inflation (d.h., zu viele 0en im Datensatz) mithilfe des R-Paketes performance (Lüdecke et al. 2021). Mittels `simulationOutput` kann man den Verteilungstest auch grafisch darstellen. Hierbei werden automatisch Achsenbeschriftungen erstellt, diese sind daher in Englisch.
-```{r}
-testDispersion(glm.lv) # kein signifikanter Unterschied, Modell ist ok
-check_zeroinflation(glm.lv) # keine Zero-inflation, Modell ist ok
-simulationOutput <- simulateResiduals(fittedModel = glm.lv, plot = T)
+Bevor wir weitermachen, müssen wir noch prüfen, dass die Modelle tatsächlich valide sind, also die Poissonverteilung wirklich zutrifft. Dazu nutzen wir den DHARMa-Verteilungstest aus dem R-Paket DHARMa (Hartig 2024). Der Hintergrund ist, dass eine Poissonverteilung dadurch charakterisiert ist, dass der Mittelwert der Varianz (als der Streuung) entspricht. Aber in echten Daten ist das selten so: manchmal sind die Daten zu stark gestreut (= Overdispersion, z. B. weil in manchen Teichen extrem viele Molche gezählt werden und in anderen sehr wenige), und manchmal sind sie zu wenig gestreut (= Underdispersion, z. B. weil die Zahlen „zu regelmäßig“ sind). Ein Modell, das die Streuung falsch einschätzt, kann zu falschen Tests und p-Werten führen. Der nichtparametrische Verteilungstest vergleicht dann: Wie groß ist die Standardabweichung der Residuen in den echten Daten, verglichen mit der Streuung in den simulierten Daten? Wenn sie ungefähr gleich ist, passt die Poissonverteilung. Wenn die echten Residuen viel stärker schwanken, liegt Overdispersion vor. Wenn die echten Residuen viel gleichmäßiger sind, liegt Underdispersion vor. Das Ergebnis ist ein p-Wert: nicht signifikant (p > 0.05) bedeutet, das Modell erklärt die Streuung gut, signifikant (p < 0.05) bedeutet, das Modell passt nicht zur Streuung (Über- oder Unterdispersion). In letzterem Fall müssen wir einen andere Verteilung nehmen (z. B. Negative-Binomial statt Poisson). Mittels `simulationOutput` kann man den Verteilungstest auch grafisch darstellen. Hierbei werden automatisch Achsenbeschriftungen erstellt, diese sind daher in Englisch. Man bekommt die vier Standarddiagnosen (Plots + Tests): Quantile-Plot / QQ-Plot der Residuen (prüft, ob die simulierten Residuen gleichverteilt sind); ein Histogramm der Residuen (visuelle Prüfung: Ist die Verteilung der Residuen flach (Uniform)?) Residuals vs. Predicted (Verteilungstest, prüft nach Over- oder Underdispersion); und Residuals vs. Regressors (zeigt, ob Residuen mit den erklärenden Variablen oder der Zeit korreliert sind, dient zum Erkennen von fehlenden Prädiktoren oder Autokorrelation). Das praktische daran ist, dass Auffälligkeiten immer rot dargestellt werden.
 
-testDispersion(glm.tc) # signifikanter Unterschied, Verteilung falsch
-check_zeroinflation(glm.tc) # keine Zero-inflation, Modell ist ok
-simulationOutput <- simulateResiduals(fittedModel = glm.tc, plot = T)
+Weiterhin prüfen wir auf sogenannte Zero-inflation (d. h., zu viele Nullen im Datensatz) mithilfe des R-Paketes performance (Lüdecke et al. 2021). Zu viele Nullen entstehen, wenn in manchen Gewässern keine Individuen beobachtet wurden. Ein „normales“ Poisson- oder Negative-Binomial-Modell geht aber nur von einer bestimmten Anzahl Nullen aus (basierend auf der erwarteten Verteilung). Wenn viel mehr Nullen in den Daten stecken, als das Modell erlaubt, spricht man von Zero-Inflation. Der Zero-Inflation-Test schaut nach: Wie viele Nullen hat mein Modell erwartet? Wie viele Nullen haben die echten Daten tatsächlich? Dann wird statistisch getestet, ob die Differenz größer ist, als man durch Zufall erwarten würde. Wenn das Modell ungefähr gleich viele Nullen erwartet wie beobachtet, passt die Verteilung. Wenn die echten Daten viel mehr Nullen enthalten als das Modell, sprechen wir von einer signifikanten Zero-Inflation. In seltenen Fällen gibt es auch zu wenige Nullen, dann passt das Modell ebenfalls nicht gut. Bei Zero-Inflation einer Poissonverteilung kann man hier ebenfalls zunächst die Negativ-Binomialverteilung prüfen, und wenn das Problem weiter besteht, müssen spezielle Zero-Inflated-Modelle oder das Hurdle-Modell verwendet werden, das Nullen gesondert modelliert.
+
+Führen wir die Tests nach Art getrennt nacheinander durch:
+\newpage
+```{r}
+# Teichmolch
+# Verteilungstest
+testDispersion(glm.lv) 
+# kein signifikanter Unterschied, Modell ist ok
 ```
-Für den Teichmolch ist das Modell unauffällig, für den Kammmolch gibt es jedoch eine signifikante Abweichung hinsichtlich der Verteilung (p = 0,024). Daher nutzen wir alternativ zur Poisson-Verteilung die Negativbinomialverteilung.
+\newpage
+```{r}
+# Grafische Darstellung der Verteilungstests
+simulationOutput <- simulateResiduals(fittedModel = glm.lv, plot = T)
+# keine signifikanten Unterschiede, Modell ist ok
+```
+```{r}
+# Test auf Zero-inflation
+check_zeroinflation(glm.lv) 
+# keine Zero-inflation, Modell ist ok
+```
+\newpage
+```{r}
+# Kammmolch
+# Verteilungstest
+testDispersion(glm.tc) 
+# signifikanter Unterschied, Verteilung falsch
+```
+\newpage
+```{r}
+# Grafische Darstellung der Verteilungstests
+simulationOutput <- simulateResiduals(fittedModel = glm.tc, plot = T)
+# Dispersionstest signifikant, Verteilung falsch
+```
+```{r}
+# Test auf Zero-inflation
+check_zeroinflation(glm.tc) 
+# keine Zero-inflation
+```
+Für den Teichmolch ist das Modell unauffällig, die Poissonverteilung ist also korrekt. Für den Kammmolch gibt es jedoch eine signifikante Abweichung hinsichtlich der Verteilung (p = 0,024). Daher nutzen wir alternativ zur Poisson-Verteilung die Negativ-Binomialverteilung. Diese erstellen wir hiermit und prüfen gleich im Anschluss erneut die Verteilung sowie die Zero-Inflation:
 
 ```{r}
 glm.tc <- glm.nb(TC_larvae_Numbers_of_Individual ~ Group * Time, 
                data = BAdata)
-testDispersion(glm.tc) # signifikanter Unterschied, Verteilung falsch
-check_zeroinflation(glm.tc) # keine Zero-inflation, Modell ist ok
+# Verteilungstest
+testDispersion(glm.tc) 
+# kein signifikanter Unterschied, Modell ist ok
+```
+\newpage
+```{r}
+# Grafische Darstellung der Verteilungstests
 simulationOutput <- simulateResiduals(fittedModel = glm.tc, plot = T)
+# keine signifikanten Unterschiede, Modell ist ok
+```
+```{r}
+# Test auf Zero-inflation
+check_zeroinflation(glm.tc) 
+# keine Zero-inflation, Modell ist ok
 ```
 Nun gibt es keine weiteren Abweichungen, das Modell für den Kammmolch ist ebenfalls ok.
 
-Schauen wir uns nun die Arten nun im Detail an.
+Schauen wir uns nun die Analysen der Arten nun im Detail an.
 
 ## Teichmolch
-Vergleichen wir zunächst die Modelle mit jeweils linearen Kombinationen der Parameter. Dazu nutzen wir die *dredge* Funktion aus dem R-Paket MuMIn. Eine Einführung in Modellvergleiche findet sich in Kapitel 9.3 des Buches.
+Vergleichen wir zunächst die Modelle mit jeweils linearen Kombinationen der Parameter. Dazu nutzen wir die `dredge` Funktion aus dem R-Paket MuMIn. Eine Einführung in Modellvergleiche findet sich in Kapitel 9.3 des Buches.
 ```{r}
 # Modellvergleich
 glm.lv.mod <- dredge(glm.lv, options(na.action = "na.fail"))
@@ -127,21 +169,35 @@ drop1(glm(LV_larvae_Numbers_of_Individual ~ Group + Time,
 Während die Gesamtinteraktion nicht signifikant ist, sind es die Einzelparameter ohne Interaktion. Wenn es einen Interaktionseffekt (also Einfluss der Intervention) gibt, ist dieser schwächer als die Effekte der einzelnen Parameter.
 
 ### Interaktionseffekte
-Die einzelnen Interaktionseffekte können wir uns auch mithilfe des emmeans-Paketes anschauen.
+Die einzelnen Interaktionseffekte sind im Modell oben schwer zu interpretieren. Einfacher können wir sie uns auch mithilfe des emmeans-Paketes anschauen. Die Funktion `emmeans` berechnet die sogenannten Estimated Marginal Means (= erwartete Mittelwerte), also die Mittelwerte nach dem Modell, nicht die rohen Mittelwerte aus den Daten. Das funktioniert folgendermaßen: Dein Modell wurde in einer bestimmten Link-Funktion geschätzt. Bei einem Poisson-GLM ist das die log-Link:
+
+$log(\mu)=\alpha+\beta \cdot x$
+
+Das Modell arbeitet also auf der Log-Skala. Die Funktion `emmeans` berechnet die erwarteten Werte auf dieser Modellskala (= Logarithmus der erwarteten Anzahl). Deshalb siehst du die Ergebnisse erstmal auf der Log-Skala. Die Log-Skala hat den Vorteil, dass Unterschiede in den Gruppen zu Additionen werden (linearer Zusammenhang). Auf der Originalskala wären es Multiplikationen (Exponent). Schauen wir uns das an:
+
 ```{r}
 l.em <- emmeans(glm.lv, ~ Group * Time)
 l.em
 ```
-Im `Treatment`-Gewässer waren also auch 2023 mehr Larven als im `Control1`-Gewässer, jedoch ist der Unterschied 2024 deutlich stärker zu sehen. In beiden Gewässern gibt es 2024 allerdings mehr Larven als 2023, weshalb der mögliche positive Effekt der Pflegemaßnahme maskiert sein könnte. 
+Wir sehen die Gruppe (`Control1` vs. `Treatment`) und die entsprechende Zeit (`Before` und `After`), sowie die für die entsprechende Kombination berechneten Mittelwerte auf der Log-Skala (Spalte `emmean`). Im `Treatment`-Gewässer waren also auch 2023 (`Before`) bereits mehr Teichmolchlarven als im `Control1`-Gewässer, jedoch ist der Unterschied zwischen den Gewässern in 2024 (`After`) deutlich stärker zu sehen. In beiden Gewässern gab es 2024 allerdings mehr Teichmolchlarven als 2023, weshalb der mögliche positive Effekt der Pflegemaßnahme maskiert sein könnte. 
 
-### Graphische Darstellung
+Die geschätzten Mittelwerte können natürlich auch zurücktransformiert werden:
+```{r}
+l.em <- as.data.frame(l.em)
+l.em$emmean_original <- exp(l.em$emmean)
+l.em
+```
+Hier sehen wir den Unterschied noch deutlich stärker (Spalte `emmean_original`), im `Treatment`-Gewässer waren nach der Pflegemaßnahme deutlich mehr Teichmolchlarven (letzter Wert) als im `Control1`-Gewässer oder im Jahr vor der Pflegemaßnahme.
+
+### Grafische Darstellung
+Stellen wir die Rohdaten auch noch einmal direkt gegenüber. Achtung, hier handelt es sich nicht wie zuvor um Schätzwerte.
 ```{r}
 ggplot(BAdata, aes(x = Group, y = LV_larvae_Numbers_of_Individual, 
                    fill = Time, group = interaction(Group, Time))) +
   geom_boxplot() +
   labs(
     x = "",
-    y = "",
+    y = "Larvenzahl",
     title = "Veränderung der Teichmolchlarven vor und nach dem Eingriff",
     fill = "Zeit"
   ) +
@@ -176,10 +232,10 @@ ggplot(BAdata, aes(x = Group, y = LV_larvae_Numbers_of_Individual,
 
 
 ```
-Dieses Ergebnis deckt sich mit den Modellergebnissen. Achtung: in einem Boxplot werden keine Mittelwerte, sondern Mediane dargestellt, weshalb der Zahlenwert nicht mit denen aus emmeans überein stimmen kann.
+Dieses Ergebnis deckt sich grundsätzlich mit den Modellergebnissen: im `Treatment`-Gewässer waren nach der Pflegemaßnahme deutlich mehr Teichmolchlarven als im `Control1`-Gewässer oder im Jahr vor der Pflegemaßnahme. Achtung: in einem Boxplot werden keine Mittelwerte, sondern Mediane dargestellt, weshalb der Zahlenwert weiter von den Mittelwerten aus `emmeans` abweichen kann.
 
 ## Kammmolch
-Vergleichen wir zunächst die Modelle mit jeweils linearen Kombinationen der Parameter. Dazu nutzen wir die *dredge* Funktion aus dem R-Paket MuMIn. 
+Vergleichen wir zunächst die Modelle mit jeweils linearen Kombinationen der Parameter. Dazu nutzen wir die `dredge` Funktion aus dem R-Paket MuMIn. 
 ```{r}
 # Modellvergleich
 glm.tc.mod <- dredge(glm.tc, options(na.action = "na.fail"))
@@ -192,7 +248,7 @@ Schauen wir uns dennoch die Schätzwerte der drei besten Modelle an.
 ```{r}
 get.models(glm.tc.mod, subset = c(1:3))
 ```
-Im `Treatment`-Gewässer gab es insgesamt über beide Jahre tendenziell mehr Teichmolchlarven. Der Zeiteffekt ist nur schwach ausgeprägt, es gibt aber ebenfalls den Trend, dass 2024 mehr Larven vorhanden waren. 
+Im `Treatment`-Gewässer gab es insgesamt über beide Jahre tendenziell mehr Kammmolchlarven. Der Zeiteffekt ist nur schwach ausgeprägt, es gibt aber ebenfalls den Trend, dass 2024 mehr Kammmolchlarven vorhanden waren als 2023. 
 
 Schauen wir noch nach möglicher Signifikanz der Parameter
 
@@ -205,21 +261,30 @@ drop1(glm.nb(TC_larvae_Numbers_of_Individual ~ Group + Time,
 In diesem Modell ist die Gesamtinteraktion signifikant, während die Einzelparameter (eines Modelles ohne Interaktion) es nicht wären. Der Likelihood-Ratio-Test zeigt also doch einen möglichen Interaktionseffekt und damit einen Effekt der Maßnahme.
 
 ### Interaktionseffekte
-Die einzelnen Interaktionseffekte können wir uns auch mithilfe des emmeans Paketes anschauen.
+Die einzelnen Interaktionseffekte sind im Modell oben schwer zu interpretieren. Einfacher können wir sie uns auch mithilfe des emmeans-Paketes anschauen. Die Funktion `emmeans` berechnet die sogenannten Estimated Marginal Means (= erwartete Mittelwerte), also die Mittelwerte nach dem Modell, nicht die rohen Mittelwerte aus den Daten. Wie das funktioniert, wurde beim Teichmolch bereits erklärt.
 ```{r}
 l.em <- emmeans(glm.tc, ~ Group * Time)
 l.em
 ```
-Während 2023 im `Treatment`-Gewässer weniger Kammmolchlarven als im Kontrollgewässer waren (mit nur geringem Unterschied), befanden sich nach der Maßnahme im `Treatment`-Gewässer deutlich mehr Kammmolchlarven, im Kontrollgewässer deutlich weniger als im Vorjahr. Die Unterschiede sind jedoch nicht sehr groß.
+Wir sehen die Gruppe (`Control1` vs. `Treatment`) und die entsprechende Zeit (`Before` und `After`), sowie die für die entsprechende Kombination berechneten Mittelwerte auf der Log-Skala (Spalte `emmean`). Während 2023 (`Before`) im `Treatment`-Gewässer weniger Kammmolchlarven als im Kontrollgewässer waren (mit nur geringem Unterschied), befanden sich nach der Maßnahme (`After`) im `Treatment`-Gewässer deutlich mehr Kammmolchlarven, im Kontrollgewässer deutlich weniger als im Vorjahr. Die Unterschiede sind jedoch nicht sehr groß.
 
-### Graphische Darstellung
+Die geschätzten Mittelwerte können natürlich auch zurücktransformiert werden:
+```{r}
+l.em <- as.data.frame(l.em)
+l.em$emmean_original <- exp(l.em$emmean)
+l.em
+```
+Hier sehen wir den Unterschied noch deutlich stärker (Spalte `emmean_original`), im `Treatment`-Gewässer waren nach der Pflegemaßnahme deutlich mehr Kammmolchlarven (letzter Wert) als im `Control1`-Gewässer oder im Jahr vor der Pflegemaßnahme.
+
+### Grafische Darstellung
+Stellen wir die Rohdaten auch noch einmal direkt gegenüber. Achtung, hier handelt es sich nicht wie zuvor um Schätzwerte.
 ```{r}
 ggplot(BAdata, aes(x = Group, y = TC_larvae_Numbers_of_Individual, 
                    fill = Time, group = interaction(Group, Time))) +
   geom_boxplot() +
   labs(
     x = "",
-    y = "",
+    y = "Larvenzahl",
     title = "Veränderung der Kammmolchlarven vor und nach dem Eingriff",
     fill = "Zeit"
   ) +
@@ -254,9 +319,9 @@ ggplot(BAdata, aes(x = Group, y = TC_larvae_Numbers_of_Individual,
 
 
 ```
-Schauen wir uns nur die Boxplots an (also die Mediane, nicht die Mittelwerte der Interaktionen), sehen wir, dass die Kammmolchlarven von 2023 nach 2024 eigentlich zurückgegangen sind, wie im Kontrollgewässer sichtbar. Im Gewässer mit der Pflegemaßnahme sind sie jedoch nicht zurückgegangen, was darauf schließen lässt, dass die Maßnahme für die Kammmolche ebenfalls positiv war.
+Schauen wir uns nur die Boxplots an (also die Mediane der Rohdaten, nicht die geschätzten Mittelwerte der Interaktionen), sehen wir, dass die Kammmolchlarven von 2023 nach 2024 eigentlich zurückgegangen sind, wie im Kontrollgewässer sichtbar. Im Gewässer mit der Pflegemaßnahme sind sie jedoch nicht zurückgegangen, was darauf schließen lässt, dass die Maßnahme für die Kammmolche ebenfalls positiv war.
 
-Insgesamt hatte die Freischneidung also auf die Molchlarven einen positiven Effekt.
+Insgesamt hatte die Freischneidung also auf die Molchlarven beider Arten einen positiven Effekt.
 
 Bei Analysen mit mehreren Gebieten vor und nach dem Eingriff mit jeweils mehreren Beobachtungen sollte man ggf. statt eines (generalisierten) linearen Modells ein gemischtes (generalisiertes) lineares Modell nutzen, bei dem das Gebiet als sogenannter `Random Intercept` eingegeben wird.
 

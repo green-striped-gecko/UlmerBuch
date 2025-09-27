@@ -62,10 +62,14 @@ Wir laden uns für dieses Beispiel die Fangzahlen der einzelnen Individuen (d. h
 ```{r}
 UlmerBuch::beispiel.pfad() #Pfad zu den Beispieldaten
 GV.2016 <- read.csv2("GV_Station_2016_capture_frequencies.csv")
+# Schauen wir uns die ersten sechs Zeilen an:
 head(GV.2016)
 ```
-Die Anzahl gefangener Individuen beträgt:
+Individuum 1 wurde also viermal gefangen, Individuum 2 sechsmal, Individuum 3 zweimal und so weiter. Achtung: Die Individuennummerrierung ist nur ein Zeilenname, keine gesonderte Spalte.
+
+Die Anzahl gefangener Individuen beträgt demnach:
 ```{r}
+# Anzahl der Zeilen
 nrow(GV.2016)
 ```
 # Vektor der Fangfrequenzen erstellen
@@ -124,9 +128,9 @@ Neben der Populationsgröße *N* und dem Konfidenzintervall (`CI`) gibt die Erge
 
 # Literaturverzeichnis
 \begin{hangparagraph}
-Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. (2018): Some like it hot: from individual to population responses of an arboreal arid-zone gecko to local and distant climate. --- Ecological Monographs 88: 336–-352.
+Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. (2018): Some like it hot: From individual to population responses of an arboreal arid-zone gecko to local and distant climate. --- Ecological Monographs 88: 336–-352.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Henle, K. (1990): Population ecology and life history of the arboreal gecko \textit{Gehyra variegata} in arid Australia. --- Herpetological Monographs 4: 30--60.
+Henle, K. (1990): Population ecology and life history of the arboreal gecko \textit{Gehyra variegata} in arid Australia. --- Herpetological Monographs 4: 30–-60.
 \end{hangparagraph}

@@ -53,13 +53,13 @@ Weitere Informationen zur Nutzung des Paketes sowie eine Einführung in die vers
 https://cran.r-project.org/web/packages/trend/vignettes/trend.pdf
 
 # Daten einladen
-Die Insel Mellum im Nationalpark Nordfriesisches Wattenmeer wurde bald nach ihrer Entstehung vor knapp 150 Jahren Vogelschutzgebiet (Gerdes et al. 1987). Sowohl Brutvögel als auch Durchzügler werden regelmäßig erfasst. Die Bestandsentwicklung des Löfflers seit dem Jahr 2003 ist in untenstehender Tabelle dargestellt.
+Die Insel Mellum im Nationalpark Nordfriesisches Wattenmeer wurde bald nach ihrer Entstehung vor knapp 150 Jahren Vogelschutzgebiet (Gerdes et al. 1987). Sowohl Brutvögel als auch Durchzügler werden regelmäßig erfasst. Die Bestandsentwicklung des Löfflers seit dem Jahr 2003 (Nachreiner 2018) ist in untenstehender Tabelle dargestellt.
 ```{r}
 loeffler <- data.frame(Jahr = 2003:2018,
                 Anzahl = c(23,27,27,32,39,44,59,68,52,67,71,137,98,113,152,177))
 kable(t(loeffler), 
   caption = "Bestandsentwicklung des Löfflers auf der Insel Mellum
-  von 2003 bis 2018", digits = T)
+  von 2003 bis 2018 (Nachreiner 2018)", digits = T)
 ```
 
 # Mann(-Kendal)-Test
@@ -87,6 +87,10 @@ Libiseller, C., Grimvall, A. (2002): Performance of partial Mann-Kendall tests f
 
 \begin{hangparagraph}
 Mann, H.B. (1945): Nonparametric tests against trend. --- Econometrika 13: 245--259.
+\end{hangparagraph}
+
+\begin{hangparagraph}
+Nachreiner, L. (2018): Reproduktionserfolg und Farbringe – ein Nestmonitoring bei Löfflern (\textit {Platalea leucorodia}) auf Mellum im Nationalpark Niedersächsisches Wattenmeer. --– Bachelorarbeit, Hochschule Neubrandenburg, Neubrandenburg.
 \end{hangparagraph}
 
 \begin{hangparagraph}

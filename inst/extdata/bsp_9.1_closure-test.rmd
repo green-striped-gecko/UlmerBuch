@@ -29,7 +29,7 @@ knitr::opts_chunk$set(width = 80)
 options(width = 80)
 ```
 
-Im Kinchega Nationalpark befinden sich zwei räumlich getrennte, benachbarte Geckopopulationen, welche 2016 an sieben (Auwaldgebiet, RI) bzw. sechs (Feldstation, Station) Tagen (= Fanggelegenheiten, engl. Occasion) in Folge mittels Fang-Markierung-Wiederfang-Methode untersucht wurden. Wir wissen, dass es keine konstante Fangwahrscheinlichkeit gibt (Beispiel 10.5), sondern individuelle Heterogenität vorliegt (Henle 1990b, Grimm et al. 2014, Grimm-Seyfarth et al. 2018). Anhand des Studiendesigns – Fang am Ende der Reproduktionssaison (d. h., keine neuen Individuen durch Geburten), nur wenige Tage andauernde Primärperiode (d. h., keine Zu- und Abwanderungen sowie vernachlässigbare Mortalität erwartet) – gehen wir von einer geschlossenen Population aus. Während die Feldstation räumlich ohnehin geschlossen ist, was Zu- und Abwanderung in wenigen Tagen unwahrscheinlich macht, untersuchten wir in der Auwaldpopulation zusätzlich 19 umliegende Bäume, um wandernde Individuen zu entdecken. Dabei werden Individuen, die mindestens einmal im Kerngebiet erfasst werden, dem Kerngebiet hinzugeschlagen, während Individuen, die ausschließlich an den 19 umliegenden Bäumen entdeckt werden, nicht zur Population gerechnet werden. Somit können wir in unserem Design bereits sicherstellen, dass die Population geschlossen ist. Von beiden Populationen haben wir nun die Fanggeschichte analog zu Tabelle 9.1 des Buches erstellt.
+Im Kinchega Nationalpark befinden sich zwei räumlich getrennte, benachbarte Geckopopulationen, welche 2016 an sieben (Auwaldgebiet, RI) bzw. sechs (Feldstation, Station) Tagen (= Fanggelegenheiten, engl. Occasion) in Folge mittels Fang-Markierung-Wiederfang-Methode untersucht wurden. Wir wissen, dass es keine konstante Fangwahrscheinlichkeit gibt (Beispiel 10.5), sondern individuelle Heterogenität vorliegt (Henle 1990, Grimm et al. 2014, Grimm-Seyfarth et al. 2018). Anhand des Studiendesigns – Fang am Ende der Reproduktionssaison (d. h., keine neuen Individuen durch Geburten), nur wenige Tage andauernde Primärperiode (d. h., keine Zu- und Abwanderungen sowie vernachlässigbare Mortalität erwartet) – gehen wir von einer geschlossenen Population aus. Während die Feldstation räumlich ohnehin geschlossen ist, was Zu- und Abwanderung in wenigen Tagen unwahrscheinlich macht, untersuchten wir in der Auwaldpopulation zusätzlich 19 umliegende Bäume, um wandernde Individuen zu entdecken. Dabei werden Individuen, die mindestens einmal im Kerngebiet erfasst werden, dem Kerngebiet hinzugeschlagen, während Individuen, die ausschließlich an den 19 umliegenden Bäumen entdeckt werden, nicht zur Population gerechnet werden. Somit können wir in unserem Design bereits sicherstellen, dass die Population geschlossen ist. Von beiden Populationen haben wir nun die Fanggeschichte analog zu Tabelle 9.1 des Buches erstellt.
 
 Für die beiden Onlinebeispiele 9.1 und 9.2 nutzen wir das R-Paket secr (Efford 2025).
 
@@ -101,7 +101,7 @@ Nun wiederholen wir das für die Feldstation (Station):
 ```{r}
 closure.test(CH.Station, SB=TRUE)
 ```
-Bei dieser Population ergab der Stanley & Burnham-Test p << 0,05 (d. h. keine geschlossene Population), der Otis-Test jedoch 0,27 (d. h. geschlossene Population). Die Tests für hinzukommende bzw. wegfallende Individuen waren alle hoch signifikant, ebenso waren alle bis auf eine Sekundärperiode signifikant. In dieser Population liegt extrem hohe individuelle Heterogenität vor (Grimm et al. 2014, Henle 1990, die hier vorliegenden signifikanten Tests). Hier versagt der Closure-Test von Stanley & Burnham (2011) und sollte in so einem Fall nicht angewendet werden. Es ist also wahrscheinlich, dass die Population dennoch geschlossen ist.
+Bei dieser Population ergab der Stanley & Burnham-Test p << 0,05 (d. h. keine geschlossene Population), der Otis-Test jedoch 0,27 (d. h. geschlossene Population). Die Tests für hinzukommende bzw. wegfallende Individuen waren alle hoch signifikant, ebenso waren alle bis auf eine Sekundärperiode signifikant. In dieser Population liegt extrem hohe individuelle Heterogenität vor (Grimm et al. 2014, Henle 1990, die hier vorliegenden signifikanten Tests). Hier versagt der Closure-Test von Stanley & Burnham (2011) und sollte in so einem Fall nicht angewendet werden. Es ist dennoch biologisch sehr wahrscheinlich, dass die Population dennoch geschlossen ist.
 
 # Literaturverzeichnis
 \begin{hangparagraph}
@@ -113,17 +113,17 @@ Grimm, A., Gruber, B., Henle, K. (2014): Reliability of different mark-recapture
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. (2018): Some like it hot: from individual to population responses of an arboreal arid-zone gecko to local and distant climate. --- Ecological Monographs 88: 336–-352.
+Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. (2018): Some like it hot: From individual to population responses of an arboreal arid-zone gecko to local and distant climate. --- Ecological Monographs 88: 336–-352.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Henle, K. (1990): Population ecology and life history of the arboreal gecko \textit{Gehyra variegata} in arid Australia. --- Herpetological Monographs 4: 30--60.
+Henle, K. (1990): Population ecology and life history of the arboreal gecko \textit{Gehyra variegata} in arid Australia. --- Herpetological Monographs 4: 30–-60.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Otis, D.L., Burnham, K.P., White, G.C., Anderson, D.R. (1978): Statistical inference from capture data on closed animal populations. --- Wildlife Monographs 62: 1-–135.
+Otis, D.L., Burnham, K.P., White, G.C., Anderson, D.R. (1978): Statistical inference from capture data on closed animal populations. --- Wildlife Monographs 62: 1–-135.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Stanley, T.R., Burnham, K.P. (1999): A closure test for time-specific capture–recapture data. --- Environmental and Ecological Statistics 6: 197-–209.
+Stanley, T.R., Burnham, K.P. (1999): A closure test for time-specific capture–recapture data. --- Environmental and Ecological Statistics 6: 197–-209.
 \end{hangparagraph}

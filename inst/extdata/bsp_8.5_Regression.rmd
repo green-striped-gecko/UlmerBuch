@@ -49,7 +49,7 @@ kroeten2
 ```
 
 # Logarithmisches Wachstumsmodell
-Wir logarithmieren die Populationsgröße und lassen sie von der Zeit abhängen. Dabei ist wichtig, dass das fehlende Jahr berücksichtigt wird (ein Zeitschritt in t wird übersprungen). 
+Wir logarithmieren die Populationsgröße und lassen sie von der Zeit abhängen. Dabei ist wichtig, dass das fehlende Jahr berücksichtigt wird (ein Zeitschritt in `t` wird übersprungen). 
 ```{r}
 mod1 <- lm(log(Anzahl)~t, data=kroeten)
 # Zusammenfassung des Modells
@@ -60,7 +60,7 @@ Das Modell ist signifikant (gesamt-p-Wert: 0,001, in diesem Fall kann der p-Wert
 # Granger-Kausalitätstest (Granger-Causality-Test)
 Eine weitere parametrische Analysemethode, wenn man mehrere Zeitreihen vorliegen hat, ist der Granger-Kausalitätstest oder Granger-Causality-Test (Granger 1969). Er stammt eigentlich aus ökonomischen Analysen, kann aber auch für ökologische Analysen angewendet werden. 
 
-Wir benötigen hierzu das R-Paket lmtest (Zeileis & Hothorn 2002). Außerdem nutzen wir dplyr (Wickham et al. 2023) zur Datenmanipulation.
+Wir benötigen hierzu das R-Paket lmtest (Zeileis & Hothorn 2002). Außerdem nutzen wir das R-Paket dplyr (Wickham et al. 2023) zur Datenaufbereitung.
 
 ```{r, warning=FALSE, message=FALSE}
 # check.packages function: install and load multiple R packages.

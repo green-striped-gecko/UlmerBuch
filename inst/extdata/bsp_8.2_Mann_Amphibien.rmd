@@ -104,7 +104,7 @@ Sen, P.K. (1968): Estimates of the regression coefficient based on Kendall’s t
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Seyring, M., Henle, K., Barth, B. et al. (2024): Empfehlungen für ein bundeseinheitliches Vorgehen bei der Erfassung von Amphibien-Schutzzaun-Daten zur Unterstützung von Bestandstrendanalysen. --– S. 114-–133 in: Henle, K., Pogoda, P., Podloucky, R. et al. (Hrsg.): Neue Methoden der Feldherpetologie. --– Chimaira, Frankfurt/M. (Mertensiella 32). 
+Seyring, M., Henle, K., Barth, B. et al. (2024): Empfehlungen für ein bundeseinheitliches Vorgehen bei der Erfassung von Amphibien-Schutzzaun-Daten zur Unterstützung von Bestandstrendanalysen. --– S. 114--133 in: Henle, K., Pogoda, P., Podloucky, R. et al. (Hrsg.): Neue Methoden der Feldherpetologie. --– Chimaira, Frankfurt/M. (Mertensiella 32). 
 \end{hangparagraph}
 
 \begin{hangparagraph}
