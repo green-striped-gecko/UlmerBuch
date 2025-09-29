@@ -45,24 +45,25 @@ Im Datensatz sind 145 individuelle Geckos enthalten.
 
 # Berechnung anhand der Formeln 11.1---11.10 des Buches
 ## Fangstatistiken:
-Bei *k* = 5 Erfassungsjahren reicht *i* von 1 bis 5 und *j* von 1 bis *k*-1 = 4.
+Bei *k* = 5 Erfassungsjahren reicht *i* von 1 bis 5.
 
-*ni*:	Gesamtzahl aller Tiere, die bei der *i*-ten Erfassung gefangen/festgestellt wurden (*i* = 1,...,*k*) ($ni = mi + ui$);
+$n_i$:	Gesamtzahl aller Tiere, die bei der *i*-ten Erfassung gefangen/festgestellt wurden (*i* = 1,...,*k*) ($n_i = m_i + u_i$);
 
 ```{r}
 ch <- gecko[,2:6]
+k <- ncol(ch)
 ni <- colSums(ch)
 ni
 ```
 
-*Ri*:	Anzahl Exemplare aus *ni*, die nach der *i*-ten Erfassung (*i* = 1,...,*k*-1) wieder freigelassen wurden. Wenn ein Teil der zum Zeitpunkt *i* gefangenen Exemplare einbehalten wird (Belegentnahme, Verletzung bei Markierung etc.), können zum Zeitpunkt *i* nur noch *Ri* < *ni* Exemplare freigelassen werden; in diesem Datensatz haben wir alle gefangenen Geckos wieder freigelassen, daher ist $Ri = ni$.
+$R_i$:	Anzahl Exemplare aus $n_i$, die nach der *i*-ten Erfassung (*i* = 1,...,*k*) wieder freigelassen wurden. Wenn ein Teil der zum Zeitpunkt *i* gefangenen Exemplare einbehalten wird (Belegentnahme, Verletzung bei Markierung etc.), können zum Zeitpunkt *i* nur noch $R_i$ < $n_i$ Exemplare freigelassen werden; in diesem Datensatz haben wir alle gefangenen Geckos wieder freigelassen, daher ist $R_i = n_i$.
 
 ```{r}
 Ri <- ni
 Ri
 ```
 
-*mi*:	Anzahl markierter Individuen, die bei der *i*-ten Erfassung gefangen/festgestellt wurden (*i* = 1,...,*k*; *m1* = 0);
+$m_i$:	Anzahl markierter Individuen, die bei der *i*-ten Erfassung gefangen/festgestellt wurden (*i* = 1,...,*k*; $m_1$ = 0);
 
 Hinweis: bei der Auswahl bedeutet `&` das statistische UND und `|` das statistische ODER
 
@@ -73,11 +74,14 @@ mi <- c(0, sum(ch$X2013[ch$X2012==1]),
         sum(ch$X2015[ch$X2012==1 | ch$X2013==1 | ch$X2014==1]),
         sum(ch$X2016[ch$X2012==1 | ch$X2013==1 | ch$X2014==1 | ch$X2015==1]))
 mi
+```
 
-# Matrix Mij für den Wiederfang
-# i sind die Primärparioden 1 bis 5, organisiert in Spalten
-# j sind die Sekundärperioden
-mij <- as.data.frame(matrix(nrow=4,ncol=5))
+$m_{ij}$: Anzahl der im Jahr *i* markierten Individuen, die im Jahr *j* wiedergefangen wurden;
+
+```{r}
+# Matrix mij für den Wiederfang
+# mit k-1 Zeilen und k Spalten
+mij <- as.data.frame(matrix(nrow=k-1,ncol=k))
 colnames(mij) <- 1:5
 rownames(mij) <- 1:4
 #mij
@@ -98,16 +102,16 @@ mij
 # entsprechen die Spaltensummen mi
 colSums(mij, na.rm=TRUE) == mi
 ```
-Damit haben wir sowohl den Gesamtvektor *mi*, als auch die Teilwerte für jede Fanggelegenheit *j*. Es ergibt sich
+Damit haben wir sowohl den Gesamtvektor $m_i$, als auch die Teilwerte für jede Fanggelegenheit *j*. Es ergibt sich
 
-*ri*:	Anzahl Individuen von *Ri*, die zum Zeitpunkt *i* freigelassen und bei einem späteren Fangtermin wiedergefangen wurden (*i* = 1,...,*k*-1);
+$r_i$:	Anzahl Individuen von $R_i$, die zum Zeitpunkt *i* freigelassen und bei einem späteren Fangtermin wiedergefangen wurden (*i* = 1,...,*k*-1);
 
 ```{r}
 ri <- rowSums(mij, na.rm=TRUE)
 ri
 ```
 
-*zi*:	Anzahl Tiere, die vor der Fanggelegenheit *i* markiert und bei Fanggelegenheit *i* nicht, jedoch bei einer späteren Fanggelegenheit wiedergefangen wurden (*i* = 2,...,*k*-1).
+$z_i$:	Anzahl Tiere, die vor der Fanggelegenheit *i* markiert und bei Fanggelegenheit *i* nicht, jedoch bei einer späteren Fanggelegenheit wiedergefangen wurden (*i* = 2,...,*k*-1).
 
 ```{r}
 zi <- c(NA, 
@@ -121,7 +125,7 @@ zi <- c(NA,
 zi
 ```
 
-*ui*:	Anzahl unmarkierter Exemplare, die bei der *i*-ten Erfassung gefangen wurden (*i* = 1,...,*k*);
+$u_i$:	Anzahl unmarkierter Exemplare, die bei der *i*-ten Erfassung gefangen wurden (*i* = 1,...,*k*);
 
 ```{r}
 ui <- ni-mi
@@ -130,7 +134,7 @@ ui
 
 ## Berechnung der Parameter
 
-*Mi*:	Anzahl markierter Tiere, die sich zum Zeitpunkt der *i*-ten Erfassung in der Population befinden (*i* = 1,...,*k*; *M1* = 0);
+$M_i$:	Anzahl markierter Tiere, die sich zum Zeitpunkt der *i*-ten Erfassung in der Population befinden (*i* = 1,...,*k*; $M_1$ = 0);
 
 ```{r}
 Mi <- mi + (Ri*zi)/ri
@@ -139,7 +143,7 @@ Mi[1] <- 0
 Mi
 ```
 
-*Ni*:	Gesamtzahl Individuen, die sich zum Zeitpunkt der *i*-ten Erfassung in der Population befinden (*i* = 1,...,*k*);
+$N_i$:	Gesamtzahl Individuen, die sich zum Zeitpunkt der *i*-ten Erfassung in der Population befinden (*i* = 1,...,*k*);
 
 ```{r}
 Ni <- (ni*Mi)/mi
@@ -151,7 +155,7 @@ seNi
 ```
 Die Populationsgrößen für 2013 bis 2015 betragen (gerundet) 77, 65 und 69 Individuen mit einem entsprechenden Standardfehler von (gerundet) 10, 3 und 6 Individuen.
 
-*phii*:	Überlebenswahrscheinlichkeit aller Tiere zwischen der *i*-ten und (*i*+1)-ten Erfassung (*i* = 1,...,*k*-1);
+$phi_i$:	Überlebenswahrscheinlichkeit aller Tiere zwischen der *i*-ten und (*i*+1)-ten Erfassung (*i* = 1,...,*k*-1);
 
 ```{r}
 j <- 5-1
@@ -171,7 +175,7 @@ VarPhii
 sePhii <- sqrt(VarPhii)
 sePhii
 ```
-Die Überlebensraten betragen von 2012 nach 2013 69,6 %, von 2013 nach 2014 62,2 % und von 2014 nach 2015 58 %; die Standardfehler sind sehr gering.
+Die Überlebensraten betragen von 2012 nach 2013 69,6 %, von 2013 nach 2014 62,3 % und von 2014 nach 2015 58 %; die Standardfehler sind sehr gering.
 
 ```{r}
 # Gesamtvarianz der Überlebensrate
@@ -180,7 +184,7 @@ GesVarPhi <- VarPhii + (phii*(1-phii))/(Mi-mi+Ri)
 GesVarPhi
 ```
 
-*Bi*:	Gesamtzahl der Exemplare, die zwischen der *i*-ten und (*i*+1)-ten Erfassung zur Population neu hinzugekommen sind und zum Zeitpunkt der (*i*+1)-ten Erfassung sich noch in der Population befinden (*i* = 1,...,*k*-1);
+$B_i$:	Gesamtzahl der Exemplare, die zwischen der *i*-ten und (*i*+1)-ten Erfassung zur Population neu hinzugekommen sind und zum Zeitpunkt der (*i*+1)-ten Erfassung sich noch in der Population befinden (*i* = 1,...,*k*-1);
 
 ```{r}
 Bi <- rep(NA,4)
@@ -193,7 +197,7 @@ Bi
 ```
 Von 2013 nach 2014 kommen 28 Individuen hinzu, von 2014 nach 2015 sind es 44 Individuen. Auf die Berechnung der Varianz verzichten wir hier an dieser Stelle.
 
-*qi*:	Sterberate zwischen der *i*-ten und (*i*+1)-ten Erfassung (*i* = 1,...,*k*-1) (*qi* = 1 - *phii*);
+$q_i$:	Sterberate zwischen der *i*-ten und (*i*+1)-ten Erfassung (*i* = 1,...,*k*-1) ($q_i$ = 1 - $phi_i$);
 
 ```{r}
 qi <- 1-phii
@@ -201,7 +205,7 @@ qi
 ```
 Die Sterberate beträgt von 2012 nach 2013 30,4 %, von 2013 nach 2014 37,7 % und von 2014 nach 2015 42,0 %.
 
-*pi*:	Fangwahrscheinlichkeit für alle Tiere, die sich bei der *i*-ten Erfassung in der Population befinden (*i* = 1,...,*k*).
+$p_i$:	Fangwahrscheinlichkeit für alle Tiere, die sich bei der *i*-ten Erfassung in der Population befinden (*i* = 1,...,*k*).
 ```{r}
 pi = mi/Mi
 pi
@@ -210,9 +214,9 @@ Die Fangwahrscheinlichkeiten betragen zwischen 77 % in 2013 und 95,5 % in 2014.
 
 # Berechnung mittels verschiedener R-Pakete 
 Die folgende Übersicht wurde von Laake et al. (2023) zusammengestellt und von uns ergänzt.
-Die derzeit umfassendste Software für die Analyse von Fang-Wiederfang-Daten ist MARK (White und Burnham 1999). MARK ist ein FORTRAN-Programm zur Anpassung von Fang-Wiederfang-Modellen, die manuell über eine grafische Benutzeroberfläche erstellt werden. RMark (Laake und Rexstad 2008) ist ein R-Paket, das Modelle für MARK mit benutzerdefinierten Formeln konstruiert, um die manuelle Modellerstellung zu ersetzen. Mit RMark und MARK können die meisten derzeit verfügbaren Fang-Wiederfang-Modelle in R angepasst und bearbeitet werden.
+Die derzeit umfassendste Software für die Analyse von Fang-Wiederfang-Daten ist MARK (White & Burnham 1999). MARK ist ein FORTRAN-Programm zur Anpassung von Fang-Wiederfang-Modellen, die manuell über eine grafische Benutzeroberfläche erstellt werden. RMark (Laake & Rexstad 2008) ist ein R-Paket, das Modelle für MARK mit benutzerdefinierten Formeln konstruiert, um die manuelle Modellerstellung zu ersetzen. Mit RMark und MARK können die meisten derzeit verfügbaren Fang-Wiederfang-Modelle in R angepasst und bearbeitet werden.
 
-Weitere R-Pakete für die Analyse von Fang-Wiederfang-Daten sind FSA (Ogle et al. 2023), Rcapture (Baillargeon und Rivest 2007), mra (McDonald et al. 2005), secr (Borchers und Efford 2008, Efford 2025), SPACECAP (Royle et al. 2009), BaSTA (Colchero, Jones und Rebke 2012) und marked (Laake et al. 2013). FSA beinhaltet das JS-Grundmodell analog zum Programm JOLLY. Rcapture passt geschlossene und offene Modelle in einem log-linearen Rahmen an. Das mra-Paket passt das Cormack-Jolly-Seber-Modell (CJS) und das geschlossene Huggins-Modell mit einem Regressionsansatz zur Modellspezifikation an. Die Pakete secr und SPACECAP ermöglichen eine räumlich explizite Modellierung geschlossener Fang-Wiederfang-Daten, können aber auf offene Populationen erweitert werden (Bsp. auch Paket openCR, Efford 2024). BaSTA schätzt das Überleben mit Kovariaten aus Wiederfang-/Wiederfindungsdaten in einem Bayes'schen Rahmen, wenn viele Individuen ein unbekanntes Alter haben. Spezifikationen für das marked finden sich unten im entsprechenden Kapitel.
+Weitere R-Pakete für die Analyse von Fang-Wiederfang-Daten sind FSA (Ogle et al. 2023), Rcapture (Baillargeon & Rivest 2007), mra (McDonald et al. 2005), secr (Borchers & Efford 2008, Efford 2025), SPACECAP (Royle et al. 2009), BaSTA (Colchero, Jones & Rebke 2012) und marked (Laake et al. 2013). FSA beinhaltet das JS-Grundmodell analog zum Programm JOLLY. Rcapture passt geschlossene und offene Modelle in einem log-linearen Rahmen an. Das mra-Paket passt das Cormack-Jolly-Seber-Modell (CJS) und das geschlossene Huggins-Modell mit einem Regressionsansatz zur Modellspezifikation an. Die Pakete secr und SPACECAP ermöglichen eine räumlich explizite Modellierung geschlossener Fang-Wiederfang-Daten, können aber auf offene Populationen erweitert werden (Bsp. auch Paket openCR, Efford 2024). BaSTA schätzt das Überleben mit Kovariaten aus Wiederfang-/Wiederfindungsdaten in einem Bayes'schen Rahmen, wenn viele Individuen ein unbekanntes Alter haben. Spezifikationen für das marked finden sich unten im entsprechenden Kapitel.
 
 In diesem Beispiel konzentrieren wir uns auf die Pakete FSA, marked und RMark. Diese laden wir hier zunächst ein. Außerdem laden wir ein Paket für Goodness-of-fit-Tests ein: R2ucare. Und schließlich laden wir ggplot2 (Wickham 2016) und scales (Wickham et al. 2023) zur grafischen Darstellung der Ergebnisse.
 
@@ -258,15 +262,15 @@ Anmerkung: Sollte sich in der ersten Spalte noch die ID befinden, gibt es die hi
 ch1 <- capHistSum(ch)
 head(ch1)
 ```
-Hier bekommen wir eine Zusammenfassung der Fanggeschichte. Wir sehen nacheinander die wichtigsten Fangstatistiken:
+Hier bekommen wir eine Zusammenfassung der Fanggeschichten. Wir sehen nacheinander die wichtigsten Fangstatistiken:
 
-`caphist` - die zusammengefasste Fanggeschichte
+`caphist` --- die zusammengefasste Fanggeschichten
 
-`methodB.top` - die *mij*-Matrix
+`methodB.top` --- die $m_{ij}$-Matrix
 
-`methodB.bot` - die Fangstatistiken *mi*, *ui*, *ni* und *Ri*
+`methodB.bot` --- die Fangstatistiken $m_i$, $u_i$, $n_i$ und $R_i$
 
-`m.array` -  die erste Spalte enthält *ni*, die folgenden (*ci*) die Wiederfänge bei *i* = 2, 3..., sowie 1-*ri*. Die Spaltensummen ergeben *mi*.
+`m.array` ---  die erste Spalte enthält $n_i$, die folgenden ($c_i$) die Wiederfänge bei *i* = 2, 3..., sowie 1-$r_i$. Die Spaltensummen ergeben $m_i$.
 
 Hier können wir auch die von uns erstellen Fangstatistiken einmal vergleichen:
 
@@ -319,7 +323,7 @@ ex1$df$phi
 # sehr geringe Abweichung
 
 ```
-In der Anleitung zum FSA-Paket findet man folgende Erklärung: Alle Parameterschätzungen erfolgen anhand der Gleichungen 4.6-4.9 aus Pollock et al. (1990) und aus Seite 204 in Seber (2002). Wenn `type=„Jolly“`, dann werden alle Standardfehler (Quadratwurzel der Varianzen) aus den Gleichungen 4.11, 4.12 und 4.14 in Pollock et al. (1990) berechnet (diese sind anders als die in Seber (2002) - siehe die Anmerkung von Pollock et al. (1990) auf Seite 21). Wenn `type=„Jolly“` und `phi.full=TRUE`, dann wird die volle Varianz für den *phi*-Parameter wie in Gleichung 4.18 in Pollock et al. (1990) angegeben, andernfalls wie in Gleichung 4.13 aus Pollock et al. (1990) verwendet. Bei `type=„Jolly“` werden die Konfidenzintervalle erzeugt unter Verwendung der Normaltheorie (d. h. Schätzung +/- *z* * SE). Unsere vorgestellten Formeln stimmen zumeist mit denen von Pollock et al. (1990) überein, lediglich für *phi* nutzen wir die Formel nach Seber (2002) (vgl. Formel 11.7 des Buches).
+In der Anleitung zum FSA-Paket findet man folgende Erklärung: Alle Parameterschätzungen erfolgen anhand der Gleichungen 4.6-4.9 aus Pollock et al. (1990) und aus Seite 204 in Seber (2002). Wenn `type=„Jolly“`, dann werden alle Standardfehler (Quadratwurzel der Varianzen) aus den Gleichungen 4.11, 4.12 und 4.14 in Pollock et al. (1990) berechnet (diese sind anders als die in Seber (2002) - siehe die Anmerkung von Pollock et al. (1990) auf Seite 21). Wenn `type=„Jolly“` und `phi.full=TRUE`, dann wird die volle Varianz für den *phi*-Parameter wie in Gleichung 4.18 in Pollock et al. (1990) angegeben, andernfalls die Gleichung 4.13 aus Pollock et al. (1990) verwendet. Bei `type=„Jolly“` werden die Konfidenzintervalle erzeugt unter Verwendung der Normaltheorie (d. h. Schätzung +/- *z* * SE). Unsere vorgestellten Formeln stimmen zumeist mit denen von Pollock et al. (1990) überein, lediglich für *phi* nutzen wir die Formel nach Seber (2002) (vgl. Formel 11.7 des Buches).
 
 ## Mittels Fangstatistiken
 Liegen bereits die Fangstatistiken vor, können diese auch direkt zur Berechnung genutzt werden. Dazu verbindet man diese zunächst als Matrix und berechnet dann analog wie oben.
@@ -339,7 +343,7 @@ confint(ex2,verbose=TRUE)
 Beide Ansätze produzieren das gleiche Ergebnis. Eine alternative Schreibweise statt `mrOpen(jolly.top,jolly.bot)` wäre `jolly(jolly.top,jolly.bot)`. Beides kann gleich verwendet werden.
 
 # CJS-Modelle mit dem R-Paket marked
-Das R-Paket marked (Laake et al. 2013) wurde für Analysen mit markierten Tieren entwickelt, als Gegensatz zum R-Paket unmarked (Fiske und Chandler 2011), welches wir für Occupancy-Modelle vorstellen (Beispiele 4.1 und 4.2). Die Entwickler des Paketes marked schreiben: Der ursprüngliche Anstoß für das Paket war die Implementierung des CJS-Modells unter Verwendung der von Pledger, Pollock und Norris (2003) beschriebenen hierarchischen Likelihood-Konstruktion und die Verbesserung der Ausführungszeiten mit RMark/MARK (White und Burnham 1999; Laake und Rexstad 2008) für die Analyse von großen Datensätze mit vielen zeitlich variierenden individuellen (tierbezogenen) Kovariablen. Anschließend wurde das Jolly-Seber-Modell mit der POPAN-Struktur von Schwarz und Arnason (1996) implementiert, wobei die Idee der hierarchischen Wahrscheinlichkeitskonstruktion auf den Eintritt von Tieren in die Population (Immigration) ausgedehnt wurde, was dem Konzept der Superpopulation entspricht. Zudem wurde eine Bayes'sche Markov-Chain-Monte-Carlo-Implementierung (MCMC) des CJS-Modells hinzugefügt, die auf dem von Albert und Chib (1993) verwendeten Ansatz zur Analyse binärer Daten mit einem Probit-Regressionsmodell basiert.
+Das R-Paket marked (Laake et al. 2013) wurde für Analysen mit markierten Tieren entwickelt, als Gegensatz zum R-Paket unmarked (Fiske & Chandler 2011), welches wir für Occupancy-Modelle vorstellen (Beispiele 4.1 und 4.2). Die Entwickler des Paketes marked schreiben: Der ursprüngliche Anstoß für das Paket war die Implementierung des CJS-Modells unter Verwendung der von Pledger, Pollock & Norris (2003) beschriebenen hierarchischen Likelihood-Konstruktion und die Verbesserung der Ausführungszeiten mit RMark/MARK (White & Burnham 1999; Laake & Rexstad 2008) für die Analyse von großen Datensätze mit vielen zeitlich variierenden individuellen (tierbezogenen) Kovariablen. Anschließend wurde das Jolly-Seber-Modell mit der POPAN-Struktur von Schwarz & Arnason (1996) implementiert, wobei die Idee der hierarchischen Wahrscheinlichkeitskonstruktion auf den Eintritt von Tieren in die Population (Immigration) ausgedehnt wurde, was dem Konzept der Superpopulation entspricht. Zudem wurde eine Bayes'sche Markov-Chain-Monte-Carlo-Implementierung (MCMC) des CJS-Modells hinzugefügt, die auf dem von Albert & Chib (1993) verwendeten Ansatz zur Analyse binärer Daten mit einem Probit-Regressionsmodell basiert.
 
 Wir erstellen als erstes die benötigte Fanggeschichte im Importformat für marked:
 
@@ -368,13 +372,13 @@ gecko.js.ddl <- make.design.data(gecko.js.proc)
 
 Folgende Parameter werden geschätzt:
 
-*phi(t)* - Überlebensrate (apparent survival)
+*phi(t)* (= $phi_i$) --- Überlebensrate (apparent survival)
 
-*p(t)* - Fängigkeit zum Zeitpunkt *t*
+*p(t)* (= $p_i$) --- Fängigkeit zum Zeitpunkt *t*
 
-*N(super)* - Superpopulationsgröße, Gesamtzahl der Individuen, die an der Studie teilnehmen können, d. h., alle Individuen, die sich während der Erfassungsdauer entweder durchgehend oder zeitweise (durch Einwanderung, Geburt bzw. Wechsel in das relevante Altersstadium - in unserem Fall Adult - in das Untersuchungsgebiet kommen oder durch Emigration oder Tod es verlassen haben) im Untersuchungsgebiet aufhalten
+*N(super)* --- Superpopulationsgröße, Gesamtzahl der Individuen, die an der Studie teilnehmen können, d. h., alle Individuen, die sich während der Erfassungsdauer entweder durchgehend oder zeitweise (durch Einwanderung, Geburt bzw. Wechsel in das relevante Altersstadium - in unserem Fall Adult - in das Untersuchungsgebiet kommen oder durch Emigration oder Tod es verlassen haben) im Untersuchungsgebiet aufhalten
 
-*pent(t)* - Wahrscheinlichkeit, dass zum Zeitpunkt t neue Individuen aus der Superpopulation hinzukommen
+*pent(t)* (= $B_i$) --- Wahrscheinlichkeit, dass zum Zeitpunkt t neue Individuen aus der Superpopulation hinzukommen
 
 ## JS mit einem Parameter: Geschlecht
 Im Folgenden können alle möglichen Formeln für alle Parameter zusammengestellt werden. Dazu schreibt man eine sog. `wrapper`-Funktion.
@@ -502,7 +506,7 @@ MCMCfit=crm(gecko3,model="probitCJS",
 
 MCMCfit
 ```
-Wir sehen: steigende Sommertemperatur wirkt sich negativ auf das Überleben aus; es gibt kaum Geschlechts-unterschiede; Residents haben eine geringere Überlebensrate als Floater; und steigende Masse und Kopf-Rumpf-Länge erhöhen das Überleben. Hinsichtlich der Nachweiswahrscheinlichkeit sehen wir: sie unterscheidet sich massiv zwischen den Jahren; Männchen haben eine geringere Fängigkeit; schwerere Tiere haben eine geringere Fängigkeit, größere jedoch eine höhere; und es gibt offensichtlich Tiere, die generell häufiger gefangen werden als andere (individuelle Heterogenität - Achtung, dies könnte, wenn sie zu stark ausgeprägt ist, gegen die Modellannahmen verstoßen).
+Wir sehen: steigende Sommertemperatur wirkt sich negativ auf das Überleben aus; es gibt kaum Geschlechtsunterschiede; Residents haben eine geringere Überlebensrate als Floater; und steigende Masse und Kopf-Rumpf-Länge erhöhen das Überleben. Hinsichtlich der Nachweiswahrscheinlichkeit sehen wir: sie unterscheidet sich massiv zwischen den Jahren; Männchen haben eine geringere Fängigkeit; schwerere Tiere haben eine geringere Fängigkeit, größere jedoch eine höhere; und es gibt offensichtlich Tiere, die generell häufiger gefangen werden als andere (individuelle Heterogenität - Achtung, dies könnte, wenn sie zu stark ausgeprägt ist, gegen die Modellannahmen verstoßen).
 
 Nun benötigen wir wieder die tatsächlichen Schätzwerte:
 ```{r}
@@ -613,7 +617,7 @@ gecko.mal.hist <- gecko.hist[mask,]
 gecko.mal.freq <- gecko.freq[mask]
 ```
 
-Nun können wir die Tests durchführen. Sie stammen aus dem bereits zu Beginn geladenen Packet R2ucare (Gimenez et al. 2018). Man kann die Tests einzeln aufrufen (`test3sr`, `test3sm`, `test2ct` und `testcl`), oder den Gesamttest mittels `overall_CJS`. Test2 testet Fangheterogenität, Test3 testet, ob alle Tiere, die bei Fanggelegenheit *i* am Leben waren, die gleiche Wahrscheinlichkeit haben, nach Fanggelegenheit *i*+1 zu überleben. Eine Übersicht über die Tests sowie ein Entscheidungsschema geben wir in Kapitel 11.1.2.3 des Buches.
+Nun können wir die Tests durchführen. Sie stammen aus dem bereits zu Beginn geladenen Packet R2ucare (Gimenez et al. 2018). Man kann die Tests einzeln aufrufen (`test3sr`, `test3sm`, `test2ct` und `testcl`), oder den Gesamttest mittels `overall_CJS`. Test2 testet Fangheterogenität, Test3 testet, ob alle Tiere, die bei Fanggelegenheit *i* am Leben waren, die gleiche Wahrscheinlichkeit haben, nach Fanggelegenheit *i*+1 zu überleben. Eine Übersicht über die Tests sowie ein Entscheidungsschema geben wir in Kap. 11.1.2.3 des Buches.
 
 ```{r}
 test3sr_females <- test3sr(gecko.fem.hist, gecko.fem.freq)
@@ -630,7 +634,7 @@ test2ct_females
 test2cl_females
 test.overall_females
 ```
-Keiner der Tests ist signifikant. Die Modellannahmen werden also nicht verletzt. Wenn doch ein Test signifikant wäre, beschreiben wir in Kapitel 11.4 bis 11.10 des Buches, welche Lösungsmöglichkeiten es geben könnte. Entscheiden wir uns für ein Modell, welches beispielsweise Änderungen der Fangwahrscheinlichkeit oder Durchzügler berücksichtigt, wollen wir sicherlich im Anschluss prüfen, ob die Anpassung das Problem behoben hat. Die Gesamtteststatistik (`overall_CJS`) ist dabei die Summer der vier Einzeltests (Test.3Sr, Test3.Sm, Test2.Ct and Test.Cl). Der Test für Änderungen der Fangwahrscheinlichkeit wäre dann folgendermaßen zu berechnen:
+Keiner der Tests ist signifikant. Die Modellannahmen werden also nicht verletzt. Wenn doch ein Test signifikant wäre, beschreiben wir in Kap. 11.4 bis 11.10 des Buches, welche Lösungsmöglichkeiten es geben könnte. Entscheiden wir uns für ein Modell, welches beispielsweise Änderungen der Fangwahrscheinlichkeit oder Durchzügler berücksichtigt, wollen wir sicherlich im Anschluss prüfen, ob die Anpassung das Problem behoben hat. Die Gesamtteststatistik (`overall_CJS`) ist dabei die Summer der vier Einzeltests (Test.3Sr, Test3.Sm, Test2.Ct and Test.Cl). Der Test für Änderungen der Fangwahrscheinlichkeit wäre dann folgendermaßen zu berechnen:
 
 ```{r}
 # Gesamttest
@@ -650,7 +654,7 @@ Die Anpassung würde in diesem Fall gut passen, da der Test nicht signifikant is
 
 # Literaturverzeichnis
 \begin{hangparagraph}
-Albert, J.H., Chib, S. (1993): Bayesian-analysis of binary and polychotomous reponse data. --- Journal of the American Statistical Association 88(422): 669–-79. 
+Albert, J.H., Chib, S. (1993): Bayesian-analysis of binary and polychotomous response data. --- Journal of the American Statistical Association 88(422): 669–-79. 
 \end{hangparagraph}
 
 \begin{hangparagraph}
@@ -658,11 +662,11 @@ Baillargeon, S., Rivest, L.P. (2007): Rcapture: Loglinear models for capture-rec
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Borchers, D.L., Efford, M.G. (2008): Spatially explicit maximum likelihood methods for capture-recapture studies. --- Biometrics 64(2): 377–-85. 
+Borchers, D.L., Efford, M.G. (2008): Spatially explicit maximum likelihood methods for capture-recapture studies. --- Biometrics 64(2): 377–-385. 
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Colchero, F., Jones, O.R., Rebke, M. (2012): BaSTA: an R package for Bayesian estimation of age-specific survival from incomplete mark-recapture/recovery data with covariates. --- Methods in Ecology and Evolution 3: 466–-70. 
+Colchero, F., Jones, O.R., Rebke, M. (2012): BaSTA: An R package for Bayesian estimation of age-specific survival from incomplete mark-recapture/recovery data with covariates. --- Methods in Ecology and Evolution 3: 466–-70. 
 \end{hangparagraph}
 
 \begin{hangparagraph}
@@ -674,20 +678,20 @@ Efford, M.G. (2025): secr: Spatially explicit capture-recapture models. R packag
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Fiske, I.J., Chandler, R.B. (2011): unmarked : An R package for fitting hierarchical models of wildlife occurrence and abundance. --- Journal of
+Fiske, I.J., Chandler, R.B. (2011): unmarked: An R package for fitting hierarchical models of wildlife occurrence and abundance. --- Journal of
   Statistical Software 43(10): 1–-23. 
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Gimenez, O., Lebreton, J.-D., Choquet, R., Pradel, R. (2018): R2ucare: An R package to perform goodness-of-fit tests for capture–recapture models. --- Methods in Ecology and Evolution 9: 1749--1754.
+Gimenez, O., Lebreton, J.-D., Choquet, R., Pradel, R. (2018): R2ucare: An R package to perform goodness-of-fit tests for capture–recapture models. --- Methods in Ecology and Evolution 9: 1749–-1754.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. (2018): Some like it hot: from individual to population responses of an arboreal arid-zone gecko to local and distant climate. --- Ecological Monographs 88(3): 336–-352.
+Grimm-Seyfarth, A., Mihoub, J.-B., Gruber, B., Henle, K. (2018): Some like it hot: From individual to population responses of an arboreal arid-zone gecko to local and distant climate. --- Ecological Monographs 88(3): 336–-352.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Henle, K. (1990): Population ecology and life history of the arboreal gecko Gehyra variegata in arid Australia. --- Herpetological Monographs 4:30–-60.
+Henle, K. (1990): Population ecology and life history of the arboreal gecko \textit {Gehyra variegata} in arid Australia. --- Herpetological Monographs 4:30–-60.
 \end{hangparagraph}
 
 \begin{hangparagraph}
@@ -695,11 +699,11 @@ Laake, J., Rexstad, E. (2008): RMark – an alternative approach to building lin
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Laake, J.L., Johnson, D.S., Conn, P.B. (2013): marked: An R package for maximum-likelihood and MCMC analysis of capture-recapture data. --- Methods in Ecology and Evolution 4: 885--890.
+Laake, J.L., Johnson, D.S., Conn, P.B. (2013): marked: An R package for maximum-likelihood and MCMC analysis of capture-recapture data. --- Methods in Ecology and Evolution 4: 885–-890.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Laake, J.L., Johnson, D.S., Conn, P.B. (2023): marked Package Vignette. \url{https://cran.r-project.org/web/packages/marked/vignettes/markedVignette.html}, zuletzt aufgerufen: 18.03.2025.
+Laake, J.L., Johnson, D.S., Conn, P.B. (2023): marked Package Vignette. \url{https://cran.r-project.org/web/packages/marked/vignettes/markedVignette.html}.
 \end{hangparagraph}
 
 \begin{hangparagraph}
@@ -711,19 +715,19 @@ Ogle D.H., Doll, J.C., Wheeler, A.P., Dinno, A. (2023): FSA: Simple fisheries st
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Pledger, S., Pollock, K.H., Norris, J.L. (2003): Open capture-recapture models with heterogeneity: I. Cormack-Jolly-Seber model. --- Biometrics 59(4): 786-–94. 
+Pledger, S., Pollock, K.H., Norris, J.L. (2003): Open capture-recapture models with heterogeneity: I. Cormack-Jolly-Seber model. --- Biometrics 59(4): 786–-794. 
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Pollock, K.H., Nichols, J.D., Brownie, C., Hines, J.E. (1990): Statistical inference for capture-recapture experiments. --- Wildlife Monographs, 107: 1--97.
+Pollock, K.H., Nichols, J.D., Brownie, C., Hines, J.E. (1990): Statistical inference for capture-recapture experiments. --- Wildlife Monographs, 107: 1–-97.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Royle, J.A., Karanth, K.U., Gopalaswamy, A.M., Kumar, N.S. (2009): Bayesian inference in camera trapping studies for a class of spatial capture-recapture models. --- Ecology 90(11): 3233–-44.
+Royle, J.A., Karanth, K.U., Gopalaswamy, A.M., Kumar, N.S. (2009): Bayesian inference in camera trapping studies for a class of spatial capture-recapture models. --- Ecology 90(11): 3233–-3244.
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Schwarz, C.J., Arnason, A.N. (1996): A general methodology for the analysis of capture-recapture experiments in open populations. --- Biometrics 52(3): 860-–73. 
+Schwarz, C.J., Arnason, A.N. (1996): A general methodology for the analysis of capture-recapture experiments in open populations. --- Biometrics 52(3): 860–-873. 
 \end{hangparagraph}
 
 \begin{hangparagraph}
@@ -735,7 +739,7 @@ Seber, G.A.F. (2002): The estimation of animal abundance. Second Edition. --- Ed
 \end{hangparagraph}
 
 \begin{hangparagraph}
-White, G.C., Burnham, K.P. (1999): Program MARK: survival estimation from populations of marked animals. --- Bird Study 46: 120–-39.
+White, G.C., Burnham, K.P. (1999): Program MARK: Survival estimation from populations of marked animals. --- Bird Study 46: 120–-139.
 \end{hangparagraph}
 
 \begin{hangparagraph}

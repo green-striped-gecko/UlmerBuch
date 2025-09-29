@@ -29,7 +29,7 @@ knitr::opts_chunk$set(width = 80)
 options(width = 80)
 ```
 
-Hier stellen wir einen Ringfund-Datensatz von Stockenten im San Luis Valley in Colorado vor. Bei diesem Datensatz werden Jung- und Alttiere unterschieden [Modell H1 von Brownie et al. (1985)]. Dazu nutzen wir den Datensatz `brownie`, der im R-Paket RMark enthalten ist (Laake 2013). Erläuterungen finden sich in Laake und Rexstad (2013).
+Hier stellen wir einen Ringfund-Datensatz von Stockenten im San Luis Valley in Colorado vor. Bei diesem Datensatz werden Jung- und Alttiere unterschieden [Modell H1 von Brownie et al. (1985)]. Dazu nutzen wir den Datensatz `brownie`, der im R-Paket RMark enthalten ist (Laake 2013). Erläuterungen finden sich in Laake & Rexstad (2013).
 
 ```{r}
 # check.packages function: install and load multiple R packages.
@@ -149,7 +149,7 @@ Brownie, C., Anderson, D.R., Burnham, K.P., Robson, D.S. (1985): Statistical inf
 \end{hangparagraph}
 
 \begin{hangparagraph}
-Laake, J., Rexstad, E. (2008): RMark – an alternative approach to building linear models in MARK. --- In: Cooch, E., White, G.C. (Hrsg.): --- Program MARK: A Gentle Introduction.
+Laake, J., Rexstad, E. (2008): RMark – An alternative approach to building linear models in MARK. --- In: Cooch, E., White, G.C. (Hrsg.): --- Program MARK: A Gentle Introduction.
 \end{hangparagraph}
 
 \begin{hangparagraph}
