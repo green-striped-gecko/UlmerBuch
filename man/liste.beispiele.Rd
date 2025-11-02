@@ -4,7 +4,10 @@
 \alias{liste.beispiele}
 \title{Funktion zum Auflisten aller Beispiele}
 \usage{
-liste.beispiele()
+liste.beispiele(links = FALSE)
+}
+\arguments{
+\item{links}{Logischer Wert, ob Links zu den pdf-Dateien mit ausgegeben werden sollen. Default ist FALSE.}
 }
 \description{
 Gibt eine Lister aller vorhandener Beispiele des Ulmerbuchs aus. 

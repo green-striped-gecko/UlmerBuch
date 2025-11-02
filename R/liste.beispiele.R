@@ -3,6 +3,7 @@
 #' Gibt eine Lister aller vorhandener Beispiele des Ulmerbuchs aus. 
 #' Einige Beispiele sind als pdf und in rmd (code der direkt ausgefuehrt werden kann) 
 #' format vorhankden.
+#' @param links Logischer Wert, ob Links zu den pdf-Dateien mit ausgegeben werden sollen. Default ist FALSE.
 #' @export
 #' @importFrom stringr str_extract str_remove 
 #' @importFrom dplyr full_join arrange '%>%' mutate distinct select 
@@ -13,7 +14,7 @@
 #' 
 #' liste.beispiele()
 
-liste.beispiele <- function()
+liste.beispiele <- function(links=FALSE)
 {
 	type <- pdf <- rmd <- bsp <- name  <- RMD <- PDF <- NULL
 	bsps.path <- system.file('extdata', package = "UlmerBuch")
@@ -42,6 +43,12 @@ liste.beispiele <- function()
 		) %>%
 		select(bsp, name, rmd, pdf) %>%
 		arrange(as.numeric(str_extract(bsp, "[0-9.]+")))
+	
+	
+	link <- "https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/"
+	
+	if (links) presence_table <- presence_table %>%
+		mutate(link =paste0("[link](",link,"bsp_", bsp, "_", name,".pdf)")) 
 	
 	# Print table
 	print(kable(data.frame(presence_table)))
