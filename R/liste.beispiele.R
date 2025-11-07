@@ -38,8 +38,8 @@ liste.beispiele <- function(links=FALSE)
 		distinct() %>%
 		pivot_wider(names_from = type, values_from = type, values_fn = length, values_fill = 0) %>%
 		mutate(
-			rmd = ifelse(!is.na(RMD) & RMD > 0, "Yes", "No"),
-			pdf = ifelse(!is.na(PDF) & PDF > 0, "Yes", "No")
+			rmd = ifelse(!is.na(RMD) & RMD > 0, "Ja", "Nein"),
+			pdf = ifelse(!is.na(PDF) & PDF > 0, "Ja", "Nein")
 		) %>%
 		select(bsp, name, rmd, pdf) %>%
 		arrange(as.numeric(str_extract(bsp, "[0-9.]+")))
