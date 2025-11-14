@@ -3,8 +3,8 @@ title: "Beispielliste"
 author: "Bernd Gruber"
 date: "2025-11-02"
 output:
-  pdf_document: default
   word_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -31,10 +31,10 @@ knitr::opts_chunk$set(echo = TRUE)
 |8.7   |State-Space                   |Ja   |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_8.7_State-Space.pdf)|
 |9.1   |closure-test                  |Ja   |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_9.1_closure-test.pdf)|
 |9.2   |Modellselektion               |Ja   |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_9.2_Modellselektion.pdf)|
+|10.5  |Fangfrequenzen                |Ja   |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_10.5_Fangfrequenzen.pdf)|
+|10.6  |Gehyra_alle_Modelle           |Nein |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_10.6_Gehyra_alle_Modelle.pdf)|
 |10.10 |Removal                       |Nein |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_10.10_Removal.pdf)|
 |10.11 |Sample_Coverage               |Nein |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_10.11_Sample_Coverage.pdf)|
 |10.13 |Populationsgroessenschaetzung |Ja   |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_10.13_Populationsgroessenschaetzung.pdf)|
-|10.5  |Fangfrequenzen                |Ja   |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_10.5_Fangfrequenzen.pdf)|
-|10.6  |Gehyra_alle_Modelle           |Nein |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_10.6_Gehyra_alle_Modelle.pdf)|
-|11.11 |Ringmeldungen                 |Ja   |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_11.11_Ringmeldungen.pdf)|
 |11.6  |JS                            |Ja   |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_11.6_JS.pdf)|
+|11.11 |Ringmeldungen                 |Ja   |Ja  |[link](https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/bsp_11.11_Ringmeldungen.pdf)|

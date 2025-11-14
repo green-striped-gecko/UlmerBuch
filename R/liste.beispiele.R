@@ -42,7 +42,7 @@ liste.beispiele <- function(links=FALSE)
 			pdf = ifelse(!is.na(PDF) & PDF > 0, "Ja", "Nein")
 		) %>%
 		select(bsp, name, rmd, pdf) %>%
-		arrange(as.numeric(str_extract(bsp, "[0-9.]+")))
+		arrange(numeric_version(str_extract(bsp, "[0-9.]+")))
 	
 	
 	link <- "https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/"
