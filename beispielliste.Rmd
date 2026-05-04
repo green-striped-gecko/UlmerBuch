@@ -1,0 +1,91 @@
+---
+title: "Beispielliste"
+authors: "Bernd Gruber, Annegret Grimm-Seyfarth"
+date: "2026-05-04"
+output:
+  pdf_document: 
+  word_document: default
+  html_document:
+    self_contained: no
+    df_print: paged
+  latex_engine: xelatex
+header-includes:
+  - \usepackage{amssymb}
+  - \usepackage[none]{hyphenat} 
+  - \newlength{\hanglen}
+  - \setlength{\hanglen}{0.5cm}
+  - \newenvironment{hangparagraph}{\par\hangindent=\hanglen \hangafter=1}{\par}
+editor_options:
+  chunk_output_type: inline
+  markdown:
+    wrap: 72
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+knitr::opts_chunk$set(width = 80)
+options(width = 80)
+```
+
+## Liste aller Beispiele fuer das Ulmerbuch 
+```{r, include=FALSE}
+library("UlmerBuch")
+liste.beispiele <- function(links=FALSE)
+{
+	type <- pdf <- rmd <- bsp <- name  <- RMD <- PDF <- NULL
+	bsps.path <- system.file('extdata', package = "UlmerBuch")
+	cat("Es sind Beispiele zu folgenden Kapiteln vorhanden:\n\n")
+	all_files <- dir(bsps.path, pattern = "^bsp_.*\\.(rmd|pdf|xlsx)$", ignore.case = TRUE)
+
+	# List all Rmd and PDF files
+	
+	
+	# Extract bsp, name (base), and type
+	file_info <- data.frame(
+		bsp = str_extract(all_files, "[0-9.]+"),
+		name = str_remove(str_remove(all_files, "^bsp_[0-9.]+_"), "\\.[^.]+$"),
+		type = tools::file_ext(all_files),
+		stringsAsFactors = FALSE
+	)
+	
+	# Create presence table
+	presence_table <- file_info %>%
+		mutate(type = toupper(type)) %>%
+		distinct() %>%
+		pivot_wider(names_from = type, values_from = type, values_fn = length, values_fill = 0) %>%
+		mutate(
+			rmd = ifelse(!is.na(RMD) & RMD > 0, "Ja", "Nein"),
+			pdf = ifelse(!is.na(PDF) & PDF > 0, "Ja", "Nein"),
+			excel = ifelse(!is.na(XLSX) & XLSX > 0, "Ja", "Nein")
+		) %>%
+		select(bsp, name, rmd, pdf, excel) %>%
+		arrange(numeric_version(str_extract(bsp, "[0-9]+(\\.[0-9]+)*")))
+	
+	
+	link <- "https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/"
+	
+	if (links) {
+	  presence_table <- presence_table %>%
+	    mutate(
+	      link = case_when(
+	        pdf == "Ja" ~ paste0("<a href='", link, "bsp_", bsp, "_", name, ".pdf'>[pdf]</a>"),
+	        excel == "Ja" ~ paste0("<a href='", link, "bsp_", bsp, "_", name, ".xlsx'>[excel]</a>"),
+	        TRUE ~ ""
+	      )
+	    )
+	}
+	
+	# Print table
+	  (kable((presence_table), escape = FALSE))
+	
+}
+
+```
+
+
+```{r}
+liste.beispiele(links = FALSE)
+```
+
