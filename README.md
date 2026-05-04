@@ -27,6 +27,7 @@ Das Paket UlmerBuch enthält alle Daten und Beispiele und kennt die folgenden Fu
 
 - `beispiel(bsp=4.1, type="rmd")` - Beispiel 4.1 als rmd (type="pdf" oeffnet ein pdf des Beispiels)
 - `liste.beipspiele()` - Liste aller Beispiele
+- `liste.beipspiele(links = TRUE)` - Liste aller Beispiele inklusive der Links zu den pdf oder Excel-Dateien
 - `beispiel.pfad()` - Pfad zu den Beispieldaten setzen. Falls kein Pfad angegeben wird, wird der interne Pfad genutzt, welcher die Daten enthält.
 - `beispiel.daten(pfad="C:/bernd/Ulmerbuchdate", unzip=TRUE)` - Beispieldaten herunterladen, falls Kopien benoetigt werden.
 
