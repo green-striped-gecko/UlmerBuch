@@ -5,13 +5,13 @@ Status: [![Checks](https://github.com/green-striped-gecko/UlmerBuch/actions/work
 
 
 
-In diesem Github Repository findest Du alle Beispiele aus dem Buch. Die Beispiele werden als R-Paket geliefert, so dass sie möglichst einfach installiert werden können. Dazu benötigst Du eine möglichst aktuelle R/Rstudio Installation. Ein Installationsanleitung findest Du [hier - in Englisch](https://rstudio-education.github.io/hopr/starting.html). Nach der Installation, starte Rstudio und gib den folgenden Befehl in der Console ein:
+In diesem Github Repository findest du alle Beispiele aus dem Buch. Die Beispiele werden als R-Paket geliefert, so dass sie möglichst einfach installiert werden können. Dazu benötigst du eine möglichst aktuelle R/Rstudio Installation. Ein Installationsanleitung findest Du [hier - in Englisch](https://rstudio-education.github.io/hopr/starting.html). Nach der Installation, starte Rstudio und gib den folgenden Befehl in der Console ein:
 
 `install.packages("devtools") #falls das devtools Paket noch nicht installiert ist`
 `devtools::install_github("green-striped-gecko/UlmerBuch")`
 
 
-Für die Installation benötigst Du eine Internetverbindung. Nach erfolgreicher Installation einfach
+Für die Installation benötigst du eine Internetverbindung. Nach erfolgreicher Installation einfach
 
 `library("UlmerBuch")`
 
@@ -26,11 +26,11 @@ Nach Ausführung des obigen Befehls sollte sich ein weiteres Code-Fenster öffne
 Das Paket UlmerBuch enthält alle Daten und Beispiele und kennt die folgenden Funktionen:
 
 - `beispiel(bsp=4.1, type="rmd")` - Beispiel 4.1 als rmd (type="pdf" oeffnet ein pdf des Beispiels)
-- `liste.beipspiele()` - Liste aller Beispiele
+- `liste.beipspiele()` - Liste aller Beispiele und Formate, in denen sie vorliegen
 - `liste.beipspiele(links = TRUE)` - Liste aller Beispiele inklusive der Links zu den pdf oder Excel-Dateien
 - `beispiel.pfad()` - Pfad zu den Beispieldaten setzen. Falls kein Pfad angegeben wird, wird der interne Pfad genutzt, welcher die Daten enthält.
-- `beispiel.daten(pfad="C:/bernd/Ulmerbuchdate", unzip=TRUE)` - Beispieldaten herunterladen, falls Kopien benoetigt werden.
+- `beispiel.daten(pfad="C:/bernd/Ulmerbuchdate", unzip=TRUE)` - Beispieldaten herunterladen, falls Kopien benoetigt werden - einfach einen eigenen Pfad einsetzen.
 
-Viel Spaß und Erfolg beim Ausprobieren der Beispiele. Falls Ihr einen Fehler entdeckt habt, schreibt bitte eine Email an: [xyz\@ulmerbuch.de](xyz@ulmerbuch.de) oder kontaktiert die Autoren direkt. Wir freuen uns auch über Anregungen und Verbesserungsvorschläge. 
+Viel Spaß und Erfolg beim Ausprobieren der Beispiele. Falls ihr einen Fehler entdeckt habt, schreibt bitte eine Email an: [xyz\@ulmerbuch.de](xyz@ulmerbuch.de) oder kontaktiert die AutorInnen direkt. Wir freuen uns auch über Anregungen und Verbesserungsvorschläge. 
 
 Klaus, Annegret und Bernd
