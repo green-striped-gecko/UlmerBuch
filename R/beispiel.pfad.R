@@ -11,7 +11,7 @@ beispiel.pfad <- function(pfad=NULL) {
 		setwd(pfad)
 		
 	} else {
-		if (!dir.exists(pfad)) stop("Der angegebene Pfad existiert nicht. Bitte auf Tippfehler überprüfen") else setwd(pfad) 
+		if (!dir.exists(pfad)) stop("Der angegebene Pfad existiert nicht. Bitte auf Tippfehler \u00fcberpr\u00fcfen") else setwd(pfad) 
 		
 	}
 	cat("Der Pfad zu den Beispieldaten wurde gesetzt auf:\n", pfad, "\n")

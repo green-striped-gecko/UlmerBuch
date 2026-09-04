@@ -5,7 +5,7 @@
 #'
 #' @param links Logischer Wert. Falls TRUE, wird eine interaktive Tabelle
 #'   mit anklickbaren Links zu PDF- und Excel-Dateien angezeigt.
-#'   Standard ist FALSE.
+#'   Standard ist TRUE.
 #'
 #' @return Eine Tabelle mit den vorhandenen Beispielen und Dateiformaten.
 #'
@@ -18,6 +18,7 @@
 liste.beispiele <- function(links = TRUE)
 {
 	type <- pdf <- rmd <- excel <- bsp <- name <- RMD <- PDF <- XLSX <- NULL
+	.sort <- link_pdf <- link_excel <- Dateien <- NULL
 	
 	bsps.path <- system.file("extdata", package = "UlmerBuch")
 	

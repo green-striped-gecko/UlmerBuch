@@ -25,7 +25,7 @@ beispiel <- function(bsp=NULL, type="rmd") {
 		found <- matched_files[check]
 		
 		if (length(found) == 0) {
-			stop("Das Beispiel ist nicht vorhanden. Bitte überpruefen Sie auch, ob sich ein Tippfehler eingeschlichen hat.\n Verfügbare Beispiele können mittels\nliste.beispiele()\naufgelistet werden.") }
+			stop("Das Beispiel ist nicht vorhanden. Bitte \u00fcberpruefen Sie auch, ob sich ein Tippfehler eingeschlichen hat.\n Verf\u00fcgbare Beispiele k\u00f6nnen mittels\nliste.beispiele()\naufgelistet werden.") }
       else {
 		if (type=="rmd") {
 		fn <- system.file('extdata',found, package = "UlmerBuch")
@@ -45,7 +45,7 @@ beispiel <- function(bsp=NULL, type="rmd") {
           
         }	
 		  else 
-			stop("Für dieses Beispiel ist kein Code-Beispiel vorhanden. Bitte überpruefen Sie auch, ob sich Tippfehler im Beispielnamen eingeschlichen haben.")
+			stop("F\u00fcr dieses Beispiel ist kein Code-Beispiel vorhanden. Bitte \u00fcberpruefen Sie auch, ob sich Tippfehler im Beispielnamen eingeschlichen haben.")
 		}
 		}
 		}

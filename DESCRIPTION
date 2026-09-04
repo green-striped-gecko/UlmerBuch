@@ -8,20 +8,12 @@ Authors@R: c(
             person("Klaus", "Henle", email="klaus.henle@ufz.de", role="aut"),
 						person("Annegret", "Grimm-Seyfarth", email="annegret.grimm@ufz.de", role="aut")
 						)
-Author: Bernd Gruber [aut, cre],
-  			Klaus Henle [aut],
-			  Annegret Grimm Seyfarth [aut],
 Maintainer: Bernd Gruber <bernd.gruber@canberra.edu.au>
 Depends: R (>= 4.0.0), utils, usethis, stringr, dplyr, knitr, tidyr
 Description: Package zum Ausprobieren aller Beispiele welche mit BeispielCode geliefert werden. 
 						Eine ausfuehrliche Beschreibung der Beispiele befindet sich auf der Webseite
 						\url{https://github.com/green-striped-gecko/UlmerBuch}.
-Imports:
-    dplyr,
-    DT,
-    knitr,
-    stringr,
-    tidyr
+Imports: DT
 RoxygenNote: 7.3.3
 Encoding: UTF-8
 License: GPL (>= 3)

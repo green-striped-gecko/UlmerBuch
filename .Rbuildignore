@@ -4,3 +4,5 @@
 ^knitallexamples\.r$
 ^\.github$
 beispielliste.*
+^docs$
+^EXCEL_Tabellen_zur_Berechnung\.pdf$

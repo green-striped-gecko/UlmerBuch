@@ -9,7 +9,7 @@ liste.beispiele(links = TRUE)
 \arguments{
 \item{links}{Logischer Wert. Falls TRUE, wird eine interaktive Tabelle
 mit anklickbaren Links zu PDF- und Excel-Dateien angezeigt.
-Standard ist FALSE.}
+Standard ist TRUE.}
 }
 \value{
 Eine Tabelle mit den vorhandenen Beispielen und Dateiformaten.
