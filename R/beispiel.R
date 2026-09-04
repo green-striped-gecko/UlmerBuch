@@ -30,7 +30,9 @@ beispiel <- function(bsp=NULL, type="rmd") {
 		fn <- system.file('extdata',found, package = "UlmerBuch")
 		if (file.exists(fn)) usethis::edit_file(fn) } else if (type=="pdf") {
 			fn <- system.file('extdata',found, package = "UlmerBuch")
-			system(paste0('open "', fn, '"'))
+			utils::browseURL(
+				paste0("file:///", normalizePath(fn, winslash = "/"))
+			)
 			
 		}	else 
 			stop("Fuer dieses Beispiel ist kein Code Beispiel vorhanden. Bitte Ueberpruefen Sie auch, ob sich Tippfehler im Beispielnamen eingeschlichen haben.")

@@ -2,19 +2,24 @@
 % Please edit documentation in R/liste.beispiele.R
 \name{liste.beispiele}
 \alias{liste.beispiele}
-\title{Funktion zum Auflisten aller Beispiele}
+\title{Liste aller Beispiele}
 \usage{
-liste.beispiele(links = FALSE)
+liste.beispiele(links = TRUE)
 }
 \arguments{
-\item{links}{Logischer Wert, ob Links zu den pdf-Dateien mit ausgegeben werden sollen. Default ist FALSE.}
+\item{links}{Logischer Wert. Falls TRUE, wird eine interaktive Tabelle
+mit anklickbaren Links zu PDF- und Excel-Dateien angezeigt.
+Standard ist FALSE.}
+}
+\value{
+Eine Tabelle mit den vorhandenen Beispielen und Dateiformaten.
 }
 \description{
-Gibt eine Lister aller vorhandener Beispiele des Ulmerbuchs aus. 
-Einige Beispiele sind als pdf und in rmd (code der direkt ausgefuehrt werden kann) 
-format vorhankden.
+Gibt eine Übersicht über alle im Paket vorhandenen Beispiele aus.
+Optional werden anklickbare Links zu PDF- und Excel-Dateien angezeigt.
 }
 \examples{
-
 liste.beispiele()
+liste.beispiele(links = TRUE)
+
 }
