@@ -57,7 +57,7 @@ Um den Einstieg zu erleichtern, haben wir außerdem ein Video erstellt, in dem d
 Das Paket **UlmerBuch** enthält alle Beispieldaten und Beispielcodes. Die wichtigsten Funktionen sind:
 
 -   `beispiel(bsp = "4.1", type = "rmd")`\
-    Öffnet Beispiel 4.1 als R-Markdown-Datei. Mit `type = "pdf"` kann – sofern für das Beispiel vorhanden – die PDF-Version geöffnet werden.
+    Öffnet Beispiel 4.1 als R-Markdown-Datei. Mit `type = "pdf"` kann – sofern für das Beispiel vorhanden – die PDF-Version geöffnet werden. Ebenso kann mit `type = "Excel"` – sofern für das Beispiel vorhanden – die Excel-Version (xlsx) geöffnet werden.
 
 -   `liste.beispiele(links=FALSE)`\
     Zeigt eine Tabelle aller Beispiele und der Formate, in denen sie vorliegen.
