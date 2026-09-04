@@ -19,7 +19,7 @@ liste.beispiele <- function(links=FALSE)
 	type <- pdf <- rmd <- bsp <- name  <- RMD <- PDF <- NULL
 	bsps.path <- system.file('extdata', package = "UlmerBuch")
 	cat("Es sind Beispiele zu folgenden Kapiteln vorhanden:\n\n")
-	all_files <- dir(bsps.path, pattern = "\\.(rmd|pdf)$")
+	all_files <- dir(bsps.path, pattern = "^bsp_.*\\.(rmd|pdf|xlsx)$", ignore.case = TRUE)
 
 	# List all Rmd and PDF files
 	
@@ -39,21 +39,31 @@ liste.beispiele <- function(links=FALSE)
 		pivot_wider(names_from = type, values_from = type, values_fn = length, values_fill = 0) %>%
 		mutate(
 			rmd = ifelse(!is.na(RMD) & RMD > 0, "Ja", "Nein"),
-			pdf = ifelse(!is.na(PDF) & PDF > 0, "Ja", "Nein")
+			pdf = ifelse(!is.na(PDF) & PDF > 0, "Ja", "Nein"),
+			excel = ifelse(!is.na(XLSX) & XLSX > 0, "Ja", "Nein")
 		) %>%
-		select(bsp, name, rmd, pdf) %>%
-		arrange(numeric_version(str_extract(bsp, "[0-9.]+")))
+		select(bsp, name, rmd, pdf, excel) %>%
+		arrange(numeric_version(str_extract(bsp, "[0-9]+(\\.[0-9]+)*")))
 	
 	
 	link <- "https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/"
 	
-	if (links) presence_table <- presence_table %>%
-		mutate(link =paste0("[link](",link,"bsp_", bsp, "_", name,".pdf)")) 
+	if (links) {
+	  presence_table <- presence_table %>%
+	    mutate(
+	      link = case_when(
+	        pdf == "Ja" ~ paste0("<a href='", link, "bsp_", bsp, "_", name, ".pdf'>[pdf]</a>"),
+	        excel == "Ja" ~ paste0("<a href='", link, "bsp_", bsp, "_", name, ".xlsx'>[excel]</a>"),
+	        TRUE ~ ""
+	      )
+	    )
+	}
 	
 	# Print table
-	print(kable(data.frame(presence_table)))
+	  print(kable(data.frame(presence_table), escape = FALSE))
 	
 }
+
 
 
 
