@@ -50,7 +50,7 @@ Besonders hilfreich ist es, den Code zunächst schrittweise auszuführen und die
 
 Mit **STRG + SHIFT + ENTER** kann der aktuelle Codeblock vollständig ausgeführt werden.
 
-Um den Einstieg zu erleichtern, haben wir außerdem ein Video erstellt, in dem die Vorgehensweise anhand von Beispiel 4.1 erläutert wird. [[Video: Beispiel 4.1 in RStudio]](https://green-striped-gecko.github.io/Ulmerbuch/Beispiel4.1inRStudio.html)
+Um den Einstieg zu erleichtern, haben wir außerdem ein Video erstellt, in dem die Vorgehensweise anhand von Beispiel 4.1 erläutert wird. [[Video: Beispiel 4.1 in RStudio]](https://green-striped-gecko.github.io/UlmerBuch/Beispiel4.1inRStudio.html)
 
 ## Funktionen des Pakets
 
