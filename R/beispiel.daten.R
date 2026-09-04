@@ -1,6 +1,6 @@
 #' Funktion zum herunterladen der Beispieldaten
 #' 
-#' Die Funktion laedt die Beispieldaten aus dem Buch herunter. Die Daten werden in dem angegebenene Ordner gespeichert. Wenn das Paket installiert wurde, sind die Daten auch im Ordner 'extdata' zu finden in dem R Packet Ulmerbuch gespeichert..
+#' Die Funktion lädt die Beispieldaten aus dem Buch herunter. Die Daten werden in dem angegebenene Ordner gespeichert. Wenn das Paket installiert wurde, sind die Daten auch im Ordner 'extdata' zu finden in dem R Packet Ulmerbuch gespeichert..
 #' @param pfad Pfad zu dem Ordner in dem die Daten gespeichert werden sollen. Sollte der Ordner nicht existieren, wird er erstellt. Wenn kein Pfad angegeben wird, werden die Daten in einem temporären Ordner gespeichert.
 #' @param unzip Wenn TRUE, werden die Daten entpackt. Standard ist TRUE.
 #' @export
