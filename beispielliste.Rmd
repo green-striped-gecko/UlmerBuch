@@ -1,10 +1,10 @@
 ---
 title: "Beispielliste"
 authors: "Bernd Gruber, Annegret Grimm-Seyfarth"
-date: "2026-05-04"
+date: "2026-10-24"
 output:
-  pdf_document: 
   word_document: default
+  pdf_document: 
   html_document:
     self_contained: no
     df_print: paged
@@ -12,6 +12,8 @@ output:
 header-includes:
   - \usepackage{amssymb}
   - \usepackage[none]{hyphenat} 
+  - \usepackage{longtable}
+  - \usepackage{booktabs}
   - \newlength{\hanglen}
   - \setlength{\hanglen}{0.5cm}
   - \newenvironment{hangparagraph}{\par\hangindent=\hanglen \hangafter=1}{\par}
@@ -64,21 +66,43 @@ liste.beispiele <- function(links=FALSE)
 		arrange(numeric_version(str_extract(bsp, "[0-9]+(\\.[0-9]+)*")))
 	
 	
-	link <- "https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/"
+	link_base <- "https://raw.githubusercontent.com/green-striped-gecko/UlmerBuch/refs/heads/main/inst/extdata/"
 	
 	if (links) {
-	  presence_table <- presence_table %>%
-	    mutate(
-	      link = case_when(
-	        pdf == "Ja" ~ paste0("<a href='", link, "bsp_", bsp, "_", name, ".pdf'>[pdf]</a>"),
-	        excel == "Ja" ~ paste0("<a href='", link, "bsp_", bsp, "_", name, ".xlsx'>[excel]</a>"),
-	        TRUE ~ ""
-	      )
-	    )
+	  # old version with separate columns
+	  #presence_table <- presence_table %>%
+	  #  mutate(
+	  #   link = case_when(
+	  #      pdf == "Ja" ~ paste0("<a href='", link, "bsp_", bsp, "_", name, ".pdf'>[pdf]</a>"),
+	  #     excel == "Ja" ~ paste0("<a href='", link, "bsp_", bsp, "_", name, ".xlsx'>[excel]</a>"),
+	  #     TRUE ~ ""
+	  #     )
+	  #   )
+	  
+	  # new version with: ja replaced by clickable link
+	   presence_table <- presence_table %>%
+    mutate(
+      # RMD: replace "Ja" with clickable link
+      rmd = ifelse(rmd == "Ja",
+                   paste0("<a href='", link_base, "bsp_", bsp, "_", name, ".rmd'>Ja</a>"),
+                   "Nein"),
+      
+      # PDF: replace "Ja" with clickable link
+      pdf = ifelse(pdf == "Ja",
+                   paste0("<a href='", link_base, "bsp_", bsp, "_", name, ".pdf'>Ja</a>"),
+                   "Nein"),
+      
+      # Excel: replace "Ja" with clickable link
+      excel = ifelse(excel == "Ja",
+                     paste0("<a href='", link_base, "bsp_", bsp, "_", name, ".xlsx'>Ja</a>"),
+                     "Nein")
+    )
+
+	  
 	}
 	
 	# Print table
-	  (kable((presence_table), escape = FALSE))
+	  (kable(presence_table, escape = FALSE, booktabs = TRUE,longtable = TRUE))
 	
 }
 
@@ -86,6 +110,6 @@ liste.beispiele <- function(links=FALSE)
 
 
 ```{r}
-liste.beispiele(links = FALSE)
+liste.beispiele(links = TRUE)
 ```
 
