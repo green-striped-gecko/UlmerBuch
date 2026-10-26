@@ -1,8 +1,8 @@
 Package: UlmerBuch
 Type: Package
 Title: Beispiel fuer UlmerBuch Erfassung von Tierpopulationen im Naturschutz (Henle et al.)
-Version: 1.0.4
-Date: 2026-09-04
+Version: 1.0.5
+Date: 2026-10-27
 Authors@R: c(
             person("Bernd", "Gruber", email="bernd.gruber@canberra.edu.au", role=c("aut","cre")), 
             person("Klaus", "Henle", email="klaus.henle@ufz.de", role="aut"),
