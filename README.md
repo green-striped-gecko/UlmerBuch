@@ -52,7 +52,7 @@ Mit **STRG + SHIFT + ENTER** kann der aktuelle Codeblock vollständig ausgeführ
 
 Um den Einstieg zu erleichtern, haben wir außerdem ein Video erstellt, in dem die Vorgehensweise anhand von Beispiel 4.1 erläutert wird. [[Video: Beispiel 4.1 in RStudio]](https://green-striped-gecko.github.io/UlmerBuch/Beispiel4.1inRStudio.html)
 
-Die Beispiele können direkt in R also code heruntergeladen werden. Eine komplette Liste aller Beispiele mit links zum Herunterlanden findest du [hier](https://green-striped-gecko.github.io/UlmerBuch/beispielliste.html "Beispielliste mit Links").
+Die Beispiele können mittels Befehl entweder direkt in R als Code heruntergeladen, inspiziert und an persönliche Daten angepasst werden. Eine komplette Liste aller Beispiele mit Links zum Herunterlanden findest du [hier](https://green-striped-gecko.github.io/UlmerBuch/beispielliste.html "Beispielliste mit Links").
 
 ## Funktionen des Pakets
 
