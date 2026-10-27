@@ -2,6 +2,8 @@
 
 In diesem GitHub-Repository findest du alle Beispiele aus dem Buch. Die Beispiele werden als R-Paket bereitgestellt, sodass sie möglichst einfach installiert und ausprobiert werden können.
 
+Die Onlinebeispiele aus dem Buch liegen zumeist als R-Code vor, wobei es zu jedem Beispiel eine zusätzliche Vignette in pdf-Form gibt. Unten beschreiben wir, wie du diese Beispiele mittels Befehl direkt in R als Code heruntergeladen kannst. Einige Beispiele liegen auch als Excel-Datei vor. Eine Erläuterung zu den in Excel vorliegenden Beispielen findest du [hier](https://github.com/green-striped-gecko/UlmerBuch/blob/main/EXCEL_Tabellen_zur_Berechnung.pdf "EXCEL Tabellen zur Berechnung"). Alle Beispiele können sowohl in R als auch in Excel ausprobiert, inspiziert und an persönliche Daten angepasst werden. Eine komplette Liste aller online verfügbaren Beispiele mit Links zum Herunterlanden findest du [hier](https://green-striped-gecko.github.io/UlmerBuch/beispielliste.html "Beispielliste mit Links").
+
 ## Installation
 
 Du benötigst eine möglichst aktuelle Version von **R** und **RStudio**. Eine deutschsprachige Installationsanleitung findest du [hier](docs/Installation_R_RStudio_DE.pdf).
@@ -51,8 +53,6 @@ Besonders hilfreich ist es, den Code zunächst schrittweise auszuführen und die
 Mit **STRG + SHIFT + ENTER** kann der aktuelle Codeblock vollständig ausgeführt werden.
 
 Um den Einstieg zu erleichtern, haben wir außerdem ein Video erstellt, in dem die Vorgehensweise anhand von Beispiel 4.1 erläutert wird. [[Video: Beispiel 4.1 in RStudio]](https://green-striped-gecko.github.io/UlmerBuch/Beispiel4.1inRStudio.html)
-
-Die Beispiele können mittels Befehl entweder direkt in R als Code heruntergeladen, inspiziert und an persönliche Daten angepasst werden. Eine komplette Liste aller online verfügbaren Beispiele mit Links zum Herunterlanden findest du [hier](https://green-striped-gecko.github.io/UlmerBuch/beispielliste.html "Beispielliste mit Links").
 
 ## Funktionen des Pakets
 
