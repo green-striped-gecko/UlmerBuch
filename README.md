@@ -36,7 +36,7 @@ library("UlmerBuch")
 
 zu laden.
 
-## Ein erstes Beispiel
+## Ein erstes Beispiel in R
 
 Um zu überprüfen, ob alles funktioniert, kannst du zum Beispiel Beispiel 4.1 öffnen:
 
